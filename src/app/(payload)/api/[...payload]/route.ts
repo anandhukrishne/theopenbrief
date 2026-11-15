@@ -1,0 +1,14 @@
+// Payload REST and GraphQL API handler
+// All endpoints live under /api/*
+// e.g. POST /api/users/login  → sets openbrief-token HttpOnly cookie
+//      GET  /api/articles     → returns published articles
+
+import { REST_DELETE, REST_GET, REST_OPTIONS, REST_PATCH, REST_POST, REST_PUT } from '@payloadcms/next/routes'
+import configPromise from '@payload-config'
+
+export const GET = REST_GET(configPromise)
+export const POST = REST_POST(configPromise)
+export const DELETE = REST_DELETE(configPromise)
+export const PATCH = REST_PATCH(configPromise)
+export const PUT = REST_PUT(configPromise)
+export const OPTIONS = REST_OPTIONS(configPromise)
