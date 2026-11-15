@@ -45,17 +45,31 @@ export default async function JournalPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="font-playfair text-4xl font-bold mb-3">The Journal</h1>
-        <p className="text-gray-500 mb-12 text-lg">In-depth essays, deep dives, and reflective analyses.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight">The Journal</h1>
+        <p className="text-gray-500 mb-12 text-base sm:text-lg">In-depth essays, deep dives, and reflective analyses.</p>
 
         <div className="divide-y divide-gray-100">
           {articles.length === 0 ? (
-            <p className="text-gray-400 italic py-8">No journal articles published yet.</p>
+            <div className="py-8 space-y-8">
+              <article className="group">
+                <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600 block mb-2">Essay</span>
+                <h2 className="text-xl sm:text-2xl font-bold group-hover:text-indigo-600 transition-colors mb-2">
+                  On Solitude, Slow Software, and the Return of the Small Web
+                </h2>
+                <p className="text-gray-500 mb-3 text-sm sm:text-base leading-relaxed">
+                  Why building quiet, durable web experiences matters more now than racing for fleeting virality.
+                </p>
+                <div className="text-xs text-gray-400 flex gap-3">
+                  <span>Editorial Desk</span>
+                  <span>· 5 min read</span>
+                </div>
+              </article>
+            </div>
           ) : (
             articles.map((article: any) => (
               <article key={article.id} className="py-8 group">
                 <Link href={`/articles/${article.slug}`}>
-                  <h2 className="font-playfair text-2xl font-bold group-hover:text-indigo-600 transition-colors mb-2">
+                  <h2 className="text-xl sm:text-2xl font-bold group-hover:text-indigo-600 transition-colors mb-2">
                     {article.title}
                   </h2>
                   {article.excerpt && <p className="text-gray-500 mb-3">{article.excerpt}</p>}

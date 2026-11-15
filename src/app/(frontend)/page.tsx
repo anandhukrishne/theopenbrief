@@ -21,53 +21,104 @@ async function getLatestArticles() {
   }
 }
 
+// Fallback sample articles displayed when the database is freshly initialized
+const SAMPLE_ARTICLES = [
+  {
+    id: 'sample-1',
+    title: 'The Architecture of Thought: Why Web Explainers Are Reshaping the Modern Journal',
+    slug: 'the-architecture-of-thought',
+    type: 'explainer',
+    excerpt: 'How visual narratives, structured technical bites, and interactive journals are reviving deep-form reading in an age of fragmented attention.',
+    author: { name: 'Editorial Desk' },
+    publishedDate: new Date().toISOString(),
+    readTime: 6,
+    isPremium: false,
+  },
+  {
+    id: 'sample-2',
+    title: 'The Cartographer of Lost Frequencies: A Tokyo Memory',
+    slug: 'the-cartographer-of-lost-frequencies',
+    type: 'short-story',
+    excerpt: 'In the back alleys of Akihabara, an old engineer recorded the dead signals left behind by analog television antennas.',
+    author: { name: 'K. Anandhu' },
+    publishedDate: new Date().toISOString(),
+    readTime: 8,
+    isPremium: false,
+  },
+  {
+    id: 'sample-3',
+    title: 'Understanding Distributed Consensus in 400 Words',
+    slug: 'understanding-distributed-consensus',
+    type: 'tech-bite',
+    excerpt: 'From Paxos to Raft: a razor-sharp breakdown of how computers agree on truth when networks can fail at any millisecond.',
+    author: { name: 'Open Brief Tech' },
+    publishedDate: new Date().toISOString(),
+    readTime: 3,
+    isPremium: false,
+  },
+  {
+    id: 'sample-4',
+    title: 'On Solitude, Slow Software, and the Return of the Small Web',
+    slug: 'on-solitude-and-slow-software',
+    type: 'journal',
+    excerpt: 'Why building quiet, durable web experiences matters more now than racing for fleeting virality.',
+    author: { name: 'Editorial Desk' },
+    publishedDate: new Date().toISOString(),
+    readTime: 5,
+    isPremium: false,
+  },
+]
+
 export default async function HomePage() {
-  const articles = await getLatestArticles()
+  const dbArticles = await getLatestArticles()
+  const articles = dbArticles && dbArticles.length > 0 ? dbArticles : SAMPLE_ARTICLES
 
   const featured = articles[0]
   const rest = articles.slice(1)
 
   return (
-    <main className="min-h-screen">
+    <main>
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <header className="border-b border-gray-100 py-5 px-6 flex items-center justify-between max-w-7xl mx-auto">
-        <Link href="/" className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="The Open Brief"
-            className="h-9 w-auto object-contain"
-          />
-        </Link>
-        <nav className="flex gap-6 text-sm font-medium text-gray-600">
-          <Link href="/journal" className="hover:text-black transition-colors">Journal</Link>
-          <Link href="/stories" className="hover:text-black transition-colors">Stories</Link>
-          <Link href="/explainers" className="hover:text-black transition-colors">Explainers</Link>
-          <Link href="/tech" className="hover:text-black transition-colors">Tech Bites</Link>
-        </nav>
+      <header className="border-b border-gray-100 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="The Open Brief"
+              className="h-7 sm:h-9 w-auto object-contain"
+            />
+          </Link>
+          <nav className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-gray-600 overflow-x-auto">
+            <Link href="/journal" className="hover:text-black transition-colors whitespace-nowrap">Journal</Link>
+            <Link href="/stories" className="hover:text-black transition-colors whitespace-nowrap">Stories</Link>
+            <Link href="/explainers" className="hover:text-black transition-colors whitespace-nowrap">Explainers</Link>
+            <Link href="/tech" className="hover:text-black transition-colors whitespace-nowrap">Tech Bites</Link>
+          </nav>
+        </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* ── Featured ──────────────────────────────────────────────────── */}
         {featured && (
-          <section className="mb-16">
+          <section className="mb-12 sm:mb-16 border-b border-gray-100 pb-12 sm:pb-16">
             <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600 mb-3 block">
-              Featured
+              Featured Brief
             </span>
             <Link href={`/articles/${featured.slug}`} className="group block">
-              <h1 className="font-playfair text-4xl md:text-5xl font-bold leading-tight mb-4 group-hover:text-indigo-700 transition-colors">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4 group-hover:text-indigo-600 transition-colors tracking-tight">
                 {featured.title}
               </h1>
               {featured.excerpt && (
-                <p className="text-gray-500 text-lg leading-relaxed max-w-2xl">{featured.excerpt}</p>
+                <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-3xl mb-4">{featured.excerpt}</p>
               )}
-              <div className="mt-4 flex items-center gap-3 text-sm text-gray-400">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-400">
                 {typeof featured.author === 'object' && (
-                  <span>{(featured.author as any)?.name}</span>
+                  <span className="font-medium text-gray-700">{(featured.author as any)?.name}</span>
                 )}
                 {featured.publishedDate && (
                   <>
                     <span>·</span>
-                    <span>{new Date(featured.publishedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    <span>{new Date(featured.publishedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </>
                 )}
                 {featured.readTime && (
@@ -83,10 +134,13 @@ export default async function HomePage() {
 
         {/* ── Article Grid ───────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-8">
-            Latest
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              Latest Dispatches
+            </h2>
+            <span className="text-xs text-gray-400">Updated weekly</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
             {rest.map((article) => (
               <ArticleCard key={article.id} article={article as any} />
             ))}
@@ -112,7 +166,7 @@ function ArticleCard({ article }: { article: any }) {
           {typeLabels[article.type] || article.type}
         </span>
       </div>
-      <h3 className="font-playfair text-xl font-bold leading-snug mb-2 group-hover:text-indigo-700 transition-colors">
+      <h3 className="text-lg sm:text-xl font-bold leading-snug mb-2 group-hover:text-indigo-600 transition-colors">
         {article.title}
       </h3>
       {article.excerpt && (
