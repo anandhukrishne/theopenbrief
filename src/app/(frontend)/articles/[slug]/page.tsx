@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { SAMPLE_ARTICLES } from '../../../lib/sampleArticles'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -22,11 +23,14 @@ async function getArticle(slug: string) {
       depth: 2,
       limit: 1,
     })
-    return docs[0] || null
+    if (docs[0]) return docs[0]
   } catch (err) {
-    console.error('Error fetching article:', err)
-    return null
+    console.error('Error fetching article from db:', err)
   }
+
+  // Fallback to sample article by slug
+  const sample = SAMPLE_ARTICLES.find((a) => a.slug === slug)
+  return sample || null
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -119,10 +123,14 @@ export default async function ArticlePage({ params }: Props) {
         </div>
 
         {/* ── Body ──────────────────────────────────────────────────────── */}
-        {/* Payload Lexical content renders as JSON — use @payloadcms/richtext-lexical/react */}
-        <div className="prose prose-lg prose-gray max-w-none">
-          {/* RichText renderer goes here — see @payloadcms/richtext-lexical */}
-          <p className="text-gray-400 italic">[Article body rendered via Lexical RichText component]</p>
+        <div className="prose prose-lg prose-gray max-w-none text-gray-800 leading-relaxed space-y-6 text-base sm:text-lg">
+          {typeof article.content === 'string' ? (
+            article.content.split('\n\n').map((paragraph: string, idx: number) => (
+              <p key={idx}>{paragraph}</p>
+            ))
+          ) : (
+            <p className="text-gray-600">{article.excerpt || 'Article content'}</p>
+          )}
         </div>
       </article>
     </main>

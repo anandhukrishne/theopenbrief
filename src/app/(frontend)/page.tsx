@@ -21,53 +21,7 @@ async function getLatestArticles() {
   }
 }
 
-// Fallback sample articles displayed when the database is freshly initialized
-const SAMPLE_ARTICLES = [
-  {
-    id: 'sample-1',
-    title: 'The Architecture of Thought: Why Web Explainers Are Reshaping the Modern Journal',
-    slug: 'the-architecture-of-thought',
-    type: 'explainer',
-    excerpt: 'How visual narratives, structured technical bites, and interactive journals are reviving deep-form reading in an age of fragmented attention.',
-    author: { name: 'Editorial Desk' },
-    publishedDate: new Date().toISOString(),
-    readTime: 6,
-    isPremium: false,
-  },
-  {
-    id: 'sample-2',
-    title: 'The Cartographer of Lost Frequencies: A Tokyo Memory',
-    slug: 'the-cartographer-of-lost-frequencies',
-    type: 'short-story',
-    excerpt: 'In the back alleys of Akihabara, an old engineer recorded the dead signals left behind by analog television antennas.',
-    author: { name: 'K. Anandhu' },
-    publishedDate: new Date().toISOString(),
-    readTime: 8,
-    isPremium: false,
-  },
-  {
-    id: 'sample-3',
-    title: 'Understanding Distributed Consensus in 400 Words',
-    slug: 'understanding-distributed-consensus',
-    type: 'tech-bite',
-    excerpt: 'From Paxos to Raft: a razor-sharp breakdown of how computers agree on truth when networks can fail at any millisecond.',
-    author: { name: 'Open Brief Tech' },
-    publishedDate: new Date().toISOString(),
-    readTime: 3,
-    isPremium: false,
-  },
-  {
-    id: 'sample-4',
-    title: 'On Solitude, Slow Software, and the Return of the Small Web',
-    slug: 'on-solitude-and-slow-software',
-    type: 'journal',
-    excerpt: 'Why building quiet, durable web experiences matters more now than racing for fleeting virality.',
-    author: { name: 'Editorial Desk' },
-    publishedDate: new Date().toISOString(),
-    readTime: 5,
-    isPremium: false,
-  },
-]
+import { SAMPLE_ARTICLES } from '../../lib/sampleArticles'
 
 export default async function HomePage() {
   const dbArticles = await getLatestArticles()
