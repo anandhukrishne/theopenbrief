@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { SAMPLE_ARTICLES } from '../../../lib/sampleArticles'
+import { SAMPLE_ARTICLES } from '@/lib/sampleArticles'
 
 export const dynamic = 'force-dynamic'
 

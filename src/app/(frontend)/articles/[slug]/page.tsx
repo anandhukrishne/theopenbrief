@@ -3,7 +3,7 @@ import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { SAMPLE_ARTICLES } from '../../../lib/sampleArticles'
+import { SAMPLE_ARTICLES } from '@/lib/sampleArticles'
 
 interface Props {
   params: Promise<{ slug: string }>

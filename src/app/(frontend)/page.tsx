@@ -21,7 +21,7 @@ async function getLatestArticles() {
   }
 }
 
-import { SAMPLE_ARTICLES } from '../../lib/sampleArticles'
+import { SAMPLE_ARTICLES } from '@/lib/sampleArticles'
 
 export default async function HomePage() {
   const dbArticles = await getLatestArticles()
