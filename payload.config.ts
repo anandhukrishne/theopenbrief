@@ -22,8 +22,10 @@ export default buildConfig({
     user: Users.slug,
     meta: {
       titleSuffix: '— The Open Brief',
-      favicon: '/favicon.png',
-      ogImage: '/logo.png',
+      icons: [{ rel: 'icon', url: '/favicon.png' }],
+      openGraph: {
+        images: [{ url: '/logo.png' }],
+      },
     },
   },
 

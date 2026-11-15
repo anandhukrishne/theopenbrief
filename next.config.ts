@@ -2,6 +2,10 @@ import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  typescript: {
+    // Let Next.js build without blocking on non-critical TS issues in Vercel
+    ignoreBuildErrors: false,
+  },
   images: {
     remotePatterns: [
       {
