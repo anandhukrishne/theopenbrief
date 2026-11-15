@@ -1,7 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import type { Article } from '../../payload-types'
 
 export const revalidate = 60
 
