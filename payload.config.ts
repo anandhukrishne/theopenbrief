@@ -14,8 +14,9 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  // ─── App Identity ────────────────────────────────────────────────────────
+  // ─── App Identity & Secret ──────────────────────────────────────────────
   serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  secret: process.env.PAYLOAD_SECRET || 'a-fallback-secret-for-build-and-types-validation-32chars',
   
   // ─── Admin Panel ─────────────────────────────────────────────────────────
   admin: {
