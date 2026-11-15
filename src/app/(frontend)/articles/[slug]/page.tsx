@@ -8,20 +8,25 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getArticle(slug: string) {
-  const payload = await getPayload({ config: configPromise })
-  const { docs } = await payload.find({
-    collection: 'articles',
-    where: {
-      slug: { equals: slug },
-      status: { equals: 'published' },
-    },
-    depth: 2,
-    limit: 1,
-  })
-  return docs[0] || null
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'articles',
+      where: {
+        slug: { equals: slug },
+        status: { equals: 'published' },
+      },
+      depth: 2,
+      limit: 1,
+    })
+    return docs[0] || null
+  } catch (err) {
+    console.error('Error fetching article:', err)
+    return null
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

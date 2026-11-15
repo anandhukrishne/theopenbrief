@@ -2,23 +2,28 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getArticlesByType(type: string) {
-  const payload = await getPayload({ config: configPromise })
-  const { docs } = await payload.find({
-    collection: 'articles',
-    where: {
-      and: [
-        { status: { equals: 'published' } },
-        { type: { equals: type } },
-      ],
-    },
-    sort: '-publishedDate',
-    limit: 20,
-    depth: 1,
-  })
-  return docs
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'articles',
+      where: {
+        and: [
+          { status: { equals: 'published' } },
+          { type: { equals: type } },
+        ],
+      },
+      sort: '-publishedDate',
+      limit: 20,
+      depth: 1,
+    })
+    return docs
+  } catch (err) {
+    console.error(`Error fetching articles for type ${type}:`, err)
+    return []
+  }
 }
 
 export default async function JournalPage() {

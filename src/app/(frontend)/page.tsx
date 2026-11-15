@@ -2,19 +2,23 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
 
-// Revalidate homepage every 60 seconds (ISR)
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getLatestArticles() {
-  const payload = await getPayload({ config: configPromise })
-  const { docs } = await payload.find({
-    collection: 'articles',
-    where: { status: { equals: 'published' } },
-    sort: '-publishedDate',
-    limit: 12,
-    depth: 1, // resolve author + categories
-  })
-  return docs
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'articles',
+      where: { status: { equals: 'published' } },
+      sort: '-publishedDate',
+      limit: 12,
+      depth: 1, // resolve author + categories
+    })
+    return docs
+  } catch (err) {
+    console.error('Error fetching latest articles:', err)
+    return []
+  }
 }
 
 export default async function HomePage() {
