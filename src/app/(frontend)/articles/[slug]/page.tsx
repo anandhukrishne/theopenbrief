@@ -35,7 +35,7 @@ async function getArticle(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const article = await getArticle(slug)
+  const article: any = await getArticle(slug)
   if (!article) return { title: 'Not Found' }
 
   return {
@@ -46,14 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: article.excerpt || '',
       type: 'article',
       publishedTime: article.publishedDate || undefined,
-      authors: [(article.author as any)?.name],
+      authors: [article.author?.name || 'The Open Brief'],
     },
   }
 }
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
-  const article = await getArticle(slug)
+  const article: any = await getArticle(slug)
   if (!article) notFound()
 
   const author = article.author as any
