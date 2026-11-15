@@ -3,7 +3,7 @@
 // Auth cookies are set here — HttpOnly, Secure, never in the URL.
 
 import { RootPage, generatePageMetadata } from '@payloadcms/next/views'
-import { importMap } from '../importMap'
+import { importMap } from '../../importMap'
 import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 

@@ -1,6 +1,6 @@
 import configPromise from '@payload-config'
 import { RootLayout } from '@payloadcms/next/views'
-import { importMap } from '../importMap'
+import { importMap } from './importMap'
 import React from 'react'
 
 type Args = {
