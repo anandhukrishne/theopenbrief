@@ -1,7 +1,7 @@
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { cloudinaryStorage } from '@payloadcms/storage-cloudinary'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { Users } from './src/collections/Users'
 import { Articles } from './src/collections/Articles'
 import { Categories } from './src/collections/Categories'
@@ -48,17 +48,14 @@ export default buildConfig({
     },
   }),
 
-  // ─── Image Storage (Cloudinary) ───────────────────────────────────────────
+  // ─── Image Storage (Vercel Blob — 1-click free on Vercel) ────────────────
   plugins: [
-    cloudinaryStorage({
-      config: {
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
-        api_key: process.env.CLOUDINARY_API_KEY || '',
-        api_secret: process.env.CLOUDINARY_API_SECRET || '',
-      },
+    vercelBlobStorage({
+      enabled: true,
       collections: {
         media: true,
       },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     }),
   ],
 
@@ -70,10 +67,14 @@ export default buildConfig({
   // ─── CORS (allow frontend to call API) ────────────────────────────────────
   cors: [
     process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    'https://admin.theopenbrief.app',
+    'https://theopenbrief.app',
   ],
 
   // ─── CSRF protection ──────────────────────────────────────────────────────
   csrf: [
     process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    'https://admin.theopenbrief.app',
+    'https://theopenbrief.app',
   ],
 })

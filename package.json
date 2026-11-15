@@ -10,13 +10,13 @@
     "payload": "payload"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.91.0",
-    "@payloadcms/next": "3.91.0",
-    "@payloadcms/richtext-lexical": "3.91.0",
-    "@payloadcms/storage-cloudinary": "3.91.0",
+    "@payloadcms/db-postgres": "3.93.0",
+    "@payloadcms/next": "3.93.0",
+    "@payloadcms/richtext-lexical": "3.93.0",
+    "@payloadcms/storage-vercel-blob": "3.93.0",
     "graphql": "^16.8.1",
     "next": "15.3.9",
-    "payload": "3.91.0",
+    "payload": "3.93.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sharp": "^0.33.0"

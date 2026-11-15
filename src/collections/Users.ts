@@ -11,6 +11,7 @@ export const Users: CollectionConfig = {
     cookies: {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',
+      domain: process.env.NODE_ENV === 'production' ? '.theopenbrief.app' : undefined,
     },
     // Lock account after 5 failed attempts for 10 minutes
     maxLoginAttempts: 5,
