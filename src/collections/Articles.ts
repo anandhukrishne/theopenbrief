@@ -1,8 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import type { User } from '../payload-types'
 
 // Helper: check if user has one of the given roles
-const hasRole = (user: User | null | undefined, roles: string[]) =>
+const hasRole = (user: any, roles: string[]) =>
   !!user && roles.includes(user.role)
 
 // Helper: author can edit their own article, editors/admins can edit all

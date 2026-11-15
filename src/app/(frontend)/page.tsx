@@ -1,7 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import type { Article } from '../../payload-types'
 
 // Revalidate homepage every 60 seconds (ISR)
 export const revalidate = 60
@@ -94,7 +93,7 @@ export default async function HomePage() {
   )
 }
 
-function ArticleCard({ article }: { article: Article & { author: any; categories: any[] } }) {
+function ArticleCard({ article }: { article: any }) {
   const typeLabels: Record<string, string> = {
     'journal': '📔 Journal',
     'short-story': '📖 Story',
