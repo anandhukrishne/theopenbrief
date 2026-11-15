@@ -46,6 +46,7 @@ export default buildConfig({
 
   // ─── Database (Neon PostgreSQL) ───────────────────────────────────────────
   db: postgresAdapter({
+    push: true, // Automatically synchronize schema and create tables on boot
     pool: {
       connectionString: process.env.DATABASE_URL || '',
       ssl: {
