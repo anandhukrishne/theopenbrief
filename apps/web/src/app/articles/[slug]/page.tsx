@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { fetchArticleBySlug, Article } from '@/lib/api'
 import ThemeToggle from '@/components/ThemeToggle'
+import CoverImage from '@/components/CoverImage'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -104,11 +105,12 @@ export default async function ArticlePage({ params }: Props) {
 
         {/* Cover Image */}
         {article.coverImage && (
-          <figure className="mb-12">
-            <img
+          <figure className="mb-12 aspect-[16/9] w-full overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            <CoverImage
               src={article.coverImage}
               alt={article.title}
-              className="w-full rounded-sm border border-neutral-200 dark:border-neutral-800 aspect-[16/9] object-cover"
+              monogramSize="lg"
+              className="w-full h-full object-cover"
             />
           </figure>
         )}
