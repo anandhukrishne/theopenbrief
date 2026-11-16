@@ -57,17 +57,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <img src="/logo-white.png" alt="The Open Brief" className="h-7 w-auto object-contain hidden dark:block" />
                 </Link>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
-                  An independent journal of ideas, architectural breakdowns, technological inquiries, and cinematic arts.
+                  An independent journal of explainers, breakdowns, technological advancements and cinematic arts.
                 </p>
                 <div className="p-4 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm space-y-1.5">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold block">
                     Contact Newsroom
                   </span>
                   <a
-                    href="mailto:editorial@theopenbrief.app"
+                    href="mailto:anandhu.krishne@theopenbrief.app"
                     className="text-xs font-mono font-semibold text-neutral-800 dark:text-neutral-200 hover:underline block"
                   >
-                    editorial@theopenbrief.app
+                    anandhu.krishne@theopenbrief.app
                   </a>
                 </div>
               </div>
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* Col 2: Pillars */}
               <div className="md:col-span-3">
                 <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-500 mb-4 font-semibold">
-                  Pillars &amp; Sections
+                  Sections
                 </h4>
                 <ul className="space-y-2.5 text-xs font-mono">
                   <li>
@@ -168,9 +168,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400 font-mono">
               <p>© {currentYear} The Open Brief. All rights reserved.</p>
               <div className="flex items-center gap-6">
-                <span>Adoor / Global</span>
+                <span>Global</span>
                 <span>•</span>
-                <span>Dev 45 studios</span>
+                <span>Developed by 45 STUDioS</span>
               </div>
             </div>
           </div>
