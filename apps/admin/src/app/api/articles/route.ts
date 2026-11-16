@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb } from '@/lib/db'
 import { adminAuth } from '@/lib/firebaseAdmin'
 
-// GET /api/articles - Fetch all articles (with optional section filter)
+// GET /api/articles - Fetch all articles
 export async function GET(req: NextRequest) {
   try {
     await initDb()
@@ -31,14 +31,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Session authorization check
-    const sessionCookie = req.cookies.get('openbrief_session')?.value
-    if (!sessionCookie) {
+    const token = req.cookies.get('openbrief_session')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     let decodedToken
     try {
-      decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true)
+      decodedToken = await adminAuth.verifyIdToken(token)
     } catch {
       return NextResponse.json({ error: 'Unauthorized: Session expired' }, { status: 401 })
     }

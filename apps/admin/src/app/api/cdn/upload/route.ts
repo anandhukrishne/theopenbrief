@@ -3,14 +3,14 @@ import { adminAuth } from '@/lib/firebaseAdmin'
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify session cookie
-    const sessionCookie = req.cookies.get('openbrief_session')?.value
-    if (!sessionCookie) {
+    // 1. Verify session cookie using Google's public certificates
+    const token = req.cookies.get('openbrief_session')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
     }
 
     try {
-      await adminAuth.verifySessionCookie(sessionCookie, true)
+      await adminAuth.verifyIdToken(token)
     } catch {
       return NextResponse.json({ error: 'Unauthorized: Invalid or expired session' }, { status: 401 })
     }
@@ -24,10 +24,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No image file uploaded' }, { status: 400 })
     }
 
-    const token = process.env.GITHUB_CDN_TOKEN
+    const ghToken = process.env.GITHUB_CDN_TOKEN
     const repo = process.env.GITHUB_CDN_REPO || 'anandhukrishne/tob-cdn'
 
-    if (!token) {
+    if (!ghToken) {
       return NextResponse.json({ error: 'Server configuration missing GITHUB_CDN_TOKEN' }, { status: 500 })
     }
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const ghRes = await fetch(ghUrl, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${ghToken}`,
         Accept: 'application/vnd.github+json',
         'User-Agent': 'TheOpenBrief-Admin',
         'Content-Type': 'application/json',

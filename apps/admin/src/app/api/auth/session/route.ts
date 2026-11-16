@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminAuth } from '@/lib/firebaseAdmin'
 
 // 5 days duration for session cookie
-const EXPIRES_IN = 60 * 60 * 24 * 5 * 1000
+const EXPIRES_IN_SEC = 60 * 60 * 24 * 5
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,14 +12,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing ID token' }, { status: 400 })
     }
 
-    // Create session cookie with Firebase Admin
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn: EXPIRES_IN })
+    // Verify the Firebase ID token using Google's public certificates (Zero private key required)
+    const decodedToken = await adminAuth.verifyIdToken(idToken)
 
-    const res = NextResponse.json({ status: 'success' })
+    if (!decodedToken.uid) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
 
-    // Store session id securely in HttpOnly cookie — never in site address or URL!
-    res.cookies.set('openbrief_session', sessionCookie, {
-      maxAge: EXPIRES_IN / 1000,
+    const res = NextResponse.json({ status: 'success', user: { uid: decodedToken.uid, email: decodedToken.email } })
+
+    // Store verified ID token directly as the HttpOnly session cookie
+    res.cookies.set('openbrief_session', idToken, {
+      maxAge: EXPIRES_IN_SEC,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -28,8 +32,8 @@ export async function POST(req: NextRequest) {
 
     return res
   } catch (err: any) {
-    console.error('Session creation error:', err)
-    return NextResponse.json({ error: err.message || 'Failed to authenticate session' }, { status: 401 })
+    console.error('Session verification error:', err)
+    return NextResponse.json({ error: err.message || 'Authentication failed' }, { status: 401 })
   }
 }
 
