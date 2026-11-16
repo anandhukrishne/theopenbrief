@@ -1,29 +1,20 @@
-/* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
-import config from '@payload-config'
-import '@payloadcms/next/css'
-import type { ServerFunctionClient } from 'payload'
-import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts'
-import React from 'react'
+import './globals.css'
+import type { Metadata } from 'next'
 
-import { importMap } from './admin/importMap.js'
-
-type Args = {
-  children: React.ReactNode
+export const metadata: Metadata = {
+  title: 'Author Studio — The Open Brief',
+  description: 'Editorial Studio for Authors and Editors of The Open Brief.',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
-const serverFunction: ServerFunctionClient = async function (args) {
-  'use server'
-  return handleServerFunctions({
-    ...args,
-    config,
-    importMap,
-  })
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className="light" style={{ colorScheme: 'light' }}>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased font-sans">
+        {children}
+      </body>
+    </html>
+  )
 }
-
-const Layout = ({ children }: Args) => (
-  <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
-    {children}
-  </RootLayout>
-)
-
-export default Layout
