@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb } from '@/lib/db'
 import { adminAuth } from '@/lib/firebaseAdmin'
 
-// GET /api/articles - Fetch all articles
+// GET /api/articles - Fetch all articles or single by slug/section
 export async function GET(req: NextRequest) {
   try {
     await initDb()
     const { searchParams } = new URL(req.url)
     const section = searchParams.get('section')
+    const slug = searchParams.get('slug')
 
     let query = 'SELECT * FROM articles WHERE status = $1'
     const values: any[] = ['published']
 
-    if (section) {
+    if (slug) {
+      query += ' AND slug = $2'
+      values.push(slug)
+    } else if (section) {
       query += ' AND section = $2'
       values.push(section)
     }
@@ -20,7 +24,16 @@ export async function GET(req: NextRequest) {
     query += ' ORDER BY published_at DESC LIMIT 50'
 
     const result = await db.query(query, values)
-    return NextResponse.json({ docs: result.rows })
+    return NextResponse.json(
+      { docs: result.rows },
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
+    )
   } catch (err: any) {
     console.error('Error in GET /api/articles:', err)
     return NextResponse.json({ docs: [], error: err.message }, { status: 500 })
@@ -33,7 +46,7 @@ export async function POST(req: NextRequest) {
     // Session authorization check
     const token = req.cookies.get('openbrief_session')?.value
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
     }
 
     let decodedToken
@@ -94,4 +107,15 @@ export async function POST(req: NextRequest) {
     console.error('Error creating article:', err)
     return NextResponse.json({ error: err.message || 'Failed to save article' }, { status: 500 })
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
 }

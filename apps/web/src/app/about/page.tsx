@@ -2,8 +2,8 @@ import Link from 'next/link'
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen">
-      <header className="border-b border-gray-100 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
+    <main className="min-h-screen bg-white">
+      <header className="border-b border-neutral-200 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <img
@@ -12,7 +12,7 @@ export default function AboutPage() {
               className="h-7 sm:h-9 w-auto object-contain"
             />
           </Link>
-          <nav className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-gray-600">
+          <nav className="flex items-center gap-6 text-xs sm:text-sm font-mono uppercase text-neutral-600">
             <Link href="/journal" className="hover:text-black">OpenBrief Plus</Link>
             <Link href="/explainers" className="hover:text-black">TOB Explainers</Link>
             <Link href="/tech" className="hover:text-black">TechnoBrief</Link>
@@ -20,21 +20,46 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-3xl sm:text-5xl font-bold mb-6 tracking-tight">About The Open Brief</h1>
-        <p className="text-xl text-gray-600 leading-relaxed mb-8">
-          The Open Brief is an independent publication dedicated to thoughtful essays, short stories, technical explainers, and architectural notes.
+      <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
+        <div className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-4">
+          Publication Colophon & Manifesto
+        </div>
+        <h1 className="editorial-serif text-4xl sm:text-6xl font-bold mb-8 tracking-tight text-neutral-900 leading-tight">
+          A Deliberate Antidote to Ephemeral Noise.
+        </h1>
+
+        <p className="editorial-serif text-xl sm:text-2xl text-neutral-600 leading-relaxed mb-10 italic border-l-2 border-neutral-900 pl-6">
+          The Open Brief is an independent publication dedicated to sustained attention, long-form inquiry, architectural explainers, and technical intelligence.
         </p>
 
-        <div className="prose prose-gray max-w-none text-gray-700 space-y-6 leading-relaxed">
+        <div className="space-y-6 text-neutral-800 leading-relaxed text-base sm:text-lg">
           <p>
-            We believe the modern internet has an abundance of immediacy, but a deficit of clarity. 
-            The Open Brief is designed as an antidote: a quiet reading space prioritizing craft, editorial depth, and durable thinking over ephemeral engagement.
+            The modern web suffers from an abundance of velocity and a poverty of synthesis. We consume hundreds of fragmented notifications daily, yet find ourselves increasingly unequipped to reason through foundational shifts in software, human thought, and digital institutions.
           </p>
           <p>
-            Our writers and contributors work across fiction, engineering, philosophy, and design. 
-            Every dispatch is edited and presented with deliberate care.
+            The Open Brief is organized around three distinct editorial pillars:
           </p>
+          <ul className="space-y-4 my-6 pl-4 border-l border-neutral-200 text-sm sm:text-base">
+            <li>
+              <strong className="font-semibold text-neutral-900">OpenBrief Plus:</strong> Philosophical essays, cultural commentary, and narrative inquiries examining human agency in an algorithmic age.
+            </li>
+            <li>
+              <strong className="font-semibold text-neutral-900">TOB Explainers:</strong> Structural deep dives breaking down complex protocols, economic mechanisms, and system architectures into clear mental models.
+            </li>
+            <li>
+              <strong className="font-semibold text-neutral-900">TechnoBrief:</strong> Compact, high-density engineering dispatches on compilers, distributed state, edge networks, and foundational software engineering.
+            </li>
+          </ul>
+          <p>
+            Headquartered out of Adoor, Kerala, and read globally, our publishing architecture is intentionally self-reliant, zero-card, and built to endure.
+          </p>
+        </div>
+
+        <div className="mt-16 pt-8 border-t border-neutral-200 flex items-center justify-between text-xs font-mono text-neutral-400">
+          <span>Adoor / Global</span>
+          <Link href="/" className="font-semibold text-neutral-900 hover:underline">
+            ← Back to Front Page
+          </Link>
         </div>
       </div>
     </main>

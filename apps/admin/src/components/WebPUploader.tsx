@@ -5,36 +5,34 @@ import { compressImageToWebP } from '@/lib/imageCompressor'
 
 interface Props {
   articleSlug: string
+  coverImageUrl?: string
   onUploadComplete: (cdnUrl: string) => void
+  onRemove?: () => void
 }
 
-export default function WebPUploader({ articleSlug, onUploadComplete }: Props) {
+export default function WebPUploader({ articleSlug, coverImageUrl, onUploadComplete, onRemove }: Props) {
   const [compressing, setCompressing] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [dragOver, setDragOver] = useState(false)
   const [fileSizeInfo, setFileSizeInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const processAndUpload = async (file: File) => {
     setError(null)
     setCompressing(true)
 
     try {
       const origSize = (file.size / 1024).toFixed(1)
-      
+
       // 1. Client-Side HTML5 Canvas resize (max 1600px) & WebP compression
       const webpBlob = await compressImageToWebP(file, 1600, 1600, 0.82)
       const compressedSize = (webpBlob.size / 1024).toFixed(1)
-      setFileSizeInfo(`Original: ${origSize} KB → WebP: ${compressedSize} KB (-${Math.round((1 - webpBlob.size / file.size) * 100)}%)`)
-
-      // Local preview
-      setPreview(URL.createObjectURL(webpBlob))
+      const percentReduction = Math.round((1 - webpBlob.size / file.size) * 100)
+      setFileSizeInfo(`${origSize} KB → ${compressedSize} KB WebP (-${percentReduction}%)`)
 
       // 2. Upload to GitHub Contents API via server route
       const formData = new FormData()
-      formData.append('file', webpBlob, `${articleSlug || 'image'}.webp`)
+      formData.append('file', webpBlob, `${articleSlug || 'cover'}.webp`)
       formData.append('slug', articleSlug || 'cover')
 
       const res = await fetch('/api/cdn/upload', {
@@ -56,42 +54,101 @@ export default function WebPUploader({ articleSlug, onUploadComplete }: Props) {
     }
   }
 
-  return (
-    <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center bg-slate-50/50 hover:bg-slate-50 transition-colors">
-      <input
-        type="file"
-        id="cdn-image-input"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) await processAndUpload(file)
+  }
 
-      {preview ? (
-        <div className="space-y-3">
-          <img src={preview} alt="Compressed preview" className="max-h-48 mx-auto rounded-lg shadow-sm border border-slate-200 object-cover" />
-          {fileSizeInfo && <p className="text-xs font-mono text-emerald-600 font-medium">{fileSizeInfo}</p>}
-          <label
-            htmlFor="cdn-image-input"
-            className="inline-block cursor-pointer text-xs font-medium text-slate-700 underline hover:text-black"
-          >
-            Replace Image
-          </label>
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      await processAndUpload(file)
+    }
+  }
+
+  const copyUrl = () => {
+    if (coverImageUrl) {
+      navigator.clipboard.writeText(coverImageUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {coverImageUrl ? (
+        <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+          <img
+            src={coverImageUrl}
+            alt="Cover preview"
+            className="w-full aspect-[16/9] object-cover"
+          />
+          <div className="p-3 bg-white border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="space-y-0.5">
+              <span className="font-mono text-emerald-700 font-semibold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                CDN WebP Active
+              </span>
+              {fileSizeInfo && <p className="text-[11px] font-mono text-slate-400">{fileSizeInfo}</p>}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={copyUrl}
+                className="px-2.5 py-1 text-slate-600 hover:text-black font-mono border border-slate-200 rounded bg-slate-50 transition-colors"
+              >
+                {copied ? '✓ Copied' : 'Copy CDN URL'}
+              </button>
+              {onRemove && (
+                <button
+                  type="button"
+                  onClick={onRemove}
+                  className="px-2.5 py-1 text-red-600 hover:text-red-800 font-medium border border-red-100 rounded hover:bg-red-50 transition-colors"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
-        <label htmlFor="cdn-image-input" className="cursor-pointer block space-y-2">
-          <div className="mx-auto w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-600 text-lg">
-            📷
-          </div>
-          <div className="text-sm font-medium text-slate-700">
-            {compressing ? 'Compressing to WebP & Pushing to CDN...' : 'Upload Cover Image'}
-          </div>
-          <p className="text-xs text-slate-400">
-            Automatically resized to max 1600px width & converted to WebP via HTML5 Canvas
-          </p>
-        </label>
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+            dragOver ? 'border-slate-900 bg-slate-100' : 'border-slate-200 bg-white hover:border-slate-400'
+          }`}
+        >
+          <input
+            type="file"
+            id="cdn-image-input"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <label htmlFor="cdn-image-input" className="cursor-pointer block space-y-2">
+            <div className="mx-auto w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-lg">
+              {compressing ? '⚙️' : '📸'}
+            </div>
+            <div className="text-sm font-semibold text-slate-800">
+              {compressing ? 'Compressing to WebP & Pushing to CDN...' : 'Drop cover image here or click to browse'}
+            </div>
+            <p className="text-xs text-slate-400">
+              Canvas auto-resizes to 1600px WebP (~100–200 KB) & pushes directly to cdn.theopenbrief.app
+            </p>
+          </label>
+        </div>
       )}
 
-      {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+          <strong>Upload Error:</strong> {error}
+        </div>
+      )}
     </div>
   )
 }

@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
 
     const ghToken = process.env.GITHUB_CDN_TOKEN
     const repo = process.env.GITHUB_CDN_REPO || 'anandhukrishne/tob-cdn'
+    const branch = process.env.GITHUB_CDN_BRANCH || 'main'
 
     if (!ghToken) {
       return NextResponse.json({ error: 'Server configuration missing GITHUB_CDN_TOKEN' }, { status: 500 })
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         message: `Upload media: ${filePath} via OpenBrief Studio`,
         content: contentBase64,
+        branch,
       }),
     })
 
@@ -65,13 +67,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `GitHub API error: ${ghRes.statusText}` }, { status: ghRes.status })
     }
 
-    // 5. Construct public CDN URL (cached by Cloudflare)
+    // 5. Construct public CDN URL and raw fallback URL
     const cdnBase = process.env.NEXT_PUBLIC_CDN_URL || 'https://cdn.theopenbrief.app'
     const publicUrl = `${cdnBase}/${filePath}`
+    const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${filePath}`
 
     return NextResponse.json({
       success: true,
       url: publicUrl,
+      rawUrl,
       path: filePath,
     })
   } catch (err: any) {

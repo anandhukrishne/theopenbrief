@@ -45,24 +45,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <div className="text-center mb-8">
-          <img src="/logo.png" alt="The Open Brief" className="h-8 w-auto mx-auto mb-3 object-contain" />
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Author & Newsroom Studio</h1>
-          <p className="text-sm text-slate-500 mt-1">Sign in with your verified editorial credentials</p>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#F8F9FA]">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10 space-y-6">
+        <div className="text-center space-y-2">
+          <img src="/favicon.png" alt="The Open Brief" className="w-12 h-12 mx-auto rounded-lg object-contain shadow-sm mb-3" />
+          <h1 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Author Studio</h1>
+          <p className="text-xs font-mono text-slate-400 uppercase tracking-widest">The Open Brief Newsroom</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3.5 text-xs text-red-800 bg-red-50 border border-red-200 rounded-xl leading-relaxed">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Email
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Author Email
             </label>
             <input
               type="email"
@@ -70,13 +70,13 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="editor@theopenbrief.app"
-              className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Password
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Secret Key / Password
             </label>
             <input
               type="password"
@@ -84,22 +84,23 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••••••"
-              className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-black transition-colors disabled:opacity-50"
+            className="w-full py-3 px-4 bg-slate-900 text-white font-medium text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-sm"
           >
-            {loading ? 'Authenticating...' : 'Enter Studio'}
+            {loading ? 'Authenticating with Google...' : 'Enter Studio →'}
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-400 mt-8">
-          Protected by Firebase Auth (Spark Plan) • Sessions verified via HttpOnly Cookie
-        </p>
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
+          <span>Adoor / Global</span>
+          <span>Spark Plan Auth</span>
+        </div>
       </div>
     </div>
   )

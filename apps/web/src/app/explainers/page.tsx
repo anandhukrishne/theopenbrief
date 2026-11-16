@@ -3,37 +3,49 @@ import { fetchArticles } from '@/lib/api'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ExplainerPage() {
-  const articles = await fetchArticles('explainer')
+export default async function ExplainersPage() {
+  const articles = await fetchArticles('explainers')
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-gray-100 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
+      <header className="border-b border-neutral-200 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="The Open Brief" className="h-7 sm:h-9 w-auto object-contain" />
+            <img src="/logo.png" alt="The Open Brief" className="h-7 w-auto object-contain" />
           </Link>
-          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-6 sm:h-7 w-auto object-contain" />
+          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-6 w-auto object-contain" />
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-8 sm:h-10 w-auto object-contain mb-3" />
-          <p className="text-gray-500 text-base sm:text-lg">Visual breakdowns and clarity on complex subjects.</p>
+      <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
+        <div className="mb-12 pb-8 border-b-2 border-neutral-900">
+          <div className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-3">
+            Section 02 • Visual & Structural Analyses
+          </div>
+          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-10 sm:h-12 w-auto object-contain mb-4" />
+          <p className="editorial-serif text-lg sm:text-xl text-neutral-600 italic leading-relaxed max-w-2xl">
+            Unpacking the mental models, systems architecture, and mechanical realities of modern technology and society.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {articles.map((article: any) => (
-            <article key={article.id} className="border border-gray-100 p-6 rounded-lg group hover:border-indigo-100 transition-colors">
+          {articles.map((article) => (
+            <article key={article.id} className="p-8 border border-neutral-200 bg-white group hover:border-neutral-900 transition-all rounded-sm">
+              <div className="font-mono text-xs uppercase tracking-wider text-neutral-400 mb-3">
+                Architectural Breakdown
+              </div>
               <Link href={`/articles/${article.slug}`}>
-                <h2 className="text-xl font-bold group-hover:text-indigo-600 transition-colors mb-2">
+                <h2 className="editorial-serif text-2xl font-bold leading-snug text-neutral-900 group-hover:text-neutral-600 transition-colors mb-3">
                   {article.title}
                 </h2>
-                {article.excerpt && <p className="text-gray-500 text-sm mb-4 leading-relaxed">{article.excerpt}</p>}
-                <div className="text-xs text-gray-400">
-                  {article.author?.name && <span>{article.author.name}</span>}
-                  {article.readTime && <span> · {article.readTime} min read</span>}
+                {article.excerpt && (
+                  <p className="text-sm text-neutral-600 leading-relaxed mb-6">
+                    {article.excerpt}
+                  </p>
+                )}
+                <div className="flex items-center justify-between text-xs font-mono text-neutral-400 pt-4 border-t border-neutral-100">
+                  <span>{article.authorName}</span>
+                  <span className="font-semibold text-neutral-900 group-hover:translate-x-1 transition-transform">{article.readTime} min read →</span>
                 </div>
               </Link>
             </article>
