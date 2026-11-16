@@ -4,7 +4,7 @@ export interface Article {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech' | 'standalone'
+  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'
   excerpt?: string
   content: string
   coverImage?: string
@@ -18,11 +18,12 @@ export interface Article {
  * Normalizes an article row from Neon PostgreSQL
  */
 function normalizeArticle(item: any): Article {
-  let sec: 'journal' | 'explainers' | 'tech' | 'standalone' = 'standalone'
+  let sec: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' = 'standalone'
   const rawType = (item.section || '').toLowerCase()
   if (rawType === 'journal') sec = 'journal'
   else if (rawType === 'explainers') sec = 'explainers'
   else if (rawType === 'tech') sec = 'tech'
+  else if (rawType === 'cinebrief' || rawType === 'cine') sec = 'cinebrief'
   else sec = 'standalone'
 
   const authorName = item.author_name || 'The Open Brief Desk'
@@ -48,7 +49,6 @@ function normalizeArticle(item: any): Article {
 
 /**
  * Fetch published articles from Admin Neon PostgreSQL API.
- * Strict requirement: NO mock/placeholder articles! Returns real DB records or empty array.
  */
 export async function fetchArticles(sectionFilter?: string): Promise<Article[]> {
   try {
@@ -72,7 +72,6 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
     console.warn(`[CMS API] Failed to fetch articles (${CMS_URL}):`, (err as any)?.message)
   }
 
-  // Returns strictly empty array - no mock/placeholder articles
   return []
 }
 

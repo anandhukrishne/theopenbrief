@@ -16,7 +16,7 @@ interface ArticleItem {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech' | 'standalone'
+  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'
   status: string
   excerpt?: string
   content: string
@@ -45,7 +45,7 @@ export default function Dashboard() {
   // Form Fields
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
-  const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'standalone'>('journal')
+  const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'>('journal')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
@@ -61,7 +61,7 @@ export default function Dashboard() {
   // Archive State
   const [articles, setArticles] = useState<ArticleItem[]>([])
   const [loadingArticles, setLoadingArticles] = useState(false)
-  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech' | 'standalone'>('all')
+  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'>('all')
 
   // Live Metrics
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
@@ -401,11 +401,12 @@ export default function Dashboard() {
                 <label className="block text-[11px] font-mono uppercase tracking-widest text-slate-400 mb-2 font-semibold">
                   Select Publication Pillar or Standalone
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   {[
                     { id: 'journal', label: 'OpenBrief Plus', desc: 'Essays & Inquiries', icon: '✒️' },
                     { id: 'explainers', label: 'TOB Explainers', desc: 'Visual Deep Dives', icon: '🔍' },
                     { id: 'tech', label: 'TechnoBrief', desc: 'Engineering Bites', icon: '⚡' },
+                    { id: 'cinebrief', label: 'CinēBrief', desc: 'Cinema & Arts', icon: '🎬' },
                     { id: 'standalone', label: 'Standalone', desc: 'Independent Feature', icon: '📰' },
                   ].map((p) => (
                     <button
@@ -711,7 +712,7 @@ export default function Dashboard() {
 
               {/* Filter */}
               <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto">
-                {(['all', 'journal', 'explainers', 'tech', 'standalone'] as const).map((sec) => (
+                {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone'] as const).map((sec) => (
                   <button
                     key={sec}
                     onClick={() => setArchiveFilter(sec)}
