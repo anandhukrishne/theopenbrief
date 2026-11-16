@@ -1,46 +1,35 @@
-import { SAMPLE_ARTICLES } from './sampleArticles'
-
 const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://admin.theopenbrief.app'
-const CDN_URL = process.env.NEXT_PUBLIC_CDN_URL || 'https://cdn.theopenbrief.app'
 
 export interface Article {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech'
+  section: 'journal' | 'explainers' | 'tech' | 'standalone'
   excerpt?: string
   content: string
   coverImage?: string
   authorName: string
+  authorBio?: string
   publishedDate: string
   readTime: number
 }
 
 /**
- * Normalizes an article row from Neon PostgreSQL or fallback sample articles
+ * Normalizes an article row from Neon PostgreSQL
  */
 function normalizeArticle(item: any): Article {
-  // Normalize section / type
-  let sec: 'journal' | 'explainers' | 'tech' = 'journal'
-  const rawType = (item.section || item.type || '').toLowerCase()
-  if (rawType.includes('explainer')) sec = 'explainers'
-  else if (rawType.includes('tech')) sec = 'tech'
-  else sec = 'journal'
+  let sec: 'journal' | 'explainers' | 'tech' | 'standalone' = 'standalone'
+  const rawType = (item.section || '').toLowerCase()
+  if (rawType === 'journal') sec = 'journal'
+  else if (rawType === 'explainers') sec = 'explainers'
+  else if (rawType === 'tech') sec = 'tech'
+  else sec = 'standalone'
 
-  // Normalize author
-  const authorName = item.author_name || (typeof item.author === 'object' ? item.author?.name : item.author) || 'The Open Brief Desk'
-
-  // Normalize cover image
-  let coverImage = item.cover_image_url || item.coverImage?.url || item.coverImage || ''
-  if (coverImage && !coverImage.startsWith('http://') && !coverImage.startsWith('https://')) {
-    coverImage = `${CDN_URL}/${coverImage.replace(/^\/+/, '')}`
-  }
-
-  // Normalize read time
-  const readTime = Number(item.read_time_minutes || item.readTime || 5)
-
-  // Normalize published date
-  const publishedDate = item.published_at || item.publishedDate || item.createdAt || new Date().toISOString()
+  const authorName = item.author_name || 'The Open Brief Desk'
+  const authorBio = item.author_bio || ''
+  const coverImage = item.cover_image_url || undefined
+  const readTime = Number(item.read_time_minutes || 5)
+  const publishedDate = item.published_at || item.created_at || new Date().toISOString()
 
   return {
     id: String(item.id || item.slug),
@@ -49,15 +38,17 @@ function normalizeArticle(item: any): Article {
     section: sec,
     excerpt: item.excerpt || '',
     content: item.content || '',
-    coverImage: coverImage || undefined,
+    coverImage,
     authorName,
+    authorBio,
     publishedDate,
     readTime,
   }
 }
 
 /**
- * Fetch published articles from Admin Neon PostgreSQL API or fallback
+ * Fetch published articles from Admin Neon PostgreSQL API.
+ * Strict requirement: NO mock/placeholder articles! Returns real DB records or empty array.
  */
 export async function fetchArticles(sectionFilter?: string): Promise<Article[]> {
   try {
@@ -73,24 +64,20 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
 
     if (res.ok) {
       const data = await res.json()
-      if (Array.isArray(data.docs) && data.docs.length > 0) {
+      if (Array.isArray(data.docs)) {
         return data.docs.map(normalizeArticle)
       }
     }
   } catch (err) {
-    console.warn(`[CMS API] Offline (${CMS_URL}), serving curated local dispatches:`, (err as any)?.message)
+    console.warn(`[CMS API] Failed to fetch articles (${CMS_URL}):`, (err as any)?.message)
   }
 
-  // Fallback to sample articles
-  let list = SAMPLE_ARTICLES.map(normalizeArticle)
-  if (sectionFilter) {
-    list = list.filter((a) => a.section === sectionFilter)
-  }
-  return list
+  // Returns strictly empty array - no mock/placeholder articles
+  return []
 }
 
 /**
- * Fetch a single article by slug
+ * Fetch a single article by slug from Neon PostgreSQL
  */
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   try {
@@ -102,14 +89,12 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data.docs) && data.docs.length > 0) {
-        const match = data.docs.find((d: any) => d.slug === slug) || data.docs[0]
-        return normalizeArticle(match)
+        return normalizeArticle(data.docs[0])
       }
     }
   } catch (err) {
     console.warn(`[CMS API] Error fetching slug '${slug}':`, (err as any)?.message)
   }
 
-  const found = SAMPLE_ARTICLES.find((a) => a.slug === slug)
-  return found ? normalizeArticle(found) : null
+  return null
 }

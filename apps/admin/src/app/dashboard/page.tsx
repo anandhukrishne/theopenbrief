@@ -4,16 +4,26 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import WebPUploader from '@/components/WebPUploader'
 
+interface UserProfile {
+  id: string
+  email: string
+  name: string
+  bio?: string
+  role: 'admin' | 'editor' | 'writer'
+}
+
 interface ArticleItem {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech'
+  section: 'journal' | 'explainers' | 'tech' | 'standalone'
   status: string
   excerpt?: string
   content: string
   cover_image_url?: string
+  author_id?: string
   author_name: string
+  author_bio?: string
   read_time_minutes: number
   published_at: string
 }
@@ -22,29 +32,36 @@ export default function Dashboard() {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // User Profile & Role
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profileName, setProfileName] = useState('')
+  const [profileBio, setProfileBio] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
+
   // Current View
-  const [activeTab, setActiveTab] = useState<'editor' | 'archive'>('editor')
+  const [activeTab, setActiveTab] = useState<'editor' | 'archive' | 'profile'>('editor')
   const [editorMode, setEditorMode] = useState<'edit' | 'split' | 'preview'>('edit')
 
   // Form Fields
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
-  const [section, setSection] = useState<'journal' | 'explainers' | 'tech'>('journal')
+  const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'standalone'>('journal')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
-  const [authorName, setAuthorName] = useState('The Open Brief Desk')
   const [readTime, setReadTime] = useState(5)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null)
 
   // Status & Notifications
   const [publishing, setPublishing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string; link?: string } | null>(null)
 
   // Archive State
   const [articles, setArticles] = useState<ArticleItem[]>([])
   const [loadingArticles, setLoadingArticles] = useState(false)
-  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech'>('all')
+  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech' | 'standalone'>('all')
 
   // Live Metrics
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
@@ -53,6 +70,26 @@ export default function Dashboard() {
   useEffect(() => {
     setReadTime(calculatedReadTime)
   }, [calculatedReadTime])
+
+  // Load user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/profile')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.profile) {
+            setProfile(data.profile)
+            setProfileName(data.profile.name)
+            setProfileBio(data.profile.bio || '')
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err)
+      }
+    }
+    fetchProfile()
+  }, [])
 
   // Load articles for archive
   const fetchArchive = async () => {
@@ -122,6 +159,7 @@ export default function Dashboard() {
     setContent('')
     setCoverImageUrl('')
     setEditingId(null)
+    setEditingAuthorId(null)
     setMessage(null)
   }
 
@@ -132,13 +170,71 @@ export default function Dashboard() {
     setExcerpt(art.excerpt || '')
     setContent(art.content)
     setCoverImageUrl(art.cover_image_url || '')
-    setAuthorName(art.author_name || 'The Open Brief Desk')
     setReadTime(art.read_time_minutes || 5)
     setEditingId(art.id)
+    setEditingAuthorId(art.author_id || null)
     setActiveTab('editor')
     setMessage(null)
   }
 
+  // Delete an article
+  const handleDeleteArticle = async (id: string, artTitle: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${artTitle}"? This cannot be undone.`)) {
+      return
+    }
+
+    setDeleting(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch(`/api/articles?id=${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to delete article')
+      }
+
+      setMessage({ type: 'success', text: `✓ Article "${artTitle}" has been permanently deleted.` })
+      if (editingId === id) resetForm()
+      fetchArchive()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // Save profile
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingProfile(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: profileName, bio: profileBio }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to update profile')
+      }
+
+      const data = await res.json()
+      setProfile(data.profile)
+      setMessage({ type: 'success', text: '✓ Your profile has been updated successfully.' })
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
+  // Submit / Publish Article
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setPublishing(true)
@@ -149,13 +245,13 @@ export default function Dashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: editingId || undefined,
           title,
           slug,
           section,
           excerpt,
           content,
           cover_image_url: coverImageUrl,
-          author_name: authorName,
           read_time_minutes: Number(readTime),
         }),
       })
@@ -181,15 +277,22 @@ export default function Dashboard() {
     ? articles
     : articles.filter((a) => a.section === archiveFilter)
 
+  // Can the current user delete/edit the article currently in the form?
+  const canEditCurrent =
+    !editingId ||
+    profile?.role === 'admin' ||
+    profile?.role === 'editor' ||
+    editingAuthorId === profile?.id
+
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
-      {/* ── Studio Masthead Header ── */}
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-sans">
+      {/* ── Studio Navigation Header ── */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src="/favicon.png" alt="TOB" className="w-7 h-7 rounded object-contain shadow-sm" />
+            <img src="/favicon.png" alt="TOB" className="w-7 h-7 rounded object-contain shadow-xs" />
             <div className="leading-tight">
-              <span className="font-serif font-bold text-base text-slate-900 tracking-tight block">
+              <span className="font-bold text-sm text-slate-900 tracking-tight block">
                 The Open Brief
               </span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
@@ -198,11 +301,12 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Tab Navigation */}
           <div className="hidden sm:flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-medium ml-4">
             <button
               onClick={() => setActiveTab('editor')}
               className={`px-3 py-1.5 rounded-md transition-all ${
-                activeTab === 'editor' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-black'
+                activeTab === 'editor' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
             >
               ✍️ Writing Desk
@@ -210,21 +314,38 @@ export default function Dashboard() {
             <button
               onClick={() => setActiveTab('archive')}
               className={`px-3 py-1.5 rounded-md transition-all ${
-                activeTab === 'archive' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-black'
+                activeTab === 'archive' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
             >
-              📰 Dispatches Archive
+              📰 Dispatches ({articles.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`px-3 py-1.5 rounded-md transition-all ${
+                activeTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+              }`}
+            >
+              👤 My Profile
             </button>
           </div>
         </div>
 
         {/* Live Metrics & Actions */}
-        <div className="flex items-center gap-4">
-          {activeTab === 'editor' && (
-            <div className="hidden md:flex items-center gap-3 text-xs font-mono text-slate-400 border-r border-slate-200 pr-4">
-              <span>{wordCount} words</span>
-              <span>•</span>
-              <span>~{readTime} min read</span>
+        <div className="flex items-center gap-3">
+          {profile && (
+            <div className="flex items-center gap-2 text-xs font-mono bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+              <span className="font-semibold text-slate-800">{profile.name}</span>
+              <span
+                className={`uppercase text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                  profile.role === 'admin'
+                    ? 'bg-rose-100 text-rose-800'
+                    : profile.role === 'editor'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-200 text-slate-700'
+                }`}
+              >
+                {profile.role}
+              </span>
             </div>
           )}
 
@@ -234,12 +355,12 @@ export default function Dashboard() {
             rel="noreferrer"
             className="text-xs font-mono text-slate-500 hover:text-black transition-colors hidden sm:inline"
           >
-            Live Reader ↗
+            Live Site ↗
           </a>
 
           <button
             onClick={handleLogout}
-            className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors"
+            className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-2"
           >
             Sign Out
           </button>
@@ -274,33 +395,34 @@ export default function Dashboard() {
         {activeTab === 'editor' && (
           <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Primary Writing Area (8 cols) */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-              {/* Publication Pillar Segmented Picker */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+              {/* Publication Pillar Selector (Including Standalone) */}
               <div>
                 <label className="block text-[11px] font-mono uppercase tracking-widest text-slate-400 mb-2 font-semibold">
-                  Publication Pillar
+                  Select Publication Pillar or Standalone
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {[
-                    { id: 'journal', label: 'OpenBrief Plus', desc: 'Essays & Long-form', icon: '✒️' },
+                    { id: 'journal', label: 'OpenBrief Plus', desc: 'Essays & Inquiries', icon: '✒️' },
                     { id: 'explainers', label: 'TOB Explainers', desc: 'Visual Deep Dives', icon: '🔍' },
                     { id: 'tech', label: 'TechnoBrief', desc: 'Engineering Bites', icon: '⚡' },
+                    { id: 'standalone', label: 'Standalone', desc: 'Independent Feature', icon: '📰' },
                   ].map((p) => (
                     <button
                       key={p.id}
                       type="button"
                       onClick={() => setSection(p.id as any)}
-                      className={`text-left p-3.5 rounded-xl border transition-all ${
+                      className={`text-left p-3 rounded-xl border transition-all ${
                         section === p.id
-                          ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span>{p.icon}</span>
-                        <span className="font-semibold text-sm">{p.label}</span>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-sm">{p.icon}</span>
+                        <span className="font-semibold text-xs truncate">{p.label}</span>
                       </div>
-                      <span className={`text-[11px] block ${section === p.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] block truncate ${section === p.id ? 'text-slate-300' : 'text-slate-400'}`}>
                         {p.desc}
                       </span>
                     </button>
@@ -308,7 +430,18 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Title Input */}
+              {/* Author Attribution Lock Notification */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-mono text-slate-600">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>
+                    Publishing as: <strong className="text-slate-900">{profile?.name || 'Verified Author'}</strong>
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400">Locked attribution • No spoofing</span>
+              </div>
+
+              {/* Title Input (Sans-Serif) */}
               <div>
                 <input
                   type="text"
@@ -316,7 +449,7 @@ export default function Dashboard() {
                   onChange={handleTitleChange}
                   required
                   placeholder="Article Headline..."
-                  className="w-full text-2xl sm:text-4xl font-serif font-bold text-slate-900 placeholder:text-slate-300 border-none outline-none focus:ring-0 p-0 leading-tight bg-transparent"
+                  className="w-full text-2xl sm:text-4xl font-extrabold text-slate-900 placeholder:text-slate-300 border-none outline-none focus:ring-0 p-0 leading-tight bg-transparent tracking-tight"
                 />
               </div>
 
@@ -327,17 +460,17 @@ export default function Dashboard() {
                   onChange={(e) => setExcerpt(e.target.value)}
                   rows={2}
                   placeholder="Standfirst / Excerpt — A sharp 2-3 sentence overview..."
-                  className="w-full text-base sm:text-lg font-serif italic text-slate-600 placeholder:text-slate-300 border-none outline-none focus:ring-0 p-0 bg-transparent resize-none leading-relaxed"
+                  className="w-full text-base sm:text-lg text-slate-600 placeholder:text-slate-300 border-none outline-none focus:ring-0 p-0 bg-transparent resize-none leading-relaxed"
                 />
               </div>
 
-              {/* Formatting Toolbar & Mode Switcher */}
+              {/* Formatting Toolbar */}
               <div className="border-t border-b border-slate-100 py-2.5 flex items-center justify-between gap-2 overflow-x-auto">
                 <div className="flex items-center gap-1 text-xs">
                   <button
                     type="button"
                     onClick={() => insertMarkdown('## ')}
-                    className="px-2 py-1 font-semibold rounded hover:bg-slate-100 text-slate-700"
+                    className="px-2 py-1 font-bold rounded hover:bg-slate-100 text-slate-700"
                     title="Heading 2"
                   >
                     H2
@@ -345,7 +478,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('### ')}
-                    className="px-2 py-1 font-semibold rounded hover:bg-slate-100 text-slate-700"
+                    className="px-2 py-1 font-bold rounded hover:bg-slate-100 text-slate-700"
                     title="Heading 3"
                   >
                     H3
@@ -353,7 +486,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('**', '**')}
-                    className="px-2 py-1 font-bold rounded hover:bg-slate-100 text-slate-700"
+                    className="px-2 py-1 font-extrabold rounded hover:bg-slate-100 text-slate-700"
                     title="Bold"
                   >
                     B
@@ -361,7 +494,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('*', '*')}
-                    className="px-2 py-1 italic rounded hover:bg-slate-100 text-slate-700 font-serif"
+                    className="px-2 py-1 italic rounded hover:bg-slate-100 text-slate-700"
                     title="Italic"
                   >
                     I
@@ -369,7 +502,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('> ')}
-                    className="px-2 py-1 rounded hover:bg-slate-100 text-slate-700 font-serif"
+                    className="px-2 py-1 rounded hover:bg-slate-100 text-slate-700 font-medium"
                     title="Quote"
                   >
                     “ ”
@@ -433,7 +566,7 @@ export default function Dashboard() {
                   onChange={(e) => setContent(e.target.value)}
                   required
                   rows={18}
-                  placeholder="Dispatched from Adoor... Write your essay, visual explainer breakdown, or systems note in Markdown..."
+                  placeholder="Write your article or technical breakdown here in clean Markdown..."
                   className="w-full text-base font-sans text-slate-800 placeholder:text-slate-300 border-none outline-none focus:ring-0 p-0 resize-y leading-relaxed bg-transparent"
                 />
               )}
@@ -457,8 +590,8 @@ export default function Dashboard() {
 
               {editorMode === 'preview' && (
                 <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-200 min-h-[400px]">
-                  <h1 className="editorial-serif text-3xl font-bold mb-4">{title || 'Untitled'}</h1>
-                  {excerpt && <p className="editorial-serif italic text-lg text-slate-600 mb-6">{excerpt}</p>}
+                  <h1 className="text-3xl font-extrabold mb-4 tracking-tight">{title || 'Untitled'}</h1>
+                  {excerpt && <p className="text-lg text-slate-600 mb-6">{excerpt}</p>}
                   <MarkdownViewer content={content} />
                 </div>
               )}
@@ -467,56 +600,68 @@ export default function Dashboard() {
             {/* Sidebar Controls (4 cols) */}
             <div className="lg:col-span-4 space-y-6">
               {/* Publishing Actions Card */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
                     Dispatch Status
                   </span>
                   <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
-                    {editingId ? 'Editing Live' : 'Ready to Publish'}
+                    {editingId ? 'Editing Dispatch' : 'New Dispatch'}
                   </span>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={publishing}
-                  className="w-full py-3 px-4 bg-slate-900 text-white font-medium text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                  disabled={publishing || !canEditCurrent}
+                  className="w-full py-3 px-4 bg-slate-900 text-white font-semibold text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-2"
                 >
                   {publishing ? (
-                    <span>Publishing to Neon...</span>
+                    <span>Saving to Neon...</span>
                   ) : (
-                    <span>{editingId ? 'Update Live Dispatch' : 'Publish to Neon & Live Site'}</span>
+                    <span>{editingId ? 'Update Live Dispatch' : 'Publish Dispatch'}</span>
                   )}
                 </button>
 
                 {editingId && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="w-full py-2 text-xs font-mono text-slate-500 hover:text-black border border-slate-200 rounded-lg transition-colors"
-                  >
-                    Cancel Edit & Clear Form
-                  </button>
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="w-full py-2 text-xs font-mono text-slate-600 hover:text-black border border-slate-200 rounded-lg transition-colors"
+                    >
+                      Clear & Start New Blank Draft
+                    </button>
+
+                    {canEditCurrent && (
+                      <button
+                        type="button"
+                        disabled={deleting}
+                        onClick={() => handleDeleteArticle(editingId, title)}
+                        className="w-full py-2 text-xs font-mono text-red-600 hover:text-red-800 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        {deleting ? 'Deleting...' : '🗑️ Delete Article'}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {/* Cover Image Card */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
+              {/* Cover Image Card (Client-Side Canvas WebP Compression) */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3">
                 <label className="block text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
-                  Cover Image (Zero-Card CDN)
+                  Cover Image (Compressed WebP)
                 </label>
                 <WebPUploader
-                  articleSlug={slug}
                   coverImageUrl={coverImageUrl}
-                  onUploadComplete={(url) => setCoverImageUrl(url)}
+                  onUploadComplete={(dataUrl) => setCoverImageUrl(dataUrl)}
                   onRemove={() => setCoverImageUrl('')}
                 />
               </div>
 
               {/* Metadata Details Card */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
                 <span className="block text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold pb-2 border-b border-slate-100">
-                  Metadata & Byline
+                  Metadata & Settings
                 </span>
 
                 <div>
@@ -538,18 +683,6 @@ export default function Dashboard() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Author Byline
-                  </label>
-                  <input
-                    type="text"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Read Time (Minutes)
                   </label>
                   <input
@@ -565,18 +698,20 @@ export default function Dashboard() {
           </form>
         )}
 
-        {/* ── TAB 2: Dispatches Archive ── */}
+        {/* ── TAB 2: Dispatches Archive with Delete Options & Hierarchy ── */}
         {activeTab === 'archive' && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Dispatches in Neon PostgreSQL</h2>
-                <p className="text-xs text-slate-500 mt-1">Manage and edit your published stories</p>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Dispatches in Neon Database</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Manage, edit, or delete published articles ({profile?.role?.toUpperCase()} permissions active)
+                </p>
               </div>
 
               {/* Filter */}
-              <div className="flex items-center gap-2 text-xs font-mono">
-                {(['all', 'journal', 'explainers', 'tech'] as const).map((sec) => (
+              <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto">
+                {(['all', 'journal', 'explainers', 'tech', 'standalone'] as const).map((sec) => (
                   <button
                     key={sec}
                     onClick={() => setArchiveFilter(sec)}
@@ -608,43 +743,144 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {filteredArticles.map((art) => (
-                  <div key={art.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 p-2 rounded-xl transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
-                          {art.section}
-                        </span>
-                        <span className="text-xs font-mono text-slate-400">
-                          {new Date(art.published_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-slate-900 text-base">{art.title}</h3>
-                      <p className="text-xs text-slate-500 font-mono">
-                        by {art.author_name} • {art.read_time_minutes} min read • /{art.slug}
-                      </p>
-                    </div>
+                {filteredArticles.map((art) => {
+                  const canManage =
+                    profile?.role === 'admin' ||
+                    profile?.role === 'editor' ||
+                    art.author_id === profile?.id
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => editArticle(art)}
-                        className="px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg hover:border-black transition-colors"
-                      >
-                        Edit in Studio
-                      </button>
-                      <a
-                        href={`https://theopenbrief.app/articles/${art.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 text-xs font-mono text-slate-500 hover:text-black"
-                      >
-                        Live ↗
-                      </a>
+                  return (
+                    <div
+                      key={art.id}
+                      className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 p-3 rounded-xl transition-colors"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
+                            {art.section}
+                          </span>
+                          <span className="text-xs font-mono text-slate-400">
+                            {new Date(art.published_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base">{art.title}</h3>
+                        <p className="text-xs text-slate-500 font-mono">
+                          by {art.author_name} • {art.read_time_minutes} min read • /{art.slug}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {canManage ? (
+                          <>
+                            <button
+                              onClick={() => editArticle(art)}
+                              className="px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg hover:border-black transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteArticle(art.id, art.title)}
+                              className="px-3 py-1.5 text-xs font-mono text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs font-mono text-slate-400 italic">Read-only</span>
+                        )}
+                        <a
+                          href={`https://theopenbrief.app/articles/${art.slug}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 text-xs font-mono text-slate-500 hover:text-black"
+                        >
+                          Live ↗
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── TAB 3: My Profile (Editable by Owner Only) ── */}
+        {activeTab === 'profile' && (
+          <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Your Author Profile</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Editable only by you. Your name and bio will appear on all dispatches you publish.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Account Email
+                </label>
+                <input
+                  type="text"
+                  value={profile?.email || ''}
+                  disabled
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 text-slate-500 border border-slate-200 rounded-xl cursor-not-allowed font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Editorial Role
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 text-xs font-mono uppercase font-bold rounded-lg bg-slate-900 text-white">
+                    {profile?.role}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {profile?.role === 'admin'
+                      ? 'Full system access (edit/delete any article)'
+                      : profile?.role === 'editor'
+                      ? 'Editorial privileges (edit/delete any article)'
+                      : 'Writer privileges (create and manage your own articles only)'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Display / Byline Name
+                </label>
+                <input
+                  type="text"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  required
+                  placeholder="e.g. Anandhu Krishna"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Author Bio
+                </label>
+                <textarea
+                  value={profileBio}
+                  onChange={(e) => setProfileBio(e.target.value)}
+                  rows={3}
+                  placeholder="A short sentence or two about your editorial background or focus area..."
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all leading-relaxed"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingProfile}
+                className="py-2.5 px-6 bg-slate-900 text-white font-semibold text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50"
+              >
+                {savingProfile ? 'Saving Profile...' : 'Save Profile Changes'}
+              </button>
+            </form>
           </div>
         )}
       </div>
@@ -660,13 +896,13 @@ function MarkdownViewer({ content }: { content: string }) {
       {content.split('\n\n').map((block, idx) => {
         const text = block.trim()
         if (text.startsWith('## ')) {
-          return <h2 key={idx} className="font-serif font-bold text-xl text-slate-900 mt-4">{text.replace('## ', '')}</h2>
+          return <h2 key={idx} className="font-bold text-xl text-slate-900 mt-4 tracking-tight">{text.replace('## ', '')}</h2>
         }
         if (text.startsWith('### ')) {
-          return <h3 key={idx} className="font-serif font-bold text-lg text-slate-900 mt-3">{text.replace('### ', '')}</h3>
+          return <h3 key={idx} className="font-bold text-lg text-slate-900 mt-3 tracking-tight">{text.replace('### ', '')}</h3>
         }
         if (text.startsWith('> ')) {
-          return <blockquote key={idx} className="font-serif italic border-l-2 border-slate-900 pl-4 text-slate-700 my-2">{text.replace('> ', '')}</blockquote>
+          return <blockquote key={idx} className="border-l-2 border-slate-900 pl-4 text-slate-700 my-2 font-medium">{text.replace('> ', '')}</blockquote>
         }
         if (text.startsWith('```')) {
           return <pre key={idx} className="bg-slate-900 text-slate-100 p-3 rounded text-xs font-mono overflow-x-auto">{text.replace(/```/g, '')}</pre>

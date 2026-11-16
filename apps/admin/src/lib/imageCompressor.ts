@@ -1,14 +1,14 @@
 /**
- * Client-Side Image Compressor using HTML5 <canvas>
- * Resizes any image to a maximum dimension of 1600px and exports as clean WebP (quality 0.82)
- * Typically yields ~100-250 KB files with zero server processing overhead.
+ * Client-Side Ultra-Compressed WebP Processor using HTML5 <canvas>
+ * Resizes images to max 1200px and exports as highly-optimized WebP (quality 0.72)
+ * Stored directly with the article record in Neon PostgreSQL (zero CDN dependencies).
  */
-export async function compressImageToWebP(
+export async function compressImageToDataUrlWebP(
   file: File,
-  maxWidth = 1600,
-  maxHeight = 1600,
-  quality = 0.82
-): Promise<Blob> {
+  maxWidth = 1200,
+  maxHeight = 900,
+  quality = 0.72
+): Promise<{ dataUrl: string; originalSizeKb: number; compressedSizeKb: number }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
@@ -26,8 +26,7 @@ export async function compressImageToWebP(
             width = maxWidth
           } else {
             width = Math.round((width * maxHeight) / height)
-            maxHeight = maxHeight
-            height = Math.round((height * maxHeight) / img.height)
+            height = maxHeight
           }
         }
 
@@ -41,22 +40,16 @@ export async function compressImageToWebP(
           return
         }
 
-        // Apply smooth bilinear scaling
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = 'high'
         ctx.drawImage(img, 0, 0, width, height)
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob)
-            } else {
-              reject(new Error('Canvas to WebP conversion failed'))
-            }
-          },
-          'image/webp',
-          quality
-        )
+        const dataUrl = canvas.toDataURL('image/webp', quality)
+        const originalSizeKb = Math.round(file.size / 1024)
+        // Approximate base64 string size in KB
+        const compressedSizeKb = Math.round((dataUrl.length * 0.75) / 1024)
+
+        resolve({ dataUrl, originalSizeKb, compressedSizeKb })
       }
 
       img.onerror = () => reject(new Error('Failed to load image element'))
@@ -66,4 +59,15 @@ export async function compressImageToWebP(
     reader.onerror = () => reject(new Error('Failed to read image file'))
     reader.readAsDataURL(file)
   })
+}
+
+export async function compressImageToWebP(
+  file: File,
+  maxWidth = 1200,
+  maxHeight = 900,
+  quality = 0.72
+): Promise<Blob> {
+  const { dataUrl } = await compressImageToDataUrlWebP(file, maxWidth, maxHeight, quality)
+  const res = await fetch(dataUrl)
+  return await res.blob()
 }

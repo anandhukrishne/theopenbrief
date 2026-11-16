@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'The Open Brief — Independent Journal & Dispatches',
     template: '%s — The Open Brief',
   },
-  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, and systems analysis in TechnoBrief.',
+  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, and standalone dispatches.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app'),
   icons: {
     icon: '/favicon.png',
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
-      <body className="min-h-screen flex flex-col justify-between bg-[#FCFCFD] text-neutral-900 antialiased selection:bg-neutral-900 selection:text-white">
+      <body className="min-h-screen flex flex-col justify-between bg-[#FCFCFD] text-neutral-900 antialiased selection:bg-neutral-900 selection:text-white font-sans">
         <div className="flex-1">{children}</div>
 
         {/* ── Editorial Footer ── */}
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/" className="inline-block">
                   <img src="/logo.png" alt="The Open Brief" className="h-7 w-auto object-contain" />
                 </Link>
-                <p className="text-sm text-neutral-600 leading-relaxed max-w-sm font-serif">
+                <p className="text-sm text-neutral-600 leading-relaxed max-w-sm">
                   A journal of ideas, architectural breakdowns, and technological inquiry. Free, open, and deliberately unhurried.
                 </p>
                 <div className="flex items-center gap-3 text-xs text-neutral-400 font-mono uppercase tracking-wider">
@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-center gap-6">
                 <span>Light Edition</span>
                 <span>•</span>
-                <span>cdn.theopenbrief.app</span>
+                <span>Adoor / Global</span>
               </div>
             </div>
           </div>

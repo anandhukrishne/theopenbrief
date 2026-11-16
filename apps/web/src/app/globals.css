@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,39 +6,24 @@
 
 @layer base {
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     @apply antialiased text-neutral-900 bg-[#FCFCFD];
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background-color: #111827;
-    color: #F9FAFB;
+    background-color: #0F172A;
+    color: #F8FAFC;
   }
 }
 
-.editorial-serif {
-  font-family: 'Newsreader', Georgia, Cambria, 'Times New Roman', serif;
-}
-
-.drop-cap:first-letter {
-  float: left;
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 4.5rem;
-  line-height: 0.8;
-  padding-top: 4px;
-  padding-right: 12px;
-  padding-bottom: 0px;
+.headline-sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.035em;
   font-weight: 700;
-  color: #111827;
 }
 
-/* Hairline rule styling for classic magazine dividers */
 .rule-hairline {
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.rule-double {
-  border-top: 3px double #111827;
+  border-bottom: 1px solid #E2E8F0;
 }

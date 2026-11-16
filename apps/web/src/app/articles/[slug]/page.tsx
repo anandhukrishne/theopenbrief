@@ -37,6 +37,7 @@ export default async function ArticlePage({ params }: Props) {
     journal: { name: 'OpenBrief Plus', href: '/journal' },
     explainers: { name: 'TOB Explainers', href: '/explainers' },
     tech: { name: 'TechnoBrief', href: '/tech' },
+    standalone: { name: 'Standalone Dispatch', href: '/' },
   }
 
   const sectionMeta = sectionLabels[article.section] || { name: 'Dispatch', href: '/' }
@@ -66,14 +67,14 @@ export default async function ArticlePage({ params }: Props) {
           <span>{article.readTime} min read</span>
         </div>
 
-        {/* Primary Headline */}
-        <h1 className="editorial-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.12] text-neutral-900 tracking-tight mb-6">
+        {/* Primary Headline (Pure Modern Sans) */}
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.12] text-neutral-900 tracking-tight mb-6">
           {article.title}
         </h1>
 
         {/* Standfirst / Excerpt */}
         {article.excerpt && (
-          <p className="editorial-serif text-xl sm:text-2xl text-neutral-600 leading-relaxed italic mb-8 border-l-2 border-neutral-900 pl-6">
+          <p className="text-xl sm:text-2xl text-neutral-600 leading-relaxed font-normal mb-8 border-l-2 border-neutral-900 pl-6">
             {article.excerpt}
           </p>
         )}
@@ -104,14 +105,11 @@ export default async function ArticlePage({ params }: Props) {
               alt={article.title}
               className="w-full rounded-sm border border-neutral-200 aspect-[16/9] object-cover"
             />
-            <figcaption className="text-xs font-mono text-neutral-400 mt-2 text-center">
-              Published via cdn.theopenbrief.app
-            </figcaption>
           </figure>
         )}
 
-        {/* Content Body */}
-        <div className="prose prose-neutral max-w-none text-neutral-800 leading-[1.8] sm:leading-[1.9] text-base sm:text-lg">
+        {/* Content Body (Pure Clean Sans-Serif) */}
+        <div className="max-w-none text-neutral-800 leading-[1.8] sm:leading-[1.9] text-base sm:text-lg space-y-6">
           {article.content.split('\n\n').map((paragraph, index) => {
             const trimmed = paragraph.trim()
             if (!trimmed) return null
@@ -119,14 +117,14 @@ export default async function ArticlePage({ params }: Props) {
             // Subheadings
             if (trimmed.startsWith('## ')) {
               return (
-                <h2 key={index} className="editorial-serif text-2xl sm:text-3xl font-bold text-neutral-900 mt-10 mb-4 tracking-tight">
+                <h2 key={index} className="text-2xl sm:text-3xl font-bold text-neutral-900 mt-10 mb-4 tracking-tight">
                   {trimmed.replace('## ', '')}
                 </h2>
               )
             }
             if (trimmed.startsWith('### ')) {
               return (
-                <h3 key={index} className="editorial-serif text-xl sm:text-2xl font-bold text-neutral-900 mt-8 mb-3 tracking-tight">
+                <h3 key={index} className="text-xl sm:text-2xl font-bold text-neutral-900 mt-8 mb-3 tracking-tight">
                   {trimmed.replace('### ', '')}
                 </h3>
               )
@@ -135,22 +133,43 @@ export default async function ArticlePage({ params }: Props) {
             // Quotes
             if (trimmed.startsWith('> ')) {
               return (
-                <blockquote key={index} className="editorial-serif italic text-xl border-l-2 border-neutral-900 pl-6 my-8 text-neutral-700">
+                <blockquote key={index} className="text-xl border-l-2 border-neutral-900 pl-6 my-8 text-neutral-700 font-medium">
                   {trimmed.replace('> ', '')}
                 </blockquote>
               )
             }
 
-            // Regular paragraph with drop cap on the first paragraph
+            // Code
+            if (trimmed.startsWith('```')) {
+              return (
+                <pre key={index} className="bg-neutral-900 text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6">
+                  {trimmed.replace(/```/g, '')}
+                </pre>
+              )
+            }
+
+            // Regular paragraph
             return (
-              <p key={index} className={`mb-6 text-neutral-800 ${index === 0 ? 'drop-cap' : ''}`}>
+              <p key={index} className="text-neutral-800">
                 {trimmed}
               </p>
             )
           })}
         </div>
 
-        {/* Colophon & Navigation */}
+        {/* Colophon & Author Bio */}
+        {article.authorBio && (
+          <div className="mt-12 p-6 bg-neutral-50 border border-neutral-200 rounded-sm">
+            <div className="font-mono text-xs uppercase tracking-wider text-neutral-400 mb-1 font-semibold">
+              About the Author
+            </div>
+            <p className="text-sm text-neutral-700 leading-relaxed">
+              <strong>{article.authorName}</strong> — {article.authorBio}
+            </p>
+          </div>
+        )}
+
+        {/* Footer Navigation */}
         <div className="mt-16 pt-8 border-t-2 border-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-neutral-500">
           <div>
             Dispatched under The Open Brief Editorial Standards.

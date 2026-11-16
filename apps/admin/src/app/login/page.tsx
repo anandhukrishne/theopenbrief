@@ -49,7 +49,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10 space-y-6">
         <div className="text-center space-y-2">
           <img src="/favicon.png" alt="The Open Brief" className="w-12 h-12 mx-auto rounded-lg object-contain shadow-sm mb-3" />
-          <h1 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Author Studio</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Author Studio</h1>
           <p className="text-xs font-mono text-slate-400 uppercase tracking-widest">The Open Brief Newsroom</p>
         </div>
 

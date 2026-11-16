@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, initDb } from '@/lib/db'
+import { db, initDb, getOrCreateProfile, UserProfile } from '@/lib/db'
 import { adminAuth } from '@/lib/firebaseAdmin'
+
+// Helper to authenticate user from session cookie
+async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: string; profile: UserProfile } | null> {
+  const token = req.cookies.get('openbrief_session')?.value
+  if (!token) return null
+  try {
+    const decoded = await adminAuth.verifyIdToken(token)
+    const profile = await getOrCreateProfile(decoded.uid, decoded.email || '', decoded.name || '')
+    return { uid: decoded.uid, email: decoded.email || '', profile }
+  } catch {
+    return null
+  }
+}
 
 // GET /api/articles - Fetch all articles or single by slug/section
 export async function GET(req: NextRequest) {
@@ -9,6 +22,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const section = searchParams.get('section')
     const slug = searchParams.get('slug')
+    const authorId = searchParams.get('author_id')
 
     let query = 'SELECT * FROM articles WHERE status = $1'
     const values: any[] = ['published']
@@ -16,9 +30,15 @@ export async function GET(req: NextRequest) {
     if (slug) {
       query += ' AND slug = $2'
       values.push(slug)
-    } else if (section) {
-      query += ' AND section = $2'
-      values.push(section)
+    } else {
+      if (section) {
+        query += ` AND section = $${values.length + 1}`
+        values.push(section)
+      }
+      if (authorId) {
+        query += ` AND author_id = $${values.length + 1}`
+        values.push(authorId)
+      }
     }
 
     query += ' ORDER BY published_at DESC LIMIT 50'
@@ -29,7 +49,7 @@ export async function GET(req: NextRequest) {
       {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         },
       }
@@ -40,20 +60,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/articles - Create/Publish a new article
+// POST /api/articles - Create or Update article with Role Hierarchy & Protected Attribution
 export async function POST(req: NextRequest) {
   try {
-    // Session authorization check
-    const token = req.cookies.get('openbrief_session')?.value
-    if (!token) {
+    const auth = await getAuthUser(req)
+    if (!auth) {
       return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
-    }
-
-    let decodedToken
-    try {
-      decodedToken = await adminAuth.verifyIdToken(token)
-    } catch {
-      return NextResponse.json({ error: 'Unauthorized: Session expired' }, { status: 401 })
     }
 
     await initDb()
@@ -61,51 +73,156 @@ export async function POST(req: NextRequest) {
     const {
       title,
       slug,
-      section,
-      excerpt,
+      section = 'journal',
+      excerpt = '',
       content,
-      cover_image_url,
-      author_name = decodedToken.email?.split('@')[0] || 'The Open Brief Desk',
+      cover_image_url = '',
       read_time_minutes = 5,
+      id, // present if editing an existing article
     } = body
 
-    if (!title || !slug || !section || !content) {
+    if (!title || !slug || !content) {
       return NextResponse.json({ error: 'Missing required article fields' }, { status: 400 })
     }
 
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
+    // Validate section
+    const validSections = ['journal', 'explainers', 'tech', 'standalone']
+    const safeSection = validSections.includes(section) ? section : 'standalone'
+
+    // Check if updating an existing article
+    let targetArticle = null
+    if (id) {
+      const res = await db.query('SELECT * FROM articles WHERE id = $1', [id])
+      targetArticle = res.rows[0]
+    } else {
+      const res = await db.query('SELECT * FROM articles WHERE slug = $1', [cleanSlug])
+      targetArticle = res.rows[0]
+    }
+
+    if (targetArticle) {
+      // Permission check based on hierarchy:
+      // admin & editor: can edit any article
+      // writer: can only edit articles they created (author_id match)
+      const canEdit =
+        auth.profile.role === 'admin' ||
+        auth.profile.role === 'editor' ||
+        targetArticle.author_id === auth.uid
+
+      if (!canEdit) {
+        return NextResponse.json(
+          { error: 'Forbidden: You only have permission to edit your own articles.' },
+          { status: 403 }
+        )
+      }
+
+      // Update article
+      const updateQuery = `
+        UPDATE articles SET
+          title = $1,
+          section = $2,
+          excerpt = $3,
+          content = $4,
+          cover_image_url = $5,
+          read_time_minutes = $6,
+          updated_at = NOW()
+        WHERE id = $7
+        RETURNING *;
+      `
+      const updateValues = [
+        title,
+        safeSection,
+        excerpt,
+        content,
+        cover_image_url,
+        read_time_minutes,
+        targetArticle.id,
+      ]
+
+      const updated = await db.query(updateQuery, updateValues)
+      return NextResponse.json({ success: true, article: updated.rows[0] })
+    }
+
+    // Creating a new article - strictly lock author attribution to current user's profile
     const insertQuery = `
       INSERT INTO articles (
-        title, slug, section, excerpt, content, cover_image_url, author_name, read_time_minutes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT (slug) DO UPDATE SET
-        title = EXCLUDED.title,
-        section = EXCLUDED.section,
-        excerpt = EXCLUDED.excerpt,
-        content = EXCLUDED.content,
-        cover_image_url = EXCLUDED.cover_image_url,
-        read_time_minutes = EXCLUDED.read_time_minutes,
-        updated_at = NOW()
+        title, slug, section, excerpt, content, cover_image_url,
+        author_id, author_name, author_bio, read_time_minutes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *;
     `
 
     const values = [
       title,
       cleanSlug,
-      section,
+      safeSection,
       excerpt,
       content,
       cover_image_url,
-      author_name,
+      auth.uid,
+      auth.profile.name,
+      auth.profile.bio || '',
       read_time_minutes,
     ]
 
     const result = await db.query(insertQuery, values)
     return NextResponse.json({ success: true, article: result.rows[0] })
   } catch (err: any) {
-    console.error('Error creating article:', err)
+    console.error('Error saving article:', err)
     return NextResponse.json({ error: err.message || 'Failed to save article' }, { status: 500 })
+  }
+}
+
+// DELETE /api/articles - Delete an article (Admin/Editor or Article Owner)
+export async function DELETE(req: NextRequest) {
+  try {
+    const auth = await getAuthUser(req)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    const slug = searchParams.get('slug')
+
+    if (!id && !slug) {
+      return NextResponse.json({ error: 'Article ID or slug required' }, { status: 400 })
+    }
+
+    await initDb()
+
+    // Find the article
+    const findRes = id
+      ? await db.query('SELECT * FROM articles WHERE id = $1', [id])
+      : await db.query('SELECT * FROM articles WHERE slug = $1', [slug])
+
+    if (findRes.rows.length === 0) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+    }
+
+    const article = findRes.rows[0]
+
+    // Hierarchy check:
+    // admin and editor can delete any article
+    // writer can only delete their own article
+    const canDelete =
+      auth.profile.role === 'admin' ||
+      auth.profile.role === 'editor' ||
+      article.author_id === auth.uid
+
+    if (!canDelete) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have permission to delete this article.' },
+        { status: 403 }
+      )
+    }
+
+    await db.query('DELETE FROM articles WHERE id = $1', [article.id])
+    return NextResponse.json({ success: true, message: `Article "${article.title}" deleted successfully.` })
+  } catch (err: any) {
+    console.error('Error deleting article:', err)
+    return NextResponse.json({ error: err.message || 'Failed to delete article' }, { status: 500 })
   }
 }
 
@@ -114,7 +231,7 @@ export async function OPTIONS() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   })
