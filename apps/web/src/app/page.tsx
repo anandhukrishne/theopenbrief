@@ -348,7 +348,7 @@ export default async function HomePage() {
               {techArticles.slice(0, 3).map((art, i) => (
                 <article key={art.id || i} className="p-4 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50 rounded-sm space-y-2">
                   <span className="text-[10px] font-mono uppercase text-red-600 dark:text-red-400 font-bold">
-                    ⚡ Tech Byte
+                    Tech Byte
                   </span>
                   <Link href={`/articles/${art.slug}`}>
                     <h3 className="text-base font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
@@ -415,7 +415,7 @@ export default async function HomePage() {
               {cineArticles.slice(0, 3).map((art, i) => (
                 <article key={art.id || i} className="p-4 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50 rounded-sm space-y-2">
                   <span className="text-[10px] font-mono uppercase text-red-600 dark:text-red-400 font-bold">
-                    🎬 Film Essay
+                    Film Essay
                   </span>
                   <Link href={`/articles/${art.slug}`}>
                     <h3 className="text-base font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
