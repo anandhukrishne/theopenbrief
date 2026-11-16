@@ -57,13 +57,13 @@ export default async function CineBriefPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Pillar 04 • Cinematic Investigations &amp; Cultural Arts
+            Section 04 • Cinema &amp; Culture.
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             CinēBrief
           </h1>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
-            Critiques, narrative breakdowns, and cultural dialogues dissecting cinema, censorship, and visual media.
+            Reviews, detailed breakdown, and cultural identity surrounding cinema, censorship, and visual media.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default async function CineBriefPage() {
               Dispatch Wire
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              No cinema critiques have been filed under CinēBrief yet. Return to the overview or check back soon.
+              No movie reviews have been filed under CinēBrief yet. Return to Home or check back soon.
             </p>
             <div className="mt-6">
               <Link
@@ -91,7 +91,7 @@ export default async function CineBriefPage() {
               <article key={art.id} className="p-6 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 rounded-sm space-y-3 flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-mono font-bold uppercase text-red-600 dark:text-red-400">
-                    🎬 Film Critique
+                    Film Critique
                   </span>
                   <Link href={`/articles/${art.slug}`}>
                     <h2 className="text-lg font-bold leading-snug mt-1 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
