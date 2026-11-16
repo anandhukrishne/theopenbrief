@@ -22,10 +22,9 @@ export default async function HomePage() {
             />
           </Link>
           <nav className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-gray-600 overflow-x-auto">
-            <Link href="/journal" className="hover:text-black transition-colors whitespace-nowrap">Journal</Link>
-            <Link href="/stories" className="hover:text-black transition-colors whitespace-nowrap">Stories</Link>
-            <Link href="/explainers" className="hover:text-black transition-colors whitespace-nowrap">Explainers</Link>
-            <Link href="/tech" className="hover:text-black transition-colors whitespace-nowrap">Tech Bites</Link>
+            <Link href="/journal" className="hover:text-black transition-colors whitespace-nowrap">OpenBrief Plus</Link>
+            <Link href="/explainers" className="hover:text-black transition-colors whitespace-nowrap">TOB Explainers</Link>
+            <Link href="/tech" className="hover:text-black transition-colors whitespace-nowrap">TechnoBrief</Link>
           </nav>
         </div>
       </header>

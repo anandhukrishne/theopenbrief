@@ -13,15 +13,15 @@ export default async function JournalPage() {
           <Link href="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="The Open Brief" className="h-7 sm:h-9 w-auto object-contain" />
           </Link>
-          <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-            The Journal
-          </span>
+          <img src="/logo-openbrief-plus.png" alt="OpenBrief Plus" className="h-6 sm:h-7 w-auto object-contain" />
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight">The Journal</h1>
-        <p className="text-gray-500 mb-12 text-base sm:text-lg">In-depth essays, deep dives, and reflective analyses.</p>
+        <div className="mb-8">
+          <img src="/logo-openbrief-plus.png" alt="OpenBrief Plus" className="h-8 sm:h-10 w-auto object-contain mb-3" />
+          <p className="text-gray-500 text-base sm:text-lg">In-depth essays, deep dives, and reflective analyses from The Open Brief.</p>
+        </div>
 
         <div className="divide-y divide-gray-100">
           {articles.map((article: any) => (

@@ -13,10 +13,9 @@ export default function AboutPage() {
             />
           </Link>
           <nav className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-gray-600">
-            <Link href="/journal" className="hover:text-black">Journal</Link>
-            <Link href="/stories" className="hover:text-black">Stories</Link>
-            <Link href="/explainers" className="hover:text-black">Explainers</Link>
-            <Link href="/tech" className="hover:text-black">Tech Bites</Link>
+            <Link href="/journal" className="hover:text-black">OpenBrief Plus</Link>
+            <Link href="/explainers" className="hover:text-black">TOB Explainers</Link>
+            <Link href="/tech" className="hover:text-black">TechnoBrief</Link>
           </nav>
         </div>
       </header>
