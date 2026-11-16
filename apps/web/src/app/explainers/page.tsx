@@ -53,13 +53,13 @@ export default async function ExplainersPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Pillar 02 • Visual &amp; Structural Analyses
+            Section 02 • Visual &amp; Structural Analyses
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             TOB Explainers
           </h1>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
-            Unpacking the mental models, systems architecture, and mechanical realities of modern technology and society.
+           Deep dives and visual storytelling based articles free from noise.
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export default async function ExplainersPage() {
                 href="/"
                 className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
               >
-                ← Back to Overview
+                ← Back to Home
               </Link>
             </div>
           </div>
