@@ -8,21 +8,26 @@ export default async function ExplainersPage() {
 
   return (
     <main className="min-h-screen">
+      {/* ── Clean Header (Single Logo Only) ── */}
       <header className="border-b border-neutral-200 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 backdrop-blur z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center">
             <img src="/logo.png" alt="The Open Brief" className="h-7 w-auto object-contain" />
           </Link>
-          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-6 w-auto object-contain" />
+          <nav className="flex items-center gap-6 text-xs sm:text-sm font-medium text-neutral-600">
+            <Link href="/journal" className="hover:text-black transition-colors">OpenBrief Plus</Link>
+            <span className="text-black font-semibold border-b-2 border-black pb-0.5">TOB Explainers</span>
+            <Link href="/tech" className="hover:text-black transition-colors">TechnoBrief</Link>
+          </nav>
         </div>
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
-        <div className="mb-12 pb-8 border-b-2 border-neutral-900">
-          <div className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-3">
+        <div className="mb-12 pb-8 border-b border-neutral-200">
+          <div className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-4 font-semibold">
             Section 02 • Visual & Structural Analyses
           </div>
-          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-10 sm:h-12 w-auto object-contain mb-4" />
+          <img src="/logo-tob-explainers.png" alt="TOB Explainers" className="h-9 sm:h-11 w-auto object-contain mb-4" />
           <p className="editorial-serif text-lg sm:text-xl text-neutral-600 italic leading-relaxed max-w-2xl">
             Unpacking the mental models, systems architecture, and mechanical realities of modern technology and society.
           </p>
