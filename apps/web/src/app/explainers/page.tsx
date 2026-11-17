@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'TOB Explainers',
-  description: 'Unpacking the mental models, systems architecture, and mechanical realities of modern technology and society.',
+  description: 'Deep dives and visual storytelling articles free from noise.',
 }
 
 export default async function ExplainersPage() {
@@ -32,7 +32,7 @@ export default async function ExplainersPage() {
           </Link>
           <div className="flex items-center gap-6">
             <nav className="flex items-center gap-6 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-600 dark:text-neutral-400">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Overview</Link>
+              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Home</Link>
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
               <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">CinēBrief</Link>
@@ -53,7 +53,7 @@ export default async function ExplainersPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Section 02 • Visual &amp; Structural Analyses
+            Visual &amp; Structural Analyses
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             TOB Explainers
@@ -67,7 +67,7 @@ export default async function ExplainersPage() {
         {articles.length === 0 ? (
           <div className="relative z-10 py-16 text-center border border-dashed border-neutral-300 dark:border-neutral-800 rounded-sm p-8 max-w-xl mx-auto">
             <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
-              Dispatch Wire
+              Articles
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
               No explainers have been published yet. Check back soon for structural breakdowns.

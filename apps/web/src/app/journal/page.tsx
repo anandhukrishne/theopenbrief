@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'OpenBrief Plus',
-  description: 'A salon for cultural analysis, philosophical inquiry, and deep essays that reward sustained attention.',
+  description: 'Philosophical essays, cultural narratives and Investigative journals.',
 }
 
 export default async function JournalPage() {
@@ -31,7 +31,7 @@ export default async function JournalPage() {
           </Link>
           <div className="flex items-center gap-6">
             <nav className="flex items-center gap-6 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-600 dark:text-neutral-400">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Overview</Link>
+              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Home</Link>
               <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
               <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
               <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">CinēBrief</Link>
@@ -52,13 +52,13 @@ export default async function JournalPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Pillar 01 • Long-Form Inquiries &amp; Essays
+            Long-Form Essays
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             OpenBrief Plus
           </h1>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
-            A salon for cultural analysis, philosophical inquiry, and deep essays that reward sustained attention.
+            Philosophical essays, cultural commentary, and investigative journals.
           </p>
         </div>
 
@@ -66,17 +66,17 @@ export default async function JournalPage() {
         {articles.length === 0 ? (
           <div className="relative z-10 py-16 text-center border border-dashed border-neutral-300 dark:border-neutral-800 rounded-sm p-8 max-w-xl mx-auto">
             <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
-              Dispatch Wire
+              Articles
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              No essays have been filed under OpenBrief Plus yet. Return to the overview or check back soon.
+              No essays have been filed under OpenBrief Plus yet. Return to Home or check back soon.
             </p>
             <div className="mt-6">
               <Link
                 href="/"
                 className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
               >
-                ← Back to Overview
+                ← Back to Home
               </Link>
             </div>
           </div>

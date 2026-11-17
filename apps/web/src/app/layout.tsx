@@ -57,11 +57,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <img src="/logo-white.png" alt="The Open Brief" className="h-7 w-auto object-contain hidden dark:block" />
                 </Link>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
-                  An independent journal of explainers, breakdowns, technological advancements and cinematic arts.
+                  An independent publication of explainers, technical breakdowns, movie reviews, and long-form essays.
                 </p>
                 <div className="p-4 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm space-y-1.5">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold block">
-                    Contact Newsroom
+                    Contact Us
                   </span>
                   <a
                     href="mailto:anandhu.krishne@theopenbrief.app"
@@ -123,8 +123,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </a>
                   </li>
                   <li>
-                    <Link href="/sitemap" className="hover:text-black dark:hover:text-white transition-colors">
-                      Sitemap
+                    <Link href="/rss" className="hover:text-black dark:hover:text-white transition-colors">
+                      RSS (Really Simple Syndication)
                     </Link>
                   </li>
                 </ul>

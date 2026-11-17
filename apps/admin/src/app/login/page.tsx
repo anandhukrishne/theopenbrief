@@ -98,7 +98,7 @@ export default function LoginPage() {
         </form>
 
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
-          <span>Adoor / Global</span>
+          <span>Global</span>
           <span>Spark Plan Auth</span>
         </div>
       </div>

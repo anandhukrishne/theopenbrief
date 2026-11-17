@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'TechnoBrief',
-  description: 'Dense, fast-paced technical bites examining distributed protocols, kernel abstractions, and modern engineering patterns.',
+  description: 'Recent technical advancements, engineering insights, and navigating digital-life balance.',
 }
 
 export default async function TechPage() {
@@ -31,7 +31,7 @@ export default async function TechPage() {
           </Link>
           <div className="flex items-center gap-6">
             <nav className="flex items-center gap-6 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-600 dark:text-neutral-400">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Overview</Link>
+              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Home</Link>
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
               <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">CinēBrief</Link>
@@ -52,13 +52,13 @@ export default async function TechPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Pillar 03 • Engineering Intelligence
+            Engineering &amp; Technology
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             TechnoBrief
           </h1>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
-            Dense, fast-paced technical bites examining distributed protocols, kernel abstractions, and modern engineering patterns.
+            Recent technological advancements, engineering insights, and navigating digital-life balance.
           </p>
         </div>
 
@@ -66,17 +66,17 @@ export default async function TechPage() {
         {articles.length === 0 ? (
           <div className="relative z-10 py-16 text-center border border-dashed border-neutral-300 dark:border-neutral-800 rounded-sm p-8 max-w-xl mx-auto">
             <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
-              Dispatch Wire
+              Articles
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              No technical dispatches have been filed under TechnoBrief yet. Return to the overview or check back soon.
+              No technical articles have been published in TechnoBrief yet. Return to Home or check back soon.
             </p>
             <div className="mt-6">
               <Link
                 href="/"
                 className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
               >
-                ← Back to Overview
+                ← Back to Home
               </Link>
             </div>
           </div>
@@ -86,7 +86,7 @@ export default async function TechPage() {
               <article key={art.id} className="p-6 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 rounded-sm space-y-3 flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] font-mono font-bold uppercase text-red-600 dark:text-red-400">
-                    ⚡ Byte
+                    Tech Byte
                   </span>
                   <Link href={`/articles/${art.slug}`}>
                     <h2 className="text-lg font-bold leading-snug mt-1 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">

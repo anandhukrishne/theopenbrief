@@ -81,21 +81,21 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">7. Contact</h2>
             <p>
               For privacy-related inquiries, contact us at{' '}
-              <a href="mailto:editorial@theopenbrief.app" className="font-semibold underline">
-                editorial@theopenbrief.app
+              <a href="mailto:anandhu.krishne@theopenbrief.app" className="font-semibold underline">
+                anandhu.krishne@theopenbrief.app
               </a>.
             </p>
           </section>
 
           <p className="text-sm text-neutral-400 font-mono pt-4 border-t border-neutral-200 dark:border-neutral-800">
-            Last updated: November 2026 · Adoor / Global
+            Last updated: November 2026 · Global
           </p>
         </div>
 
         <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
-          <span>Adoor / Global</span>
+          <span>Global</span>
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
-            ← Back to Front Page
+            ← Back to Home
           </Link>
         </div>
       </div>

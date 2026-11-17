@@ -51,7 +51,7 @@ export default async function ArticlePage({ params }: Props) {
       <header className="border-b border-neutral-200 dark:border-neutral-800 py-3.5 px-4 sm:px-6 sticky top-0 bg-white/95 dark:bg-[#0B101B]/95 backdrop-blur z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <span className="text-xs font-mono text-neutral-500 hover:text-black dark:hover:text-white transition-colors">← Back to articles</span>
+            <span className="text-xs font-mono text-neutral-500 hover:text-black dark:hover:text-white transition-colors">← Back to Articles</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href={sectionMeta.href} className="text-xs font-mono uppercase tracking-wider font-bold text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white">

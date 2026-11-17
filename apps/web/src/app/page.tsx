@@ -94,7 +94,7 @@ export default async function HomePage() {
               The newsroom is quiet.
             </h2>
             <p className="text-neutral-500 dark:text-neutral-400 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-              No dispatches have been published yet. Check back soon for essays, explainers, and investigations.
+              No articles have been published yet. Check back soon for explainers, essays, and reviews.
             </p>
           </section>
         )}
@@ -261,7 +261,7 @@ export default async function HomePage() {
                       </div>
                     </div>
                   )) : (
-                    <p className="text-xs text-neutral-400 font-mono py-4">No explainer dispatches yet.</p>
+                    <p className="text-xs text-neutral-400 font-mono py-4">No explainers yet.</p>
                   )}
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-neutral-400 font-mono py-6">No tech dispatches yet.</p>
+            <p className="text-sm text-neutral-400 font-mono py-6">No technical articles yet.</p>
           )}
         </section>
 
@@ -398,7 +398,7 @@ export default async function HomePage() {
                 </Link>
               </div>
               <p className="text-xs sm:text-sm text-neutral-500 font-mono">
-                Cinematic investigations, film critique, and narrative storytelling.
+                Reviews, detailed breakdowns, and culture around movies, shows, and cinema.
               </p>
             </div>
 
@@ -435,7 +435,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-neutral-400 font-mono py-6 mt-4">No film essays yet.</p>
+            <p className="text-sm text-neutral-400 font-mono py-6 mt-4">No movie reviews yet.</p>
           )}
         </section>
       </div>

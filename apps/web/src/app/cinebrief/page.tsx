@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'CinēBrief',
-  description: 'Critiques, narrative breakdowns, and cultural dialogues dissecting cinema, censorship, and visual media.',
+  description: 'Reviews, detailed breakdowns, and culture surrounding cinema, streaming, and visual media.',
 }
 
 export default async function CineBriefPage() {
@@ -31,7 +31,7 @@ export default async function CineBriefPage() {
           </Link>
           <div className="flex items-center gap-6">
             <nav className="flex items-center gap-6 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-600 dark:text-neutral-400">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Overview</Link>
+              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Home</Link>
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
               <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
@@ -57,7 +57,7 @@ export default async function CineBriefPage() {
         {/* Section Masthead */}
         <div className="relative z-10 mb-12 pb-6 border-b border-neutral-300 dark:border-neutral-800">
           <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-3 font-bold">
-            Section 04 • Cinema &amp; Culture.
+            Cinema &amp; Culture
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
             CinēBrief
@@ -71,7 +71,7 @@ export default async function CineBriefPage() {
         {articles.length === 0 ? (
           <div className="relative z-10 py-16 text-center border border-dashed border-neutral-300 dark:border-neutral-800 rounded-sm p-8 max-w-xl mx-auto">
             <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
-              Dispatch Wire
+              Articles
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
               No movie reviews have been filed under CinēBrief yet. Return to Home or check back soon.
@@ -81,7 +81,7 @@ export default async function CineBriefPage() {
                 href="/"
                 className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
               >
-                ← Back to Overview
+                ← Back to Home
               </Link>
             </div>
           </div>
