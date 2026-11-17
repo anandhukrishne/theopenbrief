@@ -40,7 +40,7 @@ export default async function HomePage() {
           <div className="w-full md:w-1/4 text-center md:text-left font-medium">
             {dateFormatted}
           </div>
-          <div className="w-full md:w-2/4 flex items-center justify-center border-y md:border-y-0 md:border-x border-neutral-300 dark:border-neutral-800 px-6 py-1">
+          <div className="w-full md:w-2/4 flex items-center justify-center px-6 py-1">
             <Link href="/" className="inline-block py-1">
               <img
                 src="/logo.png"
@@ -76,6 +76,9 @@ export default async function HomePage() {
           <Link href="/cinebrief" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
             CINĒBRIEF
           </Link>
+          <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
+            GENERAL
+          </Link>
           <Link href="/about" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap text-neutral-400">
             ABOUT
           </Link>
@@ -105,7 +108,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
               {/* Left Side: Story of the day */}
               <div className="lg:col-span-7 space-y-3">
-                <div className="text-xs font-bold text-red-600 dark:text-red-500 uppercase tracking-wider font-mono">
+                <div className="text-[10px] font-bold text-red-600 dark:text-red-500 uppercase tracking-widest font-mono">
                   Story of the day · {heroArticle.section.toUpperCase()}
                 </div>
 
@@ -135,17 +138,17 @@ export default async function HomePage() {
               </div>
 
               {/* Right Side: Top Picks */}
-              <div className="lg:col-span-5 space-y-4">
+              <div className="lg:col-span-5 space-y-2">
                 <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 pb-2 border-b border-neutral-200 dark:border-neutral-800">
                   Top Picks of the day
                 </h2>
 
-                <div className="space-y-4">
+                <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
                   {topPicks.map((pick, i) => (
-                    <div key={pick.id || i} className="p-3 bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 rounded-sm flex gap-3.5 items-start">
+                    <div key={pick.id || i} className="py-3.5 first:pt-2 last:pb-0 flex gap-3.5 items-start">
                       <Link
                         href={`/articles/${pick.slug}`}
-                        className="w-20 h-20 shrink-0 bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center overflow-hidden"
+                        className="w-20 h-20 shrink-0 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center overflow-hidden"
                       >
                         <CoverImage
                           src={pick.coverImage}
@@ -160,7 +163,7 @@ export default async function HomePage() {
                           {pick.section}
                         </span>
                         <Link href={`/articles/${pick.slug}`}>
-                          <h3 className="text-xs sm:text-sm font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+                          <h3 className="text-sm sm:text-base font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
                             {pick.title}
                           </h3>
                         </Link>

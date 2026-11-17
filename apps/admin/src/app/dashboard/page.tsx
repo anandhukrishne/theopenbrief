@@ -196,7 +196,7 @@ export default function Dashboard() {
         throw new Error(data.error || 'Failed to delete article')
       }
 
-      setMessage({ type: 'success', text: `✓ Article "${artTitle}" has been permanently deleted.` })
+      setMessage({ type: 'success', text: `Article "${artTitle}" has been permanently deleted.` })
       if (editingId === id) resetForm()
       fetchArchive()
     } catch (err: any) {
@@ -226,7 +226,7 @@ export default function Dashboard() {
 
       const data = await res.json()
       setProfile(data.profile)
-      setMessage({ type: 'success', text: '✓ Your profile has been updated successfully.' })
+      setMessage({ type: 'success', text: 'Your profile has been updated successfully.' })
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message })
     } finally {
@@ -263,7 +263,7 @@ export default function Dashboard() {
 
       setMessage({
         type: 'success',
-        text: `✓ Dispatch "${title}" published live to Neon PostgreSQL!`,
+        text: `Dispatch "${title}" published live to Neon PostgreSQL!`,
         link: `https://theopenbrief.app/articles/${slug}`,
       })
     } catch (err: any) {
@@ -305,27 +305,36 @@ export default function Dashboard() {
           <div className="hidden sm:flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-medium ml-4">
             <button
               onClick={() => setActiveTab('editor')}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
                 activeTab === 'editor' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
             >
-              ✍️ Writing Desk
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              </svg>
+              Writing Desk
             </button>
             <button
               onClick={() => setActiveTab('archive')}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
                 activeTab === 'archive' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
             >
-              📰 Dispatches ({articles.length})
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              </svg>
+              Dispatches ({articles.length})
             </button>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
                 activeTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
             >
-              👤 My Profile
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              My Profile
             </button>
           </div>
         </div>
@@ -403,11 +412,56 @@ export default function Dashboard() {
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   {[
-                    { id: 'journal', label: 'OpenBrief Plus', desc: 'Essays & Inquiries', icon: '✒️' },
-                    { id: 'explainers', label: 'TOB Explainers', desc: 'Visual Deep Dives', icon: '🔍' },
-                    { id: 'tech', label: 'TechnoBrief', desc: 'Engineering Bites', icon: '⚡' },
-                    { id: 'cinebrief', label: 'CinēBrief', desc: 'Cinema & Arts', icon: '🎬' },
-                    { id: 'standalone', label: 'Standalone', desc: 'Independent Feature', icon: '📰' },
+                    {
+                      id: 'journal',
+                      label: 'OpenBrief Plus',
+                      desc: 'Essays & Inquiries',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.2 20.4 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'explainers',
+                      label: 'TOB Explainers',
+                      desc: 'Visual Deep Dives',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'tech',
+                      label: 'TechnoBrief',
+                      desc: 'Engineering Bites',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M7 16l-4-4 4-4 1.41 1.41L5.83 12l2.58 2.59L7 16zm10 0l-1.41-1.41L18.17 12l-2.58-2.59L17 8l4 4-4 4zM10.84 18l3-12h1.32l-3 12h-1.32z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'cinebrief',
+                      label: 'CinēBrief',
+                      desc: 'Cinema & Arts',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'standalone',
+                      label: 'General',
+                      desc: 'Standalone Dispatches',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                      ),
+                    },
                   ].map((p) => (
                     <button
                       key={p.id}
@@ -420,7 +474,7 @@ export default function Dashboard() {
                       }`}
                     >
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-sm">{p.icon}</span>
+                        <span className="shrink-0">{p.icon}</span>
                         <span className="font-semibold text-xs truncate">{p.label}</span>
                       </div>
                       <span className={`text-[10px] block truncate ${section === p.id ? 'text-slate-300' : 'text-slate-400'}`}>
@@ -640,7 +694,16 @@ export default function Dashboard() {
                         onClick={() => handleDeleteArticle(editingId, title)}
                         className="w-full py-2 text-xs font-mono text-red-600 hover:text-red-800 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                       >
-                        {deleting ? 'Deleting...' : '🗑️ Delete Article'}
+                        {deleting ? (
+                          'Deleting...'
+                        ) : (
+                          <span className="flex items-center justify-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                            Delete Article
+                          </span>
+                        )}
                       </button>
                     )}
                   </div>

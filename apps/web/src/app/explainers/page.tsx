@@ -36,6 +36,7 @@ export default async function ExplainersPage() {
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
               <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">CinēBrief</Link>
+              <Link href="/general" className="hover:text-black dark:hover:text-white transition-colors">General</Link>
             </nav>
             <ThemeToggle />
           </div>

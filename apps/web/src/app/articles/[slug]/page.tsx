@@ -52,7 +52,8 @@ export default async function ArticlePage({ params }: Props) {
     explainers: { name: 'TOB Explainers', href: '/explainers' },
     tech: { name: 'TechnoBrief', href: '/tech' },
     cinebrief: { name: 'CinēBrief', href: '/cinebrief' },
-    standalone: { name: 'Standalone Dispatch', href: '/' },
+    standalone: { name: 'General', href: '/general' },
+    general: { name: 'General', href: '/general' },
   }
 
   const sectionMeta = sectionLabels[article.section] || { name: 'Articles', href: '/' }

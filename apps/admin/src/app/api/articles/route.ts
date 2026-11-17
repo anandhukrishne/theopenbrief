@@ -32,8 +32,12 @@ export async function GET(req: NextRequest) {
       values.push(slug)
     } else {
       if (section) {
-        query += ` AND section = $${values.length + 1}`
-        values.push(section)
+        if (section === 'general' || section === 'standalone') {
+          query += ` AND (section = 'general' OR section = 'standalone')`
+        } else {
+          query += ` AND section = $${values.length + 1}`
+          values.push(section)
+        }
       }
       if (authorId) {
         query += ` AND author_id = $${values.length + 1}`

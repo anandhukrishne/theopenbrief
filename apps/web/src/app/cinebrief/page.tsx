@@ -35,6 +35,7 @@ export default async function CineBriefPage() {
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
               <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
+              <Link href="/general" className="hover:text-black dark:hover:text-white transition-colors">General</Link>
             </nav>
             <ThemeToggle />
           </div>

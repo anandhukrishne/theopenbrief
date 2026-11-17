@@ -35,6 +35,7 @@ export default async function TechPage() {
               <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
               <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
               <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">CinēBrief</Link>
+              <Link href="/general" className="hover:text-black dark:hover:text-white transition-colors">General</Link>
             </nav>
             <ThemeToggle />
           </div>
