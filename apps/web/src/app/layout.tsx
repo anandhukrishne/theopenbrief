@@ -51,36 +51,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
               
-              {/* Left Column: Logo + Paragraph Box + Contact, About & Follow Box */}
+              {/* Left Column: Logo + Paragraph (no box, clean margin) + Contact, About & Follow */}
               <div className="lg:col-span-5 space-y-4">
                 <Link href="/" className="inline-block">
                   <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
                   <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
                 </Link>
 
-                {/* Paragraph Box */}
-                <div className="p-4 sm:p-5 bg-neutral-200/60 dark:bg-neutral-900/70 border border-neutral-300/80 dark:border-neutral-800 rounded-sm">
-                  <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
-                    An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
-                  </p>
-                </div>
+                {/* Paragraph Description */}
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm pt-1">
+                  An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
+                </p>
 
-                {/* Contact, About and Follow Box */}
-                <div className="p-4 sm:p-5 bg-neutral-200/60 dark:bg-neutral-900/70 border border-neutral-300/80 dark:border-neutral-800 rounded-sm space-y-2.5">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 dark:text-neutral-400 font-bold block">
+                {/* Contact, About and Follow */}
+                <div className="pt-3 space-y-2">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold block">
                     Contact, About &amp; Follow
                   </span>
                   <div className="text-xs font-mono space-y-1.5">
                     <div>
-                      <span className="text-neutral-500">Email: </span>
+                      <span className="text-neutral-400">Email: </span>
                       <a
                         href="mailto:anandhu.krishne@theopenbrief.app"
-                        className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline"
                       >
                         anandhu.krishne@theopenbrief.app
                       </a>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 pt-1 text-neutral-700 dark:text-neutral-300">
+                    <div className="flex flex-wrap items-center gap-3 pt-1 text-neutral-600 dark:text-neutral-400">
                       <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors underline">
                         About
                       </Link>
@@ -136,10 +134,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </ul>
               </div>
 
-              {/* Right Column: Keywords Search Box with Watermark Art */}
-              <div className="lg:col-span-4 relative overflow-visible pt-2">
+              {/* Right Column: Keywords Search Box with Watermark Art (shifted slightly inwards from right) */}
+              <div className="lg:col-span-4 relative overflow-visible pt-2 pr-2 sm:pr-6 lg:pr-8">
                 {/* Watermark Graphic: Exact PNG without axis shifting or position changes */}
-                <div className="absolute -right-4 sm:-right-8 -top-8 w-48 sm:w-56 pointer-events-none select-none z-10">
+                <div className="absolute -right-2 sm:-right-4 -top-8 w-44 sm:w-52 pointer-events-none select-none z-10">
                   <img
                     src="/footer-art.png"
                     alt=""
@@ -213,9 +211,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
                 <Link href="/terms" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
                   Terms
-                </Link>
-                <Link href="/sitemap" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
-                  Sitemap
                 </Link>
                 <Link href="/rss" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
                   RSS
