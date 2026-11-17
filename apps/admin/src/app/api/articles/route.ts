@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const section = searchParams.get('section')
     const slug = searchParams.get('slug')
-    const authorId = searchParams.get('author_id')
+    const authorParam = searchParams.get('author') || searchParams.get('author_id') || searchParams.get('authorId')
 
     let query = 'SELECT * FROM articles WHERE status = $1'
     const values: any[] = ['published']
@@ -39,9 +39,9 @@ export async function GET(req: NextRequest) {
           values.push(section)
         }
       }
-      if (authorId) {
-        query += ` AND author_id = $${values.length + 1}`
-        values.push(authorId)
+      if (authorParam) {
+        query += ` AND (author_id = $${values.length + 1} OR LOWER(author_name) = LOWER($${values.length + 1}) OR REPLACE(LOWER(author_name), ' ', '-') = LOWER($${values.length + 1}))`
+        values.push(authorParam.trim())
       }
     }
 
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
       excerpt = '',
       content,
       cover_image_url = '',
+      cover_image_caption = '',
       read_time_minutes = 5,
       id, // present if editing an existing article
     } = body
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
     // Validate section
-    const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone']
+    const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general']
     const safeSection = validSections.includes(section) ? section : 'standalone'
 
     // Check if updating an existing article
@@ -129,9 +130,10 @@ export async function POST(req: NextRequest) {
           excerpt = $3,
           content = $4,
           cover_image_url = $5,
-          read_time_minutes = $6,
+          cover_image_caption = $6,
+          read_time_minutes = $7,
           updated_at = NOW()
-        WHERE id = $7
+        WHERE id = $8
         RETURNING *;
       `
       const updateValues = [
@@ -140,6 +142,7 @@ export async function POST(req: NextRequest) {
         excerpt,
         content,
         cover_image_url,
+        cover_image_caption,
         read_time_minutes,
         targetArticle.id,
       ]
@@ -151,9 +154,9 @@ export async function POST(req: NextRequest) {
     // Creating a new article - strictly lock author attribution to current user's profile
     const insertQuery = `
       INSERT INTO articles (
-        title, slug, section, excerpt, content, cover_image_url,
-        author_id, author_name, author_bio, read_time_minutes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        title, slug, section, excerpt, content, cover_image_url, cover_image_caption,
+        author_id, author_name, author_bio, author_avatar_url, read_time_minutes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *;
     `
 
@@ -164,9 +167,11 @@ export async function POST(req: NextRequest) {
       excerpt,
       content,
       cover_image_url,
+      cover_image_caption,
       auth.uid,
       auth.profile.name,
       auth.profile.bio || '',
+      auth.profile.avatar_url || '',
       read_time_minutes,
     ]
 

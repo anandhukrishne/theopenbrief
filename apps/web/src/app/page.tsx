@@ -167,9 +167,12 @@ export default async function HomePage() {
                             {pick.title}
                           </h3>
                         </Link>
-                        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate">
+                        <Link
+                          href={`/authors/${encodeURIComponent(pick.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}`}
+                          className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate hover:underline hover:text-red-600 dark:hover:text-red-400 block transition-colors"
+                        >
                           {pick.authorName}
-                        </p>
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -258,9 +261,12 @@ export default async function HomePage() {
                             {pick.title}
                           </h3>
                         </Link>
-                        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate">
+                        <Link
+                          href={`/authors/${encodeURIComponent(pick.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}`}
+                          className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate hover:underline hover:text-red-600 dark:hover:text-red-400 block transition-colors"
+                        >
                           {pick.authorName}
-                        </p>
+                        </Link>
                       </div>
                     </div>
                   )) : (

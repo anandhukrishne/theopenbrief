@@ -21,9 +21,11 @@ interface ArticleItem {
   excerpt?: string
   content: string
   cover_image_url?: string
+  cover_image_caption?: string
   author_id?: string
   author_name: string
   author_bio?: string
+  author_avatar_url?: string
   read_time_minutes: number
   published_at: string
 }
@@ -36,6 +38,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
 
   // Current View
@@ -49,6 +52,8 @@ export default function Dashboard() {
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [coverImageCaption, setCoverImageCaption] = useState('')
+  const [showImageInserter, setShowImageInserter] = useState(false)
   const [readTime, setReadTime] = useState(5)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null)
@@ -82,6 +87,7 @@ export default function Dashboard() {
             setProfile(data.profile)
             setProfileName(data.profile.name)
             setProfileBio(data.profile.bio || '')
+            setProfileAvatarUrl(data.profile.avatar_url || '')
           }
         }
       } catch (err) {
@@ -158,6 +164,7 @@ export default function Dashboard() {
     setExcerpt('')
     setContent('')
     setCoverImageUrl('')
+    setCoverImageCaption('')
     setEditingId(null)
     setEditingAuthorId(null)
     setMessage(null)
@@ -170,6 +177,7 @@ export default function Dashboard() {
     setExcerpt(art.excerpt || '')
     setContent(art.content)
     setCoverImageUrl(art.cover_image_url || '')
+    setCoverImageCaption(art.cover_image_caption || '')
     setReadTime(art.read_time_minutes || 5)
     setEditingId(art.id)
     setEditingAuthorId(art.author_id || null)
@@ -216,7 +224,7 @@ export default function Dashboard() {
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: profileName, bio: profileBio }),
+        body: JSON.stringify({ name: profileName, bio: profileBio, avatar_url: profileAvatarUrl }),
       })
 
       if (!res.ok) {
@@ -252,6 +260,7 @@ export default function Dashboard() {
           excerpt,
           content,
           cover_image_url: coverImageUrl,
+          cover_image_caption: coverImageCaption,
           read_time_minutes: Number(readTime),
         }),
       })
@@ -720,6 +729,18 @@ export default function Dashboard() {
                   onUploadComplete={(dataUrl) => setCoverImageUrl(dataUrl)}
                   onRemove={() => setCoverImageUrl('')}
                 />
+                <div className="pt-2">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Cover Image Caption / Label (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={coverImageCaption}
+                    onChange={(e) => setCoverImageCaption(e.target.value)}
+                    placeholder="e.g. Photo courtesy of Warner Bros. / Illustration by 45 STUDioS"
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  />
+                </div>
               </div>
 
               {/* Metadata Details Card */}
@@ -907,6 +928,30 @@ export default function Dashboard() {
                       ? 'Editorial privileges (edit/delete any article)'
                       : 'Writer privileges (create and manage your own articles only)'}
                   </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Author Photo / Avatar (Compressed WebP)
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center shrink-0">
+                    {profileAvatarUrl ? (
+                      <img src={profileAvatarUrl} alt={profileName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-bold text-slate-400 text-lg">
+                        {(profileName || 'A').slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <WebPUploader
+                      coverImageUrl={profileAvatarUrl}
+                      onUploadComplete={(dataUrl) => setProfileAvatarUrl(dataUrl)}
+                      onRemove={() => setProfileAvatarUrl('')}
+                    />
+                  </div>
                 </div>
               </div>
 

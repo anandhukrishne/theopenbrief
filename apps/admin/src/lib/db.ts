@@ -10,6 +10,7 @@ export interface UserProfile {
   email: string
   name: string
   bio?: string
+  avatar_url?: string
   role: 'admin' | 'editor' | 'writer'
   created_at: string
   updated_at: string
@@ -28,6 +29,7 @@ export async function initDb() {
       email TEXT NOT NULL,
       name TEXT NOT NULL,
       bio TEXT DEFAULT '',
+      avatar_url TEXT DEFAULT '',
       role TEXT NOT NULL DEFAULT 'writer', -- 'admin', 'editor', 'writer'
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -43,9 +45,11 @@ export async function initDb() {
       excerpt TEXT,
       content TEXT NOT NULL,
       cover_image_url TEXT,
+      cover_image_caption TEXT,
       author_id TEXT,
       author_name TEXT NOT NULL DEFAULT 'The Open Brief Desk',
       author_bio TEXT,
+      author_avatar_url TEXT,
       read_time_minutes INT DEFAULT 5,
       published_at TIMESTAMPTZ DEFAULT NOW(),
       created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -53,9 +57,12 @@ export async function initDb() {
     );
 
     -- Alter table safely for any existing database instances
+    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_id TEXT;
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_bio TEXT;
+    ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_avatar_url TEXT;
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
+    ALTER TABLE articles ADD COLUMN IF NOT EXISTS cover_image_caption TEXT;
 
     CREATE INDEX IF NOT EXISTS idx_articles_section_published ON articles(section, published_at DESC);
     CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);

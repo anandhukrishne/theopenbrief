@@ -8,8 +8,11 @@ export interface Article {
   excerpt?: string
   content: string
   coverImage?: string
+  coverImageCaption?: string
+  authorId?: string
   authorName: string
   authorBio?: string
+  authorAvatar?: string
   publishedDate: string
   readTime: number
 }
@@ -28,7 +31,10 @@ function normalizeArticle(item: any): Article {
 
   const authorName = item.author_name || 'The Open Brief Desk'
   const authorBio = item.author_bio || ''
+  const authorAvatar = item.author_avatar_url || undefined
+  const authorId = item.author_id || undefined
   const coverImage = item.cover_image_url || undefined
+  const coverImageCaption = item.cover_image_caption || undefined
   const readTime = Number(item.read_time_minutes || 5)
   const publishedDate = item.published_at || item.created_at || new Date().toISOString()
 
@@ -40,8 +46,11 @@ function normalizeArticle(item: any): Article {
     excerpt: item.excerpt || '',
     content: item.content || '',
     coverImage,
+    coverImageCaption,
+    authorId,
     authorName,
     authorBio,
+    authorAvatar,
     publishedDate,
     readTime,
   }
@@ -96,4 +105,33 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   }
 
   return null
+}
+
+/**
+ * Fetch all articles written by a specific author
+ */
+export async function fetchArticlesByAuthor(author: string): Promise<Article[]> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/articles?author=${encodeURIComponent(author)}`, {
+      next: { revalidate: 60 },
+      headers: { Accept: 'application/json' },
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data.docs) && data.docs.length > 0) {
+        return data.docs.map(normalizeArticle)
+      }
+    }
+  } catch (err) {
+    console.warn(`[CMS API] Failed to fetch articles by author '${author}':`, (err as any)?.message)
+  }
+
+  // Fallback: fetch all and filter in memory
+  const all = await fetchArticles()
+  const cleanTarget = author.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  return all.filter((a) => {
+    const aSlug = a.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    return aSlug === cleanTarget || a.authorName.toLowerCase() === author.toLowerCase() || a.authorId === author
+  })
 }
