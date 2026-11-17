@@ -46,131 +46,180 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col justify-between bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 antialiased font-sans">
         <div className="flex-1">{children}</div>
 
-        {/* ── Editorial Colophon Footer (Site-Wide) ── */}
-        <footer className="border-t border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0A0F1A] mt-24">
-          <div className="max-w-7xl mx-auto px-6 py-14">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-neutral-200 dark:border-neutral-800">
-              {/* Col 1: Logo & Contact */}
-              <div className="md:col-span-4 space-y-4">
+        {/* ── Universal Site-Wide Footer ── */}
+        <footer className="border-t border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#090D17] mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
+              
+              {/* Left Column: Logo + Paragraph Box + Contact, About & Follow Box */}
+              <div className="lg:col-span-5 space-y-4">
                 <Link href="/" className="inline-block">
-                  <img src="/logo.png" alt="The Open Brief" className="h-7 w-auto object-contain dark:hidden" />
-                  <img src="/logo-white.png" alt="The Open Brief" className="h-7 w-auto object-contain hidden dark:block" />
+                  <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
+                  <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
                 </Link>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
-                  An independent publication of explainers, technical breakdowns, movie reviews, and long-form essays.
-                </p>
-                <div className="p-4 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 rounded-sm space-y-1.5">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold block">
-                    Contact Us
+
+                {/* Paragraph Box */}
+                <div className="p-4 sm:p-5 bg-neutral-200/60 dark:bg-neutral-900/70 border border-neutral-300/80 dark:border-neutral-800 rounded-sm">
+                  <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
+                    An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
+                  </p>
+                </div>
+
+                {/* Contact, About and Follow Box */}
+                <div className="p-4 sm:p-5 bg-neutral-200/60 dark:bg-neutral-900/70 border border-neutral-300/80 dark:border-neutral-800 rounded-sm space-y-2.5">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 dark:text-neutral-400 font-bold block">
+                    Contact, About &amp; Follow
                   </span>
-                  <a
-                    href="mailto:anandhu.krishne@theopenbrief.app"
-                    className="text-xs font-mono font-semibold text-neutral-800 dark:text-neutral-200 hover:underline block"
-                  >
-                    anandhu.krishne@theopenbrief.app
-                  </a>
+                  <div className="text-xs font-mono space-y-1.5">
+                    <div>
+                      <span className="text-neutral-500">Email: </span>
+                      <a
+                        href="mailto:anandhu.krishne@theopenbrief.app"
+                        className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline"
+                      >
+                        anandhu.krishne@theopenbrief.app
+                      </a>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 pt-1 text-neutral-700 dark:text-neutral-300">
+                      <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors underline">
+                        About
+                      </Link>
+                      <span>•</span>
+                      <a
+                        href="https://admin.theopenbrief.app"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:text-black dark:hover:text-white transition-colors underline"
+                      >
+                        Author Studio ↗
+                      </a>
+                      <span>•</span>
+                      <Link href="/rss" className="hover:text-black dark:hover:text-white transition-colors underline">
+                        RSS Feed
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Col 2: Pillars */}
-              <div className="md:col-span-3">
-                <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-500 mb-4 font-semibold">
+              {/* Middle Column: Sections */}
+              <div className="lg:col-span-3 space-y-3">
+                <h4 className="font-bold text-base sm:text-lg text-neutral-900 dark:text-neutral-100 mb-4">
                   Sections
                 </h4>
-                <ul className="space-y-2.5 text-xs font-mono">
+                <ul className="space-y-3 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   <li>
-                    <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">
-                      → OpenBrief Plus
+                    <Link href="/journal" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
+                      OpenBrief Plus
                     </Link>
                   </li>
                   <li>
-                    <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">
-                      → TOB Explainers
+                    <Link href="/explainers" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
+                      TOB Explainers
                     </Link>
                   </li>
                   <li>
-                    <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">
-                      → TechnoBrief
+                    <Link href="/tech" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
+                      TechnoBrief
                     </Link>
                   </li>
                   <li>
-                    <Link href="/cinebrief" className="hover:text-black dark:hover:text-white transition-colors">
-                      → CinēBrief
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Col 3: Colophon & Studio */}
-              <div className="md:col-span-2">
-                <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-500 mb-4 font-semibold">
-                  Colophon
-                </h4>
-                <ul className="space-y-2.5 text-xs font-mono text-neutral-600 dark:text-neutral-400">
-                  <li>
-                    <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors">
-                      About
+                    <Link href="/cinebrief" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
+                      CinēBrief
                     </Link>
                   </li>
                   <li>
-                    <a
-                      href="https://admin.theopenbrief.app"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:text-black dark:hover:text-white transition-colors"
-                    >
-                      Author Studio ↗
-                    </a>
-                  </li>
-                  <li>
-                    <Link href="/rss" className="hover:text-black dark:hover:text-white transition-colors">
-                      RSS (Really Simple Syndication)
+                    <Link href="/" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block text-neutral-500">
+                      Standalone Dispatches
                     </Link>
                   </li>
                 </ul>
               </div>
 
-              {/* Col 4: Legal & Art */}
-              <div className="md:col-span-3 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-500 mb-4 font-semibold">
-                    Legal
-                  </h4>
-                  <ul className="space-y-2.5 text-xs font-mono text-neutral-600 dark:text-neutral-400">
-                    <li>
-                      <Link href="/privacy" className="hover:text-black dark:hover:text-white transition-colors">
-                        Privacy Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/terms" className="hover:text-black dark:hover:text-white transition-colors">
-                        Terms of Use
-                      </Link>
-                    </li>
-                  </ul>
+              {/* Right Column: Keywords Search Box with Watermark Art */}
+              <div className="lg:col-span-4 relative overflow-visible pt-2">
+                {/* Watermark Graphic: Exact PNG without axis shifting or position changes */}
+                <div className="absolute -right-4 sm:-right-8 -top-8 w-48 sm:w-56 pointer-events-none select-none z-10">
+                  <img
+                    src="/footer-art.png"
+                    alt=""
+                    className="w-full h-auto object-contain opacity-90 dark:opacity-80"
+                  />
                 </div>
 
-                <div className="pt-4 flex items-center gap-3">
-                  <svg className="w-6 h-6 text-neutral-400 fill-current" viewBox="0 0 24 24">
-                    <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
-                  </svg>
-                  <svg className="w-8 h-8 text-rose-400 fill-current" viewBox="0 0 100 100">
-                    <polygon points="50,0 63,38 100,50 63,62 50,100 37,62 0,50 37,38" />
-                  </svg>
-                  <svg className="w-6 h-6 text-indigo-400 fill-current" viewBox="0 0 100 100">
-                    <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" />
-                  </svg>
+                {/* Keywords Search Container */}
+                <div className="relative z-0 p-6 bg-neutral-200/50 dark:bg-neutral-900/60 border border-neutral-300/80 dark:border-neutral-800 rounded-sm min-h-[220px] flex flex-col justify-between">
+                  <div className="space-y-3 max-w-[70%]">
+                    <h4 className="font-bold text-base sm:text-lg text-neutral-900 dark:text-neutral-100">
+                      Keywords search
+                    </h4>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      Explore dispatches by subject, technical breakdown, or cultural inquiry:
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 pt-4 relative z-20">
+                    <div className="flex flex-wrap gap-1.5 text-[11px] font-mono">
+                      <Link
+                        href="/explainers"
+                        className="px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors rounded-xs"
+                      >
+                        #Economics
+                      </Link>
+                      <Link
+                        href="/tech"
+                        className="px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors rounded-xs"
+                      >
+                        #Software
+                      </Link>
+                      <Link
+                        href="/cinebrief"
+                        className="px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors rounded-xs"
+                      >
+                        #Cinema
+                      </Link>
+                      <Link
+                        href="/journal"
+                        className="px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors rounded-xs"
+                      >
+                        #Culture
+                      </Link>
+                      <Link
+                        href="/tech"
+                        className="px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-neutral-100 transition-colors rounded-xs"
+                      >
+                        #Engineering
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
+
             </div>
 
-            {/* Bottom rule */}
-            <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400 font-mono">
-              <p>© {currentYear} The Open Brief. All rights reserved.</p>
-              <div className="flex items-center gap-6">
+            {/* Bottom Bar: Copyright on Left, Legal & Credits on Right */}
+            <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+              <p>© TheOpenBrief. All rights reserved.</p>
+
+              <div className="flex items-center gap-4 text-neutral-400">
                 <span>Global</span>
                 <span>•</span>
                 <span>Developed by 45 STUDioS</span>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <Link href="/privacy" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                  Terms
+                </Link>
+                <Link href="/sitemap" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                  Sitemap
+                </Link>
+                <Link href="/rss" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                  RSS
+                </Link>
               </div>
             </div>
           </div>
