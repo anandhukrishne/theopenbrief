@@ -64,6 +64,19 @@ export default function Dashboard() {
   const [publishing, setPublishing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string; link?: string } | null>(null)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close profile dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Archive State
   const [articles, setArticles] = useState<ArticleItem[]>([])
@@ -173,6 +186,28 @@ export default function Dashboard() {
     setTimeout(() => {
       textarea.focus()
       textarea.setSelectionRange(start + before.length, end + before.length)
+    }, 0)
+  }
+
+  // Insert markdown link
+  const insertLink = () => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = content.substring(start, end)
+    const url = window.prompt('Enter link URL (e.g. https://...):', 'https://')
+    if (!url) return
+
+    const text = selectedText || window.prompt('Enter link text:', 'link text') || 'link'
+    const replacement = `[${text}](${url})`
+    const newContent = content.substring(0, start) + replacement + content.substring(end)
+    setContent(newContent)
+
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + replacement.length, start + replacement.length)
     }, 0)
   }
 
@@ -304,7 +339,7 @@ export default function Dashboard() {
 
       setMessage({
         type: 'success',
-        text: `Dispatch "${title}" published live to Neon PostgreSQL!`,
+        text: `Article "${title}" published live to Neon PostgreSQL!`,
         link: `https://theopenbrief.app/articles/${slug}`,
       })
     } catch (err: any) {
@@ -364,41 +399,13 @@ export default function Dashboard() {
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
-              Dispatches ({articles.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
-                activeTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-              My Profile
+              Articles ({articles.length})
             </button>
           </div>
         </div>
 
-        {/* Live Metrics & Actions */}
+        {/* Live Metrics & User Profile Dropdown */}
         <div className="flex items-center gap-3">
-          {profile && (
-            <div className="flex items-center gap-2 text-xs font-mono bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
-              <span className="font-semibold text-slate-800">{profile.name}</span>
-              <span
-                className={`uppercase text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                  profile.role === 'admin'
-                    ? 'bg-rose-100 text-rose-800'
-                    : profile.role === 'editor'
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'bg-slate-200 text-slate-700'
-                }`}
-              >
-                {profile.role}
-              </span>
-            </div>
-          )}
-
           <a
             href="https://theopenbrief.app"
             target="_blank"
@@ -408,12 +415,83 @@ export default function Dashboard() {
             Live Site ↗
           </a>
 
-          <button
-            onClick={handleLogout}
-            className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-2"
-          >
-            Sign Out
-          </button>
+          {/* User Badge with Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setProfileDropdownOpen((v) => !v)}
+              className="flex items-center gap-2 text-xs font-mono bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg hover:border-slate-400 transition-colors cursor-pointer select-none"
+            >
+              <span className="font-semibold text-slate-800">{profile?.name || 'Author'}</span>
+              <span
+                className={`uppercase text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                  profile?.role === 'admin'
+                    ? 'bg-rose-100 text-rose-800'
+                    : profile?.role === 'editor'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-200 text-slate-700'
+                }`}
+              >
+                {profile?.role || 'Author'}
+              </span>
+              <svg
+                className={`w-3 h-3 text-slate-400 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-1.5 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 text-xs font-sans">
+                <div className="px-3.5 py-2 border-b border-slate-100">
+                  <div className="font-semibold text-slate-900 truncate">{profile?.name || 'Author'}</div>
+                  <div className="text-slate-400 font-mono text-[11px] truncate">{profile?.email}</div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('profile')
+                    setProfileDropdownOpen(false)
+                  }}
+                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
+                >
+                  <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  My Profile &amp; Settings
+                </button>
+
+                <a
+                  href="https://theopenbrief.app"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
+                >
+                  <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
+                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                  </svg>
+                  View Live Site ↗
+                </a>
+
+                <div className="my-1 border-t border-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full text-left px-3.5 py-2 hover:bg-rose-50 text-rose-600 flex items-center gap-2 transition-colors font-medium"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -435,7 +513,7 @@ export default function Dashboard() {
                 rel="noreferrer"
                 className="font-mono text-xs underline font-semibold text-emerald-800 hover:text-emerald-950"
               >
-                View Live Dispatch ↗
+                View Live Article ↗
               </a>
             )}
           </div>
@@ -456,7 +534,7 @@ export default function Dashboard() {
                     {
                       id: 'journal',
                       label: 'OpenBrief Plus',
-                      desc: 'Essays & Inquiries',
+                      desc: 'Long-Form Essays',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                           <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.2 20.4 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
@@ -496,7 +574,7 @@ export default function Dashboard() {
                     {
                       id: 'standalone',
                       label: 'General',
-                      desc: 'Standalone Dispatches',
+                      desc: 'Standalone Articles',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
@@ -526,7 +604,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Author Attribution Lock Notification */}
+              {/* Author Attribution Card */}
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-mono text-slate-600">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -534,7 +612,7 @@ export default function Dashboard() {
                     Publishing as: <strong className="text-slate-900">{profile?.name || 'Verified Author'}</strong>
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400">Locked attribution • No spoofing</span>
+                <span className="text-[11px] text-slate-400">Verified author attribution</span>
               </div>
 
               {/* Title Input (Sans-Serif) */}
@@ -621,11 +699,22 @@ export default function Dashboard() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertMarkdown('\n---\n')}
+                    onClick={() => insertMarkdown('\n\n---\n\n')}
                     className="px-2 py-1 font-mono rounded hover:bg-slate-100 text-slate-700"
                     title="Divider"
                   >
                     — Divider
+                  </button>
+                  <button
+                    type="button"
+                    onClick={insertLink}
+                    className="px-2 py-1 font-mono rounded hover:bg-slate-100 text-slate-700 flex items-center gap-1"
+                    title="Insert Link"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                    </svg>
+                    Link
                   </button>
                 </div>
 
@@ -699,10 +788,10 @@ export default function Dashboard() {
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
-                    Dispatch Status
+                    Article Status
                   </span>
                   <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
-                    {editingId ? 'Editing Dispatch' : 'New Dispatch'}
+                    {editingId ? 'Editing Article' : 'New Article'}
                   </span>
                 </div>
 
@@ -714,7 +803,7 @@ export default function Dashboard() {
                   {publishing ? (
                     <span>Saving to Neon...</span>
                   ) : (
-                    <span>{editingId ? 'Update Live Dispatch' : 'Publish Dispatch'}</span>
+                    <span>{editingId ? 'Update Live Article' : 'Publish Article'}</span>
                   )}
                 </button>
 
@@ -751,10 +840,10 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Cover Image Card (Client-Side Canvas WebP Compression) */}
+              {/* Cover Image Card */}
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3">
                 <label className="block text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
-                  Cover Image (Compressed WebP)
+                  Cover Image
                 </label>
                 <WebPUploader
                   coverImageUrl={coverImageUrl}
@@ -815,12 +904,12 @@ export default function Dashboard() {
           </form>
         )}
 
-        {/* ── TAB 2: Dispatches Archive with Delete Options & Hierarchy ── */}
+        {/* ── TAB 2: Articles Archive with Delete Options & Hierarchy ── */}
         {activeTab === 'archive' && (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Dispatches in Neon Database</h2>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Articles in Neon Database</h2>
                 <p className="text-xs text-slate-500 mt-1">
                   Manage, edit, or delete published articles ({profile?.role?.toUpperCase()} permissions active)
                 </p>
@@ -846,7 +935,7 @@ export default function Dashboard() {
 
             {loadingArticles ? (
               <div className="py-12 text-center text-sm font-mono text-slate-400">
-                Loading published dispatches from database...
+                Loading published articles from database...
               </div>
             ) : filteredArticles.length === 0 ? (
               <div className="py-12 text-center text-sm text-slate-500 space-y-3">
@@ -1025,6 +1114,25 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* ── Admin Footer ── */}
+      <footer className="border-t border-slate-200 bg-white py-6 mt-16 text-xs font-mono text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>© {new Date().getFullYear()} The Open Brief. Author Studio. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-slate-400">
+            <span>Developed by 45 STUDioS</span>
+            <span>•</span>
+            <a
+              href="https://theopenbrief.app"
+              target="_blank"
+              rel="noreferrer"
+              className="text-slate-600 hover:text-black transition-colors underline"
+            >
+              theopenbrief.app ↗
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

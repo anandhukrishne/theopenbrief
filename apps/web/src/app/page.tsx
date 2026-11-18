@@ -51,7 +51,7 @@ export default async function HomePage() {
               />
             </Link>
           </div>
-          <div className="w-full md:w-1/4 flex items-center justify-center md:justify-end gap-4 text-center md:text-right font-medium">
+          <div className="hidden md:flex w-full md:w-1/4 items-center justify-end gap-4 text-right font-medium">
             <ThemeToggle />
           </div>
         </div>

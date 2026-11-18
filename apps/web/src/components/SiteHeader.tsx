@@ -117,6 +117,17 @@ export default function SiteHeader({ section }: { section?: string | null }) {
       {/* Mobile Drawer */}
       {open && (
         <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-4 py-3 flex flex-col gap-1">
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className={`text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800/60 transition-colors ${
+              !section
+                ? 'text-red-600 dark:text-red-400 font-extrabold'
+                : 'text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400'
+            }`}
+          >
+            HOME
+          </Link>
           {NAV_LINKS.map((l) => {
             const isActive = section === l.section
             return (

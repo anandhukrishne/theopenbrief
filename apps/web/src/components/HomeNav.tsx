@@ -33,34 +33,36 @@ export default function HomeNav() {
         </div>
 
         {/* Mobile: burger button (shown only on mobile) */}
-        <div className="md:hidden w-full flex items-center justify-between">
-          <span className="text-xs font-bold tracking-wider uppercase text-neutral-800 dark:text-neutral-200">
-            Menu
-          </span>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <button
-              className="p-1.5 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              onClick={() => setOpen((v) => !v)}
-              aria-label={open ? 'Close menu' : 'Open menu'}
-            >
-              {open ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-                </svg>
-              )}
-            </button>
-          </div>
+        <div className="md:hidden w-full flex items-center justify-end gap-3">
+          <ThemeToggle />
+          <button
+            className="p-1.5 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+          >
+            {open ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Mobile drawer */}
       {open && (
         <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-4 py-4 flex flex-col gap-1">
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className="text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          >
+            HOME
+          </Link>
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
