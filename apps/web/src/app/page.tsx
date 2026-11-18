@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { fetchArticles, Article } from '@/lib/api'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
+import HomeNav from '@/components/HomeNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,10 +16,6 @@ export default async function HomePage() {
     day: 'numeric',
     year: 'numeric',
   }).format(new Date())
-
-  const weekNumber = Math.ceil(
-    (Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000) + 1) / 7
-  )
 
   const heroArticle = allArticles[0] || null
   const topPicks = allArticles.slice(0, 4)
@@ -55,35 +52,13 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="w-full md:w-1/4 flex items-center justify-center md:justify-end gap-4 text-center md:text-right font-medium">
-            <span>Global edition | Week {weekNumber}</span>
             <ThemeToggle />
           </div>
         </div>
       </div>
 
       {/* ── Editorial Navigation Bar ── */}
-      <nav className="border-b border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0B101B]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-6 sm:gap-12 text-xs sm:text-sm font-bold tracking-wider uppercase overflow-x-auto text-neutral-800 dark:text-neutral-200">
-          <Link href="/journal" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            OPENBRIEF PLUS
-          </Link>
-          <Link href="/explainers" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            TOB EXPLAINERS
-          </Link>
-          <Link href="/tech" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            TECHNOBRIEF
-          </Link>
-          <Link href="/cinebrief" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            CINĒBRIEF
-          </Link>
-          <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap">
-            GENERAL
-          </Link>
-          <Link href="/about" className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap text-neutral-400">
-            ABOUT
-          </Link>
-        </div>
-      </nav>
+      <HomeNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
@@ -163,7 +138,7 @@ export default async function HomePage() {
                           {pick.section}
                         </span>
                         <Link href={`/articles/${pick.slug}`}>
-                          <h3 className="text-sm sm:text-base font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+                          <h3 className="text-base sm:text-lg font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
                             {pick.title}
                           </h3>
                         </Link>
@@ -239,7 +214,7 @@ export default async function HomePage() {
 
                 <div className="relative z-10 space-y-4">
                   {explainerPicks.length > 0 ? explainerPicks.map((pick, i) => (
-                    <div key={pick.id || i} className="p-3 bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 rounded-sm flex gap-3.5 items-start">
+                    <div key={pick.id || i} className="py-3 border-b border-neutral-200 dark:border-neutral-800 last:border-b-0 flex gap-3.5 items-start">
                       <Link
                         href={`/articles/${pick.slug}`}
                         className="w-16 h-16 shrink-0 bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center overflow-hidden"

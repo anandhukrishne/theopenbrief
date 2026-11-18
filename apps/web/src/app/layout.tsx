@@ -55,19 +55,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="grid grid-cols-12 gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
                 
                 {/* Left Column: Logo + Paragraph + Contact, About & Follow */}
-                <div className="col-span-5 space-y-4">
+                <div className="col-span-5 space-y-6">
                   <Link href="/" className="inline-block">
                     <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
                     <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
                   </Link>
 
                   {/* Paragraph Description */}
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm pt-1">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm pt-3">
                     An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
                   </p>
 
                   {/* Contact, About and Follow */}
-                  <div className="pt-3 space-y-2">
+                  <div className="pt-6 space-y-2">
                     <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold block">
                       Contact, About &amp; Follow
                     </span>
@@ -149,7 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
 
                   {/* Keywords Search Container */}
-                  <div className="relative z-0 p-6 bg-neutral-200/50 dark:bg-neutral-900/60 border border-neutral-300/80 dark:border-neutral-800 rounded-sm min-h-[220px] flex flex-col justify-between">
+                  <div className="relative z-0 min-h-[220px] flex flex-col justify-between">
                     <div className="space-y-3 max-w-[70%]">
                       <h4 className="font-bold text-lg text-neutral-900 dark:text-neutral-100">
                         Keywords search
@@ -281,7 +281,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Row 3: Keywords Search */}
               <div className="pt-2">
-                <div className="p-4 bg-neutral-200/50 dark:bg-neutral-900/60 border border-neutral-300/80 dark:border-neutral-800 rounded-sm space-y-2.5">
+                <div className="space-y-2.5">
                   <h4 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
                     Keywords search
                   </h4>

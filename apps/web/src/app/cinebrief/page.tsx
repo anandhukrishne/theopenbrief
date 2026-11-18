@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { fetchArticles } from '@/lib/api'
-import ThemeToggle from '@/components/ThemeToggle'
+import SiteHeader from '@/components/SiteHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,33 +14,8 @@ export default async function CineBriefPage() {
 
   return (
     <main className="min-h-screen bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
-      {/* ── Section Exclusive Header: Top Header Logo is the SECTION LOGO ── */}
-      <header className="border-b border-neutral-300 dark:border-neutral-800 py-4 px-4 sm:px-6 sticky top-0 bg-white/95 dark:bg-[#0B101B]/95 backdrop-blur z-20">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/cinebrief" className="flex items-center">
-            <img
-              src="/logo-cinebrief.png"
-              alt="CinēBrief"
-              className="h-8 sm:h-9 w-auto object-contain dark:hidden"
-            />
-            <img
-              src="/logo-cinebrief-white.png"
-              alt="CinēBrief"
-              className="h-8 sm:h-9 w-auto object-contain hidden dark:block"
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <nav className="flex items-center gap-6 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-600 dark:text-neutral-400">
-              <Link href="/" className="hover:text-black dark:hover:text-white transition-colors">Home</Link>
-              <Link href="/journal" className="hover:text-black dark:hover:text-white transition-colors">Plus</Link>
-              <Link href="/explainers" className="hover:text-black dark:hover:text-white transition-colors">Explainers</Link>
-              <Link href="/tech" className="hover:text-black dark:hover:text-white transition-colors">Tech</Link>
-              <Link href="/general" className="hover:text-black dark:hover:text-white transition-colors">General</Link>
-            </nav>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      {/* ── Standardized Responsive Site Header ── */}
+      <SiteHeader section="cinebrief" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 relative">
         {/* Subtle Watermark */}

@@ -15,15 +15,49 @@ async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: stri
   }
 }
 
-// GET /api/articles - Fetch all articles or single by slug/section
+// GET /api/articles - Fetch articles for public frontend, or authenticated admin requests
 export async function GET(req: NextRequest) {
   try {
     await initDb()
     const { searchParams } = new URL(req.url)
     const section = searchParams.get('section')
     const slug = searchParams.get('slug')
+    const idParam = searchParams.get('id')
+    const fullParam = searchParams.get('full')
     const authorParam = searchParams.get('author') || searchParams.get('author_id') || searchParams.get('authorId')
 
+    // --- Authenticated admin path: ?id=X or ?full=true (fetch full article for editing) ---
+    if (idParam || fullParam) {
+      const auth = await getAuthUser(req)
+      if (!auth) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      if (idParam) {
+        // Single full article by ID (for editing)
+        const result = await db.query('SELECT * FROM articles WHERE id = $1', [idParam])
+        return NextResponse.json({ docs: result.rows })
+      }
+    }
+
+    // --- Authenticated admin archive list: no slug/section/author = admin listing ---
+    // Detect admin archive request: authenticated + no public filters
+    if (!slug && !section && !authorParam && !idParam && !fullParam) {
+      const auth = await getAuthUser(req)
+      if (auth) {
+        // Return lightweight columns only — no content, no cover_image_url
+        const result = await db.query(
+          `SELECT id, title, slug, section, status, author_id, author_name, read_time_minutes, published_at, excerpt
+           FROM articles
+           WHERE status = 'published'
+           ORDER BY published_at DESC
+           LIMIT 100`
+        )
+        return NextResponse.json({ docs: result.rows })
+      }
+    }
+
+    // --- Public frontend path: full SELECT * with filters ---
     let query = 'SELECT * FROM articles WHERE status = $1'
     const values: any[] = ['published']
 

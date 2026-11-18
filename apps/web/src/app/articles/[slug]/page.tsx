@@ -72,26 +72,40 @@ export default async function ArticlePage({ params }: Props) {
   )
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
-      {/* ── Top Reading Bar: Brand on Left, Theme Toggle on Right ── */}
+    <main className="min-h-screen bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
+      {/* ── Top Reading Bar: Back Link Left, Logo Center, Section + Theme Right ── */}
       <header className="border-b border-neutral-200 dark:border-neutral-800 py-3.5 px-4 sm:px-6 sticky top-0 bg-white/95 dark:bg-[#0B101B]/95 backdrop-blur z-30">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Brand Logo on Left */}
-          <Link href="/" className="flex items-center">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          {/* Left: Back link */}
+          <Link
+            href={sectionMeta.href}
+            className="text-xs font-mono font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors whitespace-nowrap shrink-0"
+          >
+            ← Back to {sectionMeta.name}
+          </Link>
+
+          {/* Center: Brand Logo */}
+          <Link href="/" className="flex items-center shrink-0">
             <img
               src="/logo.png"
               alt="TheOpenBrief.app"
-              className="h-7 w-auto object-contain dark:hidden"
+              className="h-6 w-auto object-contain dark:hidden"
             />
             <img
               src="/logo-white.png"
               alt="TheOpenBrief.app"
-              className="h-7 w-auto object-contain hidden dark:block"
+              className="h-6 w-auto object-contain hidden dark:block"
             />
           </Link>
 
-          {/* Right Controls: Theme Toggle */}
-          <div className="flex items-center">
+          {/* Right: Section label + Theme Toggle */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href={sectionMeta.href}
+              className="hidden sm:block text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            >
+              {sectionMeta.name}
+            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -325,7 +339,7 @@ export default async function ArticlePage({ params }: Props) {
           {/* ── Right Column: Desktop "Also Read" Sidebar (lg:col-span-4) ── */}
           {alsoReadArticles.length > 0 && (
             <aside className="hidden lg:block lg:col-span-4 sticky top-20">
-              <div className="p-5 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/50 rounded-sm space-y-4">
+              <div className="pt-2 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
                   <h3 className="font-bold text-sm tracking-tight text-neutral-900 dark:text-neutral-100 uppercase font-mono">
                     Also Read

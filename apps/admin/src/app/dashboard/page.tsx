@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import WebPUploader from '@/components/WebPUploader'
+import { clientAuth } from '@/lib/firebaseClient'
+import { onAuthStateChanged } from 'firebase/auth'
 
 interface UserProfile {
   id: string
@@ -19,7 +21,7 @@ interface ArticleItem {
   section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'
   status: string
   excerpt?: string
-  content: string
+  content?: string
   cover_image_url?: string
   cover_image_caption?: string
   author_id?: string
@@ -77,24 +79,46 @@ export default function Dashboard() {
   }, [calculatedReadTime])
 
   // Load user profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch('/api/profile')
-        if (res.ok) {
-          const data = await res.json()
-          if (data.profile) {
-            setProfile(data.profile)
-            setProfileName(data.profile.name)
-            setProfileBio(data.profile.bio || '')
-            setProfileAvatarUrl(data.profile.avatar_url || '')
-          }
+  const loadProfile = async () => {
+    try {
+      const res = await fetch('/api/profile')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.profile) {
+          setProfile(data.profile)
+          setProfileName(data.profile.name)
+          setProfileBio(data.profile.bio || '')
+          setProfileAvatarUrl(data.profile.avatar_url || '')
         }
-      } catch (err) {
-        console.error('Failed to fetch profile:', err)
       }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err)
     }
-    fetchProfile()
+  }
+
+  useEffect(() => {
+    loadProfile()
+  }, [])
+
+  // Refresh Firebase session cookie whenever auth state is confirmed (fixes token expiry after browser restart)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
+      if (user) {
+        try {
+          const freshToken = await user.getIdToken(true) // force refresh
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: freshToken }),
+          })
+          // Re-sync profile after session refresh
+          await loadProfile()
+        } catch (e) {
+          console.error('Session refresh failed', e)
+        }
+      }
+    })
+    return () => unsubscribe()
   }, [])
 
   // Load articles for archive
@@ -170,19 +194,27 @@ export default function Dashboard() {
     setMessage(null)
   }
 
-  const editArticle = (art: ArticleItem) => {
-    setTitle(art.title)
-    setSlug(art.slug)
-    setSection(art.section)
-    setExcerpt(art.excerpt || '')
-    setContent(art.content)
-    setCoverImageUrl(art.cover_image_url || '')
-    setCoverImageCaption(art.cover_image_caption || '')
-    setReadTime(art.read_time_minutes || 5)
-    setEditingId(art.id)
-    setEditingAuthorId(art.author_id || null)
-    setActiveTab('editor')
-    setMessage(null)
+  const editArticle = async (artId: string) => {
+    try {
+      const res = await fetch(`/api/articles?id=${artId}`)
+      if (!res.ok) throw new Error('Failed to fetch article')
+      const data = await res.json()
+      const art: ArticleItem = data.docs?.[0] || data
+      setTitle(art.title)
+      setSlug(art.slug)
+      setSection(art.section)
+      setExcerpt(art.excerpt || '')
+      setContent(art.content || '')
+      setCoverImageUrl(art.cover_image_url || '')
+      setCoverImageCaption(art.cover_image_caption || '')
+      setReadTime(art.read_time_minutes || 5)
+      setEditingId(art.id)
+      setEditingAuthorId(art.author_id || null)
+      setActiveTab('editor')
+      setMessage(null)
+    } catch (err) {
+      console.error('Failed to load article for editing:', err)
+    }
   }
 
   // Delete an article
@@ -858,7 +890,7 @@ export default function Dashboard() {
                         {canManage ? (
                           <>
                             <button
-                              onClick={() => editArticle(art)}
+                              onClick={() => editArticle(art.id)}
                               className="px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg hover:border-black transition-colors"
                             >
                               Edit
