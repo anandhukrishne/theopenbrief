@@ -11,6 +11,8 @@ export interface UserProfile {
   name: string
   bio?: string
   avatar_url?: string
+  beat?: string
+  password_plain?: string
   role: 'admin' | 'editor' | 'writer'
   created_at: string
   updated_at: string
@@ -25,11 +27,13 @@ export async function initDb() {
   await db.query(`
     -- Profiles table
     CREATE TABLE IF NOT EXISTS profiles (
-      id TEXT PRIMARY KEY, -- Firebase UID
+      id TEXT PRIMARY KEY, -- Firebase UID or generated UUID
       email TEXT NOT NULL,
       name TEXT NOT NULL,
       bio TEXT DEFAULT '',
       avatar_url TEXT DEFAULT '',
+      beat TEXT DEFAULT '',
+      password_plain TEXT DEFAULT '',
       role TEXT NOT NULL DEFAULT 'writer', -- 'admin', 'editor', 'writer'
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -58,6 +62,8 @@ export async function initDb() {
 
     -- Alter table safely for any existing database instances
     ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
+    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS beat TEXT DEFAULT '';
+    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS password_plain TEXT DEFAULT '';
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_id TEXT;
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_bio TEXT;
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS author_avatar_url TEXT;

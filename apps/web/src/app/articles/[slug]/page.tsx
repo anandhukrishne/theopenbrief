@@ -81,7 +81,7 @@ export default async function ArticlePage({ params }: Props) {
             href={sectionMeta.href}
             className="text-xs font-mono font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors whitespace-nowrap shrink-0"
           >
-            ← Back to {sectionMeta.name}
+            ← Back
           </Link>
 
           {/* Center: Brand Logo */}
@@ -181,74 +181,89 @@ export default async function ArticlePage({ params }: Props) {
               </figure>
             )}
 
-            {/* Content Body with Image Support */}
+            {/* Content Body with Image Support & Editorial Drop Cap */}
             <div className="text-neutral-800 dark:text-neutral-200 leading-[1.8] sm:leading-[1.9] text-base sm:text-lg space-y-6">
-              {article.content.split('\n\n').map((paragraph, index) => {
-                const trimmed = paragraph.trim()
-                if (!trimmed) return null
+              {(() => {
+                let dropCapApplied = false
+                return article.content.split('\n\n').map((paragraph, index) => {
+                  const trimmed = paragraph.trim()
+                  if (!trimmed) return null
 
-                // Markdown Images: ![caption](url)
-                if (trimmed.startsWith('![') && trimmed.includes('](')) {
-                  const match = trimmed.match(/!\[(.*?)\]\((.*?)\)/)
-                  if (match) {
-                    const caption = match[1]
-                    const imgUrl = match[2]
+                  // Markdown Images: ![caption](url)
+                  if (trimmed.startsWith('![') && trimmed.includes('](')) {
+                    const match = trimmed.match(/!\[(.*?)\]\((.*?)\)/)
+                    if (match) {
+                      const caption = match[1]
+                      const imgUrl = match[2]
+                      return (
+                        <figure key={index} className="my-8 w-full">
+                          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                            <img src={imgUrl} alt={caption || 'Article image'} className="w-full h-auto object-cover" />
+                          </div>
+                          {caption && (
+                            <figcaption className="mt-2 text-xs font-mono text-neutral-500 dark:text-neutral-400 text-center">
+                              {caption}
+                            </figcaption>
+                          )}
+                        </figure>
+                      )
+                    }
+                  }
+
+                  // Subheadings
+                  if (trimmed.startsWith('## ')) {
                     return (
-                      <figure key={index} className="my-8 w-full">
-                        <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-                          <img src={imgUrl} alt={caption || 'Article image'} className="w-full h-auto object-cover" />
-                        </div>
-                        {caption && (
-                          <figcaption className="mt-2 text-xs font-mono text-neutral-500 dark:text-neutral-400 text-center">
-                            {caption}
-                          </figcaption>
-                        )}
-                      </figure>
+                      <h2 key={index} className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4 tracking-tight">
+                        {trimmed.replace('## ', '')}
+                      </h2>
                     )
                   }
-                }
+                  if (trimmed.startsWith('### ')) {
+                    return (
+                      <h3 key={index} className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 mt-8 mb-3 tracking-tight">
+                        {trimmed.replace('### ', '')}
+                      </h3>
+                    )
+                  }
 
-                // Subheadings
-                if (trimmed.startsWith('## ')) {
-                  return (
-                    <h2 key={index} className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4 tracking-tight">
-                      {trimmed.replace('## ', '')}
-                    </h2>
-                  )
-                }
-                if (trimmed.startsWith('### ')) {
-                  return (
-                    <h3 key={index} className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 mt-8 mb-3 tracking-tight">
-                      {trimmed.replace('### ', '')}
-                    </h3>
-                  )
-                }
+                  // Quotes
+                  if (trimmed.startsWith('> ')) {
+                    return (
+                      <blockquote key={index} className="text-xl border-l-2 border-neutral-900 dark:border-neutral-100 pl-6 my-8 text-neutral-700 dark:text-neutral-300 font-medium">
+                        {trimmed.replace('> ', '')}
+                      </blockquote>
+                    )
+                  }
 
-                // Quotes
-                if (trimmed.startsWith('> ')) {
-                  return (
-                    <blockquote key={index} className="text-xl border-l-2 border-neutral-900 dark:border-neutral-100 pl-6 my-8 text-neutral-700 dark:text-neutral-300 font-medium">
-                      {trimmed.replace('> ', '')}
-                    </blockquote>
-                  )
-                }
+                  // Code
+                  if (trimmed.startsWith('```')) {
+                    return (
+                      <pre key={index} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
+                        {trimmed.replace(/```/g, '')}
+                      </pre>
+                    )
+                  }
 
-                // Code
-                if (trimmed.startsWith('```')) {
-                  return (
-                    <pre key={index} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
-                      {trimmed.replace(/```/g, '')}
-                    </pre>
-                  )
-                }
+                  // Regular paragraph with Drop Cap on the first paragraph
+                  const isFirst = !dropCapApplied
+                  if (isFirst) {
+                    dropCapApplied = true
+                  }
 
-                // Regular paragraph
-                return (
-                  <p key={index} className="text-neutral-800 dark:text-neutral-200">
-                    {trimmed}
-                  </p>
-                )
-              })}
+                  return (
+                    <p
+                      key={index}
+                      className={`text-neutral-800 dark:text-neutral-200 ${
+                        isFirst
+                          ? 'first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:font-extrabold first-letter:mr-3.5 first-letter:leading-none first-letter:text-neutral-900 dark:first-letter:text-neutral-100'
+                          : ''
+                      }`}
+                    >
+                      {trimmed}
+                    </p>
+                  )
+                })
+              })()}
             </div>
 
             {/* ── About Author (Unboxed editorial layout) ── */}

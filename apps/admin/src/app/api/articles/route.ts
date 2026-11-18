@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, getOrCreateProfile, UserProfile } from '@/lib/db'
-import { adminAuth } from '@/lib/firebaseAdmin'
+import { getAuthUser as verifyToken } from '@/lib/auth'
 
 // Helper to authenticate user from session cookie
 async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: string; profile: UserProfile } | null> {
-  const token = req.cookies.get('openbrief_session')?.value
-  if (!token) return null
+  const user = await verifyToken(req)
+  if (!user) return null
   try {
-    const decoded = await adminAuth.verifyIdToken(token)
-    const profile = await getOrCreateProfile(decoded.uid, decoded.email || '', decoded.name || '')
-    return { uid: decoded.uid, email: decoded.email || '', profile }
+    const profile = await getOrCreateProfile(user.uid, user.email, user.name || '')
+    return { uid: user.uid, email: user.email, profile }
   } catch {
     return null
   }

@@ -18,25 +18,42 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // 1. Sign in with Firebase Client
-      const userCredential = await signInWithEmailAndPassword(clientAuth, email, password)
-      const idToken = await userCredential.user.getIdToken()
-
-      // 2. Exchange ID token for secure HttpOnly session cookie
-      const res = await fetch('/api/auth/session', {
+      // 1. First attempt login via internal staff database
+      const dbLoginRes = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ email, password }),
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to initialize session')
+      if (dbLoginRes.ok) {
+        router.push('/dashboard')
+        router.refresh()
+        return
       }
 
-      // 3. Redirect into studio dashboard
-      router.push('/dashboard')
-      router.refresh()
+      // 2. If not matched in roster, fallback to Firebase Client
+      try {
+        const userCredential = await signInWithEmailAndPassword(clientAuth, email, password)
+        const idToken = await userCredential.user.getIdToken()
+
+        const sessionRes = await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        })
+
+        if (!sessionRes.ok) {
+          const data = await sessionRes.json()
+          throw new Error(data.error || 'Failed to initialize session')
+        }
+
+        router.push('/dashboard')
+        router.refresh()
+        return
+      } catch (fbErr: any) {
+        const data = await dbLoginRes.json().catch(() => ({}))
+        throw new Error(data.error || fbErr.message || 'Login failed. Please check your credentials.')
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {

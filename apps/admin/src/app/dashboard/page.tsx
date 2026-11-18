@@ -44,7 +44,7 @@ export default function Dashboard() {
   const [savingProfile, setSavingProfile] = useState(false)
 
   // Current View
-  const [activeTab, setActiveTab] = useState<'editor' | 'archive' | 'profile'>('editor')
+  const [activeTab, setActiveTab] = useState<'editor' | 'archive' | 'profile' | 'staff'>('editor')
   const [editorMode, setEditorMode] = useState<'edit' | 'split' | 'preview'>('edit')
 
   // Form Fields
@@ -66,6 +66,30 @@ export default function Dashboard() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string; link?: string } | null>(null)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Staff & Password Access State (Admin & Editor only)
+  interface StaffMember {
+    id: string
+    email: string
+    name: string
+    role: 'admin' | 'editor' | 'writer'
+    beat?: string
+    password_plain?: string
+    created_at?: string
+  }
+  const [staffList, setStaffList] = useState<StaffMember[]>([])
+  const [loadingStaff, setLoadingStaff] = useState(false)
+  const [staffName, setStaffName] = useState('')
+  const [staffEmail, setStaffEmail] = useState('')
+  const [staffPassword, setStaffPassword] = useState('')
+  const [staffRole, setStaffRole] = useState<'admin' | 'editor' | 'writer'>('writer')
+  const [staffBeat, setStaffBeat] = useState('')
+  const [savingStaff, setSavingStaff] = useState(false)
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({})
+  const [editingStaffMember, setEditingStaffMember] = useState<StaffMember | null>(null)
+  const [editPasswordValue, setEditPasswordValue] = useState('')
+  const [editRoleValue, setEditRoleValue] = useState<'admin' | 'editor' | 'writer'>('writer')
+  const [updatingStaff, setUpdatingStaff] = useState(false)
 
   // Close profile dropdown on click outside
   useEffect(() => {
@@ -150,11 +174,113 @@ export default function Dashboard() {
     }
   }
 
+  // Load newsroom staff roster
+  const fetchStaff = async () => {
+    setLoadingStaff(true)
+    try {
+      const res = await fetch('/api/staff')
+      if (res.ok) {
+        const data = await res.json()
+        setStaffList(data.staff || [])
+      }
+    } catch (err) {
+      console.error('Failed to load staff roster:', err)
+    } finally {
+      setLoadingStaff(false)
+    }
+  }
+
   useEffect(() => {
-    if (activeTab === 'archive') {
-      fetchArchive()
+    if (activeTab === 'staff') {
+      fetchStaff()
     }
   }, [activeTab])
+
+  // Create staff credentials
+  const handleCreateStaff = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingStaff(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: staffName,
+          email: staffEmail,
+          password: staffPassword,
+          role: staffRole,
+          beat: staffBeat,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to grant staff access')
+
+      setMessage({ type: 'success', text: `Access credentials created for ${staffName} (${staffRole.toUpperCase()})!` })
+      setStaffName('')
+      setStaffEmail('')
+      setStaffPassword('')
+      setStaffBeat('')
+      setStaffRole('writer')
+      fetchStaff()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setSavingStaff(false)
+    }
+  }
+
+  // Update staff credentials / password
+  const handleSaveStaffEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingStaffMember) return
+    setUpdatingStaff(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/staff', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingStaffMember.id,
+          password: editPasswordValue || undefined,
+          role: editRoleValue,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update credentials')
+
+      setMessage({ type: 'success', text: `Credentials and role updated for ${editingStaffMember.name}!` })
+      setEditingStaffMember(null)
+      setEditPasswordValue('')
+      fetchStaff()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setUpdatingStaff(false)
+    }
+  }
+
+  // Revoke staff member access
+  const handleDeleteStaff = async (memberId: string, memberName: string) => {
+    if (!window.confirm(`Revoke staff access for "${memberName}"? This account will no longer be able to authenticate into the studio.`)) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/staff?id=${memberId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to delete staff member')
+
+      setMessage({ type: 'success', text: `Access revoked for "${memberName}".` })
+      fetchStaff()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    }
+  }
 
   // Auto slug generator
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,7 +315,7 @@ export default function Dashboard() {
     }, 0)
   }
 
-  // Insert markdown link
+  // Insert markdown link (reliable, non-blocking, works across all browsers including Brave)
   const insertLink = () => {
     const textarea = textareaRef.current
     if (!textarea) return
@@ -197,18 +323,26 @@ export default function Dashboard() {
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
     const selectedText = content.substring(start, end)
-    const url = window.prompt('Enter link URL (e.g. https://...):', 'https://')
-    if (!url) return
 
-    const text = selectedText || window.prompt('Enter link text:', 'link text') || 'link'
-    const replacement = `[${text}](${url})`
-    const newContent = content.substring(0, start) + replacement + content.substring(end)
-    setContent(newContent)
-
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start + replacement.length, start + replacement.length)
-    }, 0)
+    if (selectedText.trim()) {
+      const replacement = `[${selectedText}](https://)`
+      const newContent = content.substring(0, start) + replacement + content.substring(end)
+      setContent(newContent)
+      setTimeout(() => {
+        textarea.focus()
+        const urlStart = start + selectedText.length + 3
+        const urlEnd = urlStart + 8
+        textarea.setSelectionRange(urlStart, urlEnd)
+      }, 10)
+    } else {
+      const replacement = `[link text](https://)`
+      const newContent = content.substring(0, start) + replacement + content.substring(end)
+      setContent(newContent)
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + 1, start + 10)
+      }, 10)
+    }
   }
 
   const handleLogout = async () => {
@@ -401,6 +535,19 @@ export default function Dashboard() {
               </svg>
               Articles ({articles.length})
             </button>
+            {(profile?.role === 'admin' || profile?.role === 'editor') && (
+              <button
+                onClick={() => setActiveTab('staff')}
+                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                  activeTab === 'staff' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+                }`}
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+                Staff &amp; Password Access
+              </button>
+            )}
           </div>
         </div>
 
@@ -465,6 +612,22 @@ export default function Dashboard() {
                   My Profile &amp; Settings
                 </button>
 
+                {(profile?.role === 'admin' || profile?.role === 'editor') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('staff')
+                      setProfileDropdownOpen(false)
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
+                  >
+                    <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
+                      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                    Staff &amp; Password Access
+                  </button>
+                )}
+
                 <a
                   href="https://theopenbrief.app"
                   target="_blank"
@@ -527,7 +690,7 @@ export default function Dashboard() {
               {/* Publication Pillar Selector (Including Standalone) */}
               <div>
                 <label className="block text-[11px] font-mono uppercase tracking-widest text-slate-400 mb-2 font-semibold">
-                  Select Publication Pillar or Standalone
+                  Section
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   {[
@@ -612,7 +775,6 @@ export default function Dashboard() {
                     Publishing as: <strong className="text-slate-900">{profile?.name || 'Verified Author'}</strong>
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400">Verified author attribution</span>
               </div>
 
               {/* Title Input (Sans-Serif) */}
@@ -939,12 +1101,12 @@ export default function Dashboard() {
               </div>
             ) : filteredArticles.length === 0 ? (
               <div className="py-12 text-center text-sm text-slate-500 space-y-3">
-                <p>No dispatches found in this section.</p>
+                <p>No articles found in this section.</p>
                 <button
                   onClick={() => setActiveTab('editor')}
                   className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-mono"
                 >
-                  Draft First Dispatch →
+                  Draft First Article →
                 </button>
               </div>
             ) : (
@@ -1017,7 +1179,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">Your Author Profile</h2>
               <p className="text-xs text-slate-500 mt-1">
-                Editable only by you. Your name and bio will appear on all dispatches you publish.
+                Editable only by you. Your name and bio will appear on all articles you publish.
               </p>
             </div>
 
@@ -1111,6 +1273,302 @@ export default function Dashboard() {
                 {savingProfile ? 'Saving Profile...' : 'Save Profile Changes'}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* ── TAB 4: Staff & Password Access (Admin & Editor Only) ── */}
+        {activeTab === 'staff' && (profile?.role === 'admin' || profile?.role === 'editor') && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Form: Grant Staff Access (4 cols) */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Grant Staff Access</h3>
+                <p className="text-xs text-slate-500 mt-1">Create credentials for writers or reviewers.</p>
+              </div>
+
+              <form onSubmit={handleCreateStaff} className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                    Full Display Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={staffName}
+                    onChange={(e) => setStaffName(e.target.value)}
+                    placeholder="e.g., Clara Vance"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                    Login Username / Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={staffEmail}
+                    onChange={(e) => setStaffEmail(e.target.value)}
+                    placeholder="e.g., cvance@theopenbrief.app"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                    Access Password *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={staffPassword}
+                    onChange={(e) => setStaffPassword(e.target.value)}
+                    placeholder="Assign strong password"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                    Editorial Role &amp; Permissions
+                  </label>
+                  <select
+                    value={staffRole}
+                    onChange={(e) => setStaffRole(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all bg-white"
+                  >
+                    <option value="writer">Staff Writer (Draft &amp; Submit Only)</option>
+                    <option value="editor">Editor (Review &amp; Edit All)</option>
+                    <option value="admin">Admin (Full System Access)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                    Beat / Title
+                  </label>
+                  <input
+                    type="text"
+                    value={staffBeat}
+                    onChange={(e) => setStaffBeat(e.target.value)}
+                    placeholder="e.g., Senior Science Correspondent"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingStaff}
+                  className="w-full py-2.5 px-4 bg-slate-900 text-white font-semibold text-xs rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-xs"
+                >
+                  {savingStaff ? 'Saving User Credentials...' : 'Save User Credentials'}
+                </button>
+              </form>
+            </div>
+
+            {/* Right Table: Authorized Newsroom Roster (8 cols) */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Authorized Newsroom Roster</h3>
+                <p className="text-xs text-slate-500 mt-1">Only listed accounts can authenticate into the editorial portal.</p>
+              </div>
+
+              {loadingStaff ? (
+                <div className="py-12 text-center text-xs font-mono text-slate-400">
+                  Loading newsroom roster...
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
+                        <th className="pb-3 font-semibold">Staff Member</th>
+                        <th className="pb-3 font-semibold">Username</th>
+                        <th className="pb-3 font-semibold">Password</th>
+                        <th className="pb-3 font-semibold">Role</th>
+                        <th className="pb-3 font-semibold text-right">Manage</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {staffList.map((m) => {
+                        const isSelf = m.id === profile?.id
+                        const isPasswordRevealed = !!visiblePasswords[m.id]
+
+                        return (
+                          <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                            {/* Staff Member (Name & Beat) */}
+                            <td className="py-3.5 pr-3">
+                              <div className="font-bold text-slate-900">{m.name}</div>
+                              <div className="text-[11px] text-slate-500 font-normal">
+                                {m.beat || (m.role === 'admin' ? 'Editor-in-Chief' : 'Staff Contributor')}
+                              </div>
+                            </td>
+
+                            {/* Username / Email */}
+                            <td className="py-3.5 pr-3 font-mono text-slate-600 text-[11px]">
+                              {m.email}
+                            </td>
+
+                            {/* Password with Eye Reveal Toggle */}
+                            <td className="py-3.5 pr-3 font-mono text-slate-700">
+                              <div className="flex items-center gap-1.5">
+                                <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                                  {isPasswordRevealed
+                                    ? (m.password_plain || '••••••••')
+                                    : '••••••••'}
+                                </span>
+                                {m.password_plain && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setVisiblePasswords((prev) => ({
+                                        ...prev,
+                                        [m.id]: !prev[m.id],
+                                      }))
+                                    }
+                                    className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
+                                    title={isPasswordRevealed ? 'Hide Password' : 'Show Password'}
+                                  >
+                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Role Badge */}
+                            <td className="py-3.5 pr-3">
+                              <span
+                                className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold inline-block font-mono ${
+                                  m.role === 'admin'
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : m.role === 'editor'
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-slate-200 text-slate-700'
+                                }`}
+                              >
+                                {m.role}
+                              </span>
+                            </td>
+
+                            {/* Manage: Edit Password Button & Delete */}
+                            <td className="py-3.5 text-right space-x-2">
+                              {/* Edit Password Button */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingStaffMember(m)
+                                  setEditPasswordValue(m.password_plain || '')
+                                  setEditRoleValue(m.role)
+                                }}
+                                className="p-1.5 text-slate-500 hover:text-black hover:bg-slate-100 rounded transition-colors inline-block"
+                                title="Edit Password / Role"
+                              >
+                                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                              </button>
+
+                              {/* Delete Button */}
+                              {isSelf ? (
+                                <span className="text-[10px] font-mono text-slate-400 italic">(You)</span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteStaff(m.id, m.name)}
+                                  className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors inline-block"
+                                  title="Revoke Access"
+                                >
+                                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                  </svg>
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Modal: Edit Staff Member's Password & Role */}
+            {editingStaffMember && (
+              <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900">Edit Staff Credentials</h4>
+                      <p className="text-xs text-slate-500 font-mono mt-0.5">{editingStaffMember.name} ({editingStaffMember.email})</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingStaffMember(null)}
+                      className="text-slate-400 hover:text-slate-700"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveStaffEdit} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        New Access Password
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editPasswordValue}
+                        onChange={(e) => setEditPasswordValue(e.target.value)}
+                        placeholder="Enter new password"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-mono"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">This will update the login password immediately.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Editorial Role
+                      </label>
+                      <select
+                        value={editRoleValue}
+                        onChange={(e) => setEditRoleValue(e.target.value as any)}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white"
+                      >
+                        <option value="writer">Staff Writer</option>
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingStaffMember(null)}
+                        className="px-3 py-1.5 text-xs text-slate-600 hover:text-black border border-slate-200 rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updatingStaff}
+                        className="px-4 py-1.5 text-xs bg-slate-900 text-white font-semibold rounded-lg hover:bg-black transition-colors disabled:opacity-50"
+                      >
+                        {updatingStaff ? 'Updating...' : 'Save New Password'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
       </div>

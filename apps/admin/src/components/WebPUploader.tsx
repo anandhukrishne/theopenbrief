@@ -61,7 +61,7 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
             <div className="space-y-0.5">
               <span className="font-mono text-emerald-700 font-semibold flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Compressed WebP (Saved with Article)
+                Compressed WebP
               </span>
               {fileSizeInfo && <p className="text-[11px] font-mono text-slate-400">{fileSizeInfo}</p>}
             </div>

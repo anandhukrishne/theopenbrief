@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, getOrCreateProfile } from '@/lib/db'
-import { adminAuth } from '@/lib/firebaseAdmin'
-
-// Helper to authenticate user from session cookie
-async function getAuthUser(req: NextRequest) {
-  const token = req.cookies.get('openbrief_session')?.value
-  if (!token) return null
-  try {
-    return await adminAuth.verifyIdToken(token)
-  } catch {
-    return null
-  }
-}
+import { getAuthUser } from '@/lib/auth'
 
 // GET /api/profile - Fetch current user's profile
 export async function GET(req: NextRequest) {
