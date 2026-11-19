@@ -71,12 +71,48 @@ export async function POST(req: NextRequest) {
 
       console.log(`[OTP] Verification code for ${targetEmail}: ${code}`)
 
-      const responsePayload: { status: string; message: string; code?: string } = {
-        status: 'sent',
-        message: 'OTP sent to registered email',
+      // If Resend API key is configured, send real email via Resend API
+      if (process.env.RESEND_API_KEY) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: process.env.EMAIL_FROM || 'The Open Brief <auth@theopenbrief.app>',
+              to: [targetEmail],
+              subject: `Your Author Studio Verification Code: ${code}`,
+              html: `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px;">
+                  <div style="margin-bottom: 24px; text-align: center;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: #18181b; margin: 0;">The Open Brief</h2>
+                    <p style="font-size: 12px; font-family: monospace; color: #a1a1aa; text-transform: uppercase; letter-spacing: 2px; margin: 4px 0 0 0;">Author Studio</p>
+                  </div>
+                  <p style="font-size: 14px; color: #3f3f46; line-height: 1.5; margin-bottom: 20px;">Use the following 6-digit verification code to complete your login:</p>
+                  <div style="font-size: 32px; font-weight: 800; letter-spacing: 8px; padding: 20px; background: #f4f4f5; text-align: center; border-radius: 10px; color: #09090b; font-family: monospace;">
+                    ${code}
+                  </div>
+                  <p style="color: #71717a; font-size: 12px; margin-top: 24px; text-align: center;">This code will expire in 10 minutes. If you did not request this, please ignore.</p>
+                </div>
+              `,
+            }),
+          })
+        } catch (mailErr) {
+          console.error('[OTP] Failed to send email via Resend:', mailErr)
+        }
       }
 
-      if (process.env.NODE_ENV !== 'production') {
+      const responsePayload: { status: string; message: string; code?: string } = {
+        status: 'sent',
+        message: process.env.RESEND_API_KEY
+          ? 'Verification code sent to your registered email.'
+          : 'Verification code generated.',
+      }
+
+      // If email provider is not yet set up, return code so newsroom is never locked out
+      if (!process.env.RESEND_API_KEY || process.env.NODE_ENV !== 'production') {
         responsePayload.code = code
       }
 
