@@ -115,6 +115,8 @@ export default function Dashboard() {
     setReadTime(calculatedReadTime)
   }, [calculatedReadTime])
 
+  const [sessionChecked, setSessionChecked] = useState(false)
+
   // Load user profile
   const loadProfile = async () => {
     try {
@@ -130,16 +132,22 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch profile:', err)
+    } finally {
+      setSessionChecked(true)
     }
   }
 
   useEffect(() => {
     loadProfile()
+    fetchArchive()
+    fetchStaff()
   }, [])
 
   // Refresh Firebase session cookie whenever auth state is confirmed (fixes token expiry after browser restart)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
+      // Only allow Firebase auth flow if server session is checked and no active profile exists
+      if (!sessionChecked || profile !== null) return
       if (user) {
         try {
           const freshToken = await user.getIdToken(true) // force refresh
@@ -156,7 +164,7 @@ export default function Dashboard() {
       }
     })
     return () => unsubscribe()
-  }, [])
+  }, [sessionChecked, profile])
 
   // Load articles for archive
   const fetchArchive = async () => {
@@ -346,6 +354,7 @@ export default function Dashboard() {
   }
 
   const handleLogout = async () => {
+    try { await clientAuth.signOut() } catch (_) {}
     await fetch('/api/auth/session', { method: 'DELETE' })
     router.push('/login')
     router.refresh()
@@ -476,6 +485,7 @@ export default function Dashboard() {
         text: `Article "${title}" published live to Neon PostgreSQL!`,
         link: `https://theopenbrief.app/articles/${slug}`,
       })
+      fetchArchive()
     } catch (err: any) {
       setMessage({ type: 'error', text: `Publication error: ${err.message}` })
     } finally {
@@ -525,7 +535,7 @@ export default function Dashboard() {
               Writing Desk
             </button>
             <button
-              onClick={() => setActiveTab('archive')}
+              onClick={() => { setActiveTab('archive'); fetchArchive() }}
               className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
                 activeTab === 'archive' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
               }`}
@@ -537,7 +547,7 @@ export default function Dashboard() {
             </button>
             {(profile?.role === 'admin' || profile?.role === 'editor') && (
               <button
-                onClick={() => setActiveTab('staff')}
+                onClick={() => { setActiveTab('staff'); fetchStaff() }}
                 className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
                   activeTab === 'staff' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
                 }`}

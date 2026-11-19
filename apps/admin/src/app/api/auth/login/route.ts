@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
     const cleanEmail = String(email).trim().toLowerCase()
     const cleanPassword = String(password).trim()
 
-    // Query profiles in Neon database
+    // Query profiles in Neon database by email or name/handle
     const res = await db.query(
       `SELECT id, email, name, role, beat, password_plain
        FROM profiles
-       WHERE LOWER(email) = $1`,
+       WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(REPLACE(name, ' ', '')) = $1`,
       [cleanEmail]
     )
 

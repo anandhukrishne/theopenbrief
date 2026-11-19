@@ -12,65 +12,24 @@ const NAV_LINKS = [
   { label: 'ABOUT', href: '/about', section: 'about' },
 ]
 
-const SECTION_LOGOS: Record<string, { light: string; dark: string; alt: string }> = {
-  journal: {
-    light: '/logo-openbrief-plus.png',
-    dark: '/logo-openbrief-plus-white.png',
-    alt: 'OpenBrief Plus',
-  },
-  explainers: {
-    light: '/logo-tob-explainers.png',
-    dark: '/logo-tob-explainers-white.png',
-    alt: 'TOB Explainers',
-  },
-  tech: {
-    light: '/logo-technobrief.png',
-    dark: '/logo-technobrief-white.png',
-    alt: 'TechnoBrief',
-  },
-  cinebrief: {
-    light: '/logo-cinebrief.png',
-    dark: '/logo-cinebrief-white.png',
-    alt: 'CinēBrief',
-  },
-}
-
 export default function SiteHeader({ section }: { section?: string | null }) {
   const [open, setOpen] = useState(false)
-  const sectionLogo = section ? SECTION_LOGOS[section] : null
 
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-300 dark:border-neutral-800 bg-white/95 dark:bg-[#0B101B]/95 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-        {/* Brand or Section Logo */}
-        <Link href={section && SECTION_LOGOS[section] ? `/${section}` : '/'} className="shrink-0 flex items-center">
-          {sectionLogo ? (
-            <>
-              <img
-                src={sectionLogo.light}
-                alt={sectionLogo.alt}
-                className="h-7 sm:h-8 w-auto object-contain dark:hidden"
-              />
-              <img
-                src={sectionLogo.dark}
-                alt={sectionLogo.alt}
-                className="h-7 sm:h-8 w-auto object-contain hidden dark:block"
-              />
-            </>
-          ) : (
-            <>
-              <img
-                src="/logo.png"
-                alt="TheOpenBrief.app"
-                className="h-7 sm:h-8 w-auto object-contain dark:hidden"
-              />
-              <img
-                src="/logo-white.png"
-                alt="TheOpenBrief.app"
-                className="h-7 sm:h-8 w-auto object-contain hidden dark:block"
-              />
-            </>
-          )}
+        {/* Brand Logo — always the main logo, never section-specific */}
+        <Link href="/" className="shrink-0 flex items-center">
+          <img
+            src="/logo.png"
+            alt="TheOpenBrief.app"
+            className="h-7 sm:h-8 w-auto object-contain dark:hidden"
+          />
+          <img
+            src="/logo-white.png"
+            alt="TheOpenBrief.app"
+            className="h-7 sm:h-8 w-auto object-contain hidden dark:block"
+          />
         </Link>
 
         {/* Desktop Nav */}

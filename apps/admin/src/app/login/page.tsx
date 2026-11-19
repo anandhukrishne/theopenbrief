@@ -18,6 +18,9 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      // Clear any cached Firebase session so it cannot override a fresh DB staff login
+      try { await clientAuth.signOut() } catch (_) {}
+
       // 1. First attempt login via internal staff database
       const dbLoginRes = await fetch('/api/auth/login', {
         method: 'POST',

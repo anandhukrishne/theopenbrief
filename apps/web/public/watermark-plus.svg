@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" fill="none">
+  <!-- Vertical bar -->
+  <rect x="130" y="40" width="40" height="220" rx="4" fill="#F9A8A8" fill-opacity="0.20"/>
+  <!-- Horizontal bar -->
+  <rect x="40" y="130" width="220" height="40" rx="4" fill="#F9A8A8" fill-opacity="0.20"/>
+</svg>

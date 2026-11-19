@@ -20,12 +20,6 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
   const art2 = articles[1] || null
   const art3 = articles[2] || null
 
-  const formatQuotedTitle = (rawTitle: string) => {
-    const trimmed = rawTitle.trim()
-    if (trimmed.startsWith('“') || trimmed.startsWith('"')) return trimmed
-    return `“${trimmed}”`
-  }
-
   const getAuthorSlug = (authorName: string) =>
     encodeURIComponent(authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
 
@@ -42,7 +36,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
           />
         </div>
         <h3 className="text-lg sm:text-xl font-extrabold leading-snug tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-          {formatQuotedTitle(article.title)}
+          {article.title}
         </h3>
       </Link>
 
@@ -74,7 +68,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
         </span>
         <Link href={`/articles/${article.slug}`}>
           <h4 className="text-sm sm:text-base font-bold leading-snug text-neutral-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-3">
-            {formatQuotedTitle(article.title)}
+            {article.title}
           </h4>
         </Link>
         {article.excerpt && (

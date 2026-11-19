@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import './globals.css'
 import Link from 'next/link'
 
@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             
             {/* ── Desktop Layout (lg and up) ── */}
             <div className="hidden lg:block">
-              <div className="grid grid-cols-12 gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
+              <div className="relative grid grid-cols-12 gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
                 
                 {/* Left Column: Brand & Manifesto (col-span-6) */}
                 <div className="col-span-6 space-y-5 pr-8">
@@ -64,14 +64,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-md pt-1">
                     An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements. Free from algorithmic noise.
                   </p>
-
-                  <div className="pt-2">
-                    <img
-                      src="/footer-art.png"
-                      alt=""
-                      className="w-36 h-auto object-contain opacity-70 dark:opacity-60 pointer-events-none select-none"
-                    />
-                  </div>
                 </div>
 
                 {/* Middle Column: Sections (col-span-3) */}
@@ -109,7 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
 
                 {/* Right Column: Contact Us (col-span-3) */}
-                <div className="col-span-3 space-y-4">
+                <div className="col-span-3 space-y-4 relative">
                   <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
                     Contact Us
                   </span>
@@ -121,6 +113,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block"
                       >
                         anandhu.krishne@theopenbrief.app
+                      </a>
+                      <a
+                        href="mailto:sooryakiran@theopenbrief.app"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1"
+                      >
+                        sooryakiran@theopenbrief.app
                       </a>
                     </div>
                     <div className="pt-2 flex flex-col gap-2 text-neutral-600 dark:text-neutral-400">
@@ -139,11 +137,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 </div>
 
+                {/* Decorative design element moved to top-right of footer */}
+                <div className="absolute right-0 -top-2 pointer-events-none select-none hidden lg:block">
+                  <img
+                    src="/footer-art.png"
+                    alt=""
+                    className="w-32 h-auto object-contain opacity-70 dark:opacity-60"
+                  />
+                </div>
+
               </div>
 
               {/* Desktop Bottom Bar: Copyright on Left, Legal & Credits on Right */}
               <div className="pt-6 flex items-center justify-between gap-4 text-xs font-mono text-neutral-500 dark:text-neutral-400">
-                <p>© TheOpenBrief. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} TheOpenBrief. All rights reserved.</p>
 
                 <div className="flex items-center gap-4 text-neutral-400">
                   <span>Global</span>
@@ -151,7 +158,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span>
                     Developed by{' '}
                     <a
-                      href="https://theopenbrief.app/about"
+                      href="https://anandhukrishne.tech"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white underline transition-colors"
                     >
                       45 STUDioS
@@ -233,14 +242,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 font-bold block">
                   Contact Us
                 </span>
-                <div className="text-xs font-mono space-y-1.5">
-                  <div>
-                    <span className="text-neutral-400">Email: </span>
+                <div className="text-xs font-mono space-y-2 flex flex-col items-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-neutral-400">Editorial Desk:</span>
                     <a
                       href="mailto:anandhu.krishne@theopenbrief.app"
                       className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline"
                     >
                       anandhu.krishne@theopenbrief.app
+                    </a>
+                    <a
+                      href="mailto:sooryakiran@theopenbrief.app"
+                      className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline"
+                    >
+                      sooryakiran@theopenbrief.app
                     </a>
                   </div>
                   <div className="flex items-center justify-center gap-3 pt-1 text-neutral-600 dark:text-neutral-400">
@@ -274,14 +289,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Link>
                 </div>
                 <div className="flex flex-col items-center gap-1 pt-1">
-                  <p>© TheOpenBrief. All rights reserved.</p>
+                  <p>© {new Date().getFullYear()} TheOpenBrief. All rights reserved.</p>
                   <div className="flex items-center justify-center gap-2 text-neutral-400 text-[11px]">
                     <span>Global</span>
                     <span>•</span>
                     <span>
                       Developed by{' '}
                       <a
-                        href="https://theopenbrief.app/about"
+                        href="https://anandhukrishne.tech"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white underline transition-colors"
                       >
                         45 STUDioS
