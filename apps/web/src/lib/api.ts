@@ -4,7 +4,7 @@ export interface Article {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'
+  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'general'
   excerpt?: string
   content: string
   coverImage?: string
@@ -21,12 +21,13 @@ export interface Article {
  * Normalizes an article row from Neon PostgreSQL
  */
 function normalizeArticle(item: any): Article {
-  let sec: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' = 'standalone'
+  let sec: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'general' = 'standalone'
   const rawType = (item.section || '').toLowerCase()
   if (rawType === 'journal') sec = 'journal'
   else if (rawType === 'explainers') sec = 'explainers'
   else if (rawType === 'tech') sec = 'tech'
   else if (rawType === 'cinebrief' || rawType === 'cine') sec = 'cinebrief'
+  else if (rawType === 'general') sec = 'general'
   else sec = 'standalone'
 
   const authorName = item.author_name || 'The Open Brief Desk'

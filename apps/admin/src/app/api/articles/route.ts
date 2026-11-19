@@ -56,8 +56,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // --- Public frontend path: full SELECT * with filters ---
-    let query = 'SELECT * FROM articles WHERE status = $1'
+    // --- Public frontend path: full SELECT for single article, lightweight columns for list queries ---
+    let query = slug
+      ? 'SELECT * FROM articles WHERE status = $1'
+      : 'SELECT id, title, slug, section, excerpt, cover_image_url, cover_image_caption, author_id, author_name, read_time_minutes, published_at FROM articles WHERE status = $1'
     const values: any[] = ['published']
 
     if (slug) {
@@ -88,6 +90,7 @@ export async function GET(req: NextRequest) {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
         },
       }
     )

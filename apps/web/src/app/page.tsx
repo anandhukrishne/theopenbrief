@@ -6,7 +6,7 @@ import HomeNav from '@/components/HomeNav'
 import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function HomePage() {
   const allArticles = await fetchArticles()

@@ -4,7 +4,7 @@ import SiteHeader from '@/components/SiteHeader'
 import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata = {
   title: 'TOB Explainers',
