@@ -57,7 +57,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                 {authorBio}
               </p>
               <div className="pt-1 font-mono text-xs text-neutral-400">
-                {articles.length} {articles.length === 1 ? 'Dispatch' : 'Dispatches'} Published
+                {articles.length} {articles.length === 1 ? 'Article' : 'Articles'} Published
               </div>
             </div>
           </div>

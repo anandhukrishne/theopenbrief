@@ -1,125 +1,414 @@
 'use client'
 
-import { useState } from 'react'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { clientAuth } from '@/lib/firebaseClient'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [infoMessage, setInfoMessage] = useState<string | null>(null)
+  const [devCode, setDevCode] = useState<string | null>(null)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  // Auto-advance placeholder carousel slides
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3)
+    }, 4500)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Auto-focus first input on entering OTP step
+  useEffect(() => {
+    if (step === 'otp') {
+      otpRefs.current[0]?.focus()
+    }
+  }, [step])
+
+  // Step 1: Request OTP
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setInfoMessage(null)
+
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send', email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send verification code')
+      }
+
+      setStep('otp')
+      setInfoMessage('Verification code sent to your registered email.')
+      if (data.code) {
+        setDevCode(data.code)
+      }
+    } catch (err: any) {
+      setError(err.message || 'Authentication error. Please check your credentials.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle OTP digit changes
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) {
+      const digits = value.replace(/\D/g, '').slice(0, 6).split('')
+      const nextOtp = [...otp]
+      digits.forEach((d, i) => {
+        if (i < 6) nextOtp[i] = d
+      })
+      setOtp(nextOtp)
+      const nextIndex = Math.min(digits.length, 5)
+      otpRefs.current[nextIndex]?.focus()
+      return
+    }
+
+    const digit = value.replace(/\D/g, '')
+    const nextOtp = [...otp]
+    nextOtp[index] = digit
+    setOtp(nextOtp)
+
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!pasted) return
+    const digits = pasted.split('')
+    const nextOtp = [...otp]
+    digits.forEach((d, i) => {
+      if (i < 6) nextOtp[i] = d
+    })
+    setOtp(nextOtp)
+    const nextIndex = Math.min(digits.length, 5)
+    otpRefs.current[nextIndex]?.focus()
+  }
+
+  // Step 2: Verify OTP and Login
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const fullCode = otp.join('').trim()
+    if (fullCode.length !== 6) {
+      setError('Please enter all 6 digits of your verification code.')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      // Clear any cached Firebase session so it cannot override a fresh DB staff login
-      try { await clientAuth.signOut() } catch (_) {}
-
-      // 1. First attempt login via internal staff database
-      const dbLoginRes = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ action: 'verify', email, code: fullCode }),
       })
 
-      if (dbLoginRes.ok) {
-        router.push('/dashboard')
-        router.refresh()
-        return
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Invalid verification code')
       }
 
-      // 2. If not matched in roster, fallback to Firebase Client
-      try {
-        const userCredential = await signInWithEmailAndPassword(clientAuth, email, password)
-        const idToken = await userCredential.user.getIdToken()
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Verification failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        const sessionRes = await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        })
+  // Resend OTP handler
+  const handleResendOtp = async () => {
+    setLoading(true)
+    setError(null)
+    setInfoMessage(null)
 
-        if (!sessionRes.ok) {
-          const data = await sessionRes.json()
-          throw new Error(data.error || 'Failed to initialize session')
-        }
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send', email, password }),
+      })
 
-        router.push('/dashboard')
-        router.refresh()
-        return
-      } catch (fbErr: any) {
-        const data = await dbLoginRes.json().catch(() => ({}))
-        throw new Error(data.error || fbErr.message || 'Login failed. Please check your credentials.')
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to resend code')
+      }
+
+      setInfoMessage('A new verification code has been sent to your email.')
+      if (data.code) {
+        setDevCode(data.code)
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.')
+      setError(err.message || 'Unable to resend verification code.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-[#F8F9FA]">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10 space-y-6">
-        <div className="text-center space-y-2">
-          <img src="/favicon.png" alt="The Open Brief" className="w-12 h-12 mx-auto rounded-lg object-contain shadow-sm mb-3" />
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Author Studio</h1>
-          <p className="text-xs font-mono text-slate-400 uppercase tracking-widest">The Open Brief Newsroom</p>
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-[#F3F4F6] font-sans antialiased text-neutral-900">
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-neutral-200/80 flex flex-col lg:flex-row min-h-[580px]">
+        {/* Left Column: Dark Demo Carousel (55%) */}
+        <div className="hidden lg:flex lg:w-[55%] bg-[#18181B] p-10 flex-col justify-between relative overflow-hidden select-none">
+          {/* Top subtle brand status */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
+              The Open Brief Studio
+            </span>
+          </div>
+
+          {/* Carousel Showcase Area: 3 Blank Slides */}
+          <div className="my-auto py-8">
+            <div className="relative w-full aspect-[16/10] bg-[#222226] rounded-2xl border border-neutral-800 shadow-2xl flex items-center justify-center p-6 transition-all duration-500">
+              {currentSlide === 0 && (
+                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
+                  <div className="h-4 w-32 bg-neutral-800 rounded mb-2.5" />
+                  <div className="h-2.5 w-48 bg-neutral-800/60 rounded" />
+                </div>
+              )}
+              {currentSlide === 1 && (
+                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
+                  <div className="h-4 w-40 bg-neutral-800 rounded mb-2.5" />
+                  <div className="h-2.5 w-36 bg-neutral-800/60 rounded" />
+                </div>
+              )}
+              {currentSlide === 2 && (
+                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
+                  <div className="h-4 w-28 bg-neutral-800 rounded mb-2.5" />
+                  <div className="h-2.5 w-52 bg-neutral-800/60 rounded" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Dot Indicators */}
+          <div className="flex items-center justify-center gap-2">
+            {[0, 1, 2].map((idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-neutral-600 hover:bg-neutral-500'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        {error && (
-          <div className="p-3.5 text-xs text-red-800 bg-red-50 border border-red-200 rounded-xl leading-relaxed">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Author Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="editor@theopenbrief.app"
-              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-            />
+        {/* Right Column: White Authentication Panel (45%) */}
+        <div className="w-full lg:w-[45%] bg-white relative overflow-hidden p-8 sm:p-12 flex flex-col justify-center">
+          {/* Diagonal Admin Corner Ribbon */}
+          <div className="absolute top-0 right-0 w-28 h-28 overflow-hidden pointer-events-none z-20">
+            <div className="absolute top-5 -right-9 w-36 bg-[#FA5252] text-white text-[11px] font-bold py-1 text-center rotate-45 shadow-sm uppercase tracking-wider select-none">
+              Admin
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Secret Key / Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••••••"
-              className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-            />
-          </div>
+          {/* Feedback messages */}
+          {error && (
+            <div className="mb-4 p-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl leading-relaxed">
+              {error}
+            </div>
+          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-slate-900 text-white font-medium text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-sm"
-          >
-            {loading ? 'Authenticating with Google...' : 'Enter Studio →'}
-          </button>
-        </form>
+          {infoMessage && (
+            <div className="mb-4 p-3 text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded-xl leading-relaxed">
+              {infoMessage}
+            </div>
+          )}
 
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
-          <span>Global</span>
-          <span>Spark Plan Auth</span>
+          {devCode && (
+            <div className="mb-4 p-2.5 text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+              <span>Dev OTP Code: <strong>{devCode}</strong></span>
+              <button
+                type="button"
+                onClick={() => {
+                  const digits = devCode.split('')
+                  setOtp(digits)
+                  otpRefs.current[5]?.focus()
+                }}
+                className="text-[11px] uppercase tracking-wider font-semibold text-emerald-700 hover:underline"
+              >
+                Auto-fill
+              </button>
+            </div>
+          )}
+
+          {/* Step 1: Credentials Form */}
+          {step === 'credentials' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                {/* TOB Monogram Badge */}
+                <div className="w-10 h-10 bg-black text-white font-black text-xs rounded-xl flex items-center justify-center mx-auto mb-4 tracking-tight shadow-sm select-none">
+                  TOB
+                </div>
+
+                {/* Hello Again Heading */}
+                <img
+                  src="/hello-again.png"
+                  alt="Hello again!"
+                  className="h-10 sm:h-12 w-auto mx-auto mb-2 object-contain select-none"
+                />
+              </div>
+
+              <form onSubmit={handleRequestOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
+                    Registered Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="editor@theopenbrief.app"
+                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
+                    Secret Key / Password
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••••••"
+                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm"
+                  >
+                    {loading ? 'Sending OTP...' : 'Get OTP'}
+                  </button>
+                </div>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError('Please contact your editorial desk administrator to reset your credentials.')
+                    }}
+                    className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors inline-block"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Step 2: OTP Verification Form */}
+          {step === 'otp' && (
+            <div className="space-y-5">
+              {/* Back Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('credentials')
+                  setError(null)
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors mb-2"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+
+              <div>
+                <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
+                  Mobile Verification
+                </h2>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Enter the 6 digit OTP you received in your email
+                </p>
+              </div>
+
+              <form onSubmit={handleVerifyOtp} className="space-y-5 pt-2">
+                {/* 6 Digit Inputs */}
+                <div className="flex items-center justify-between gap-2 sm:gap-2.5">
+                  {otp.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        otpRefs.current[idx] = el
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      onPaste={handleOtpPaste}
+                      className="w-10 h-12 sm:w-11 sm:h-13 text-center text-xl font-bold text-neutral-900 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                    />
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading || otp.join('').length < 6}
+                    className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm"
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Login'}
+                  </button>
+                </div>
+
+                <div className="text-center pt-1">
+                  <span className="text-xs text-neutral-500">
+                    Didn't receive the code?{' '}
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={loading}
+                      className="font-semibold text-[#0080FF] hover:underline transition-colors"
+                    >
+                      Send Again
+                    </button>
+                  </span>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

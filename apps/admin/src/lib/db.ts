@@ -73,6 +73,13 @@ export async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_articles_section_published ON articles(section, published_at DESC);
     CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
     CREATE INDEX IF NOT EXISTS idx_articles_author_id ON articles(author_id);
+
+    -- OTP verification table
+    CREATE TABLE IF NOT EXISTS otps (
+      email TEXT PRIMARY KEY,
+      code TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL
+    );
   `)
 }
 

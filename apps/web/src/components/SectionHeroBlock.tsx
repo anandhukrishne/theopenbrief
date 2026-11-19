@@ -178,30 +178,57 @@ export default function SectionHeroBlock({
       <div className="lg:hidden space-y-6">
         {/* (1) Section header + watermark */}
         <div className="relative pb-3 border-b border-neutral-300 dark:border-neutral-800 flex items-end justify-between overflow-visible min-h-[60px]">
-          <div className="relative z-10 flex items-center gap-3">
-            <Link href={href} className="group inline-flex items-center">
-              <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-red-600 transition-colors">
-                {title}
-              </h3>
-            </Link>
-          </div>
-          <Link
-            href={href}
-            className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          >
-            {isSectionPage ? 'All Articles' : 'Explore →'}
-          </Link>
-          <div
-            className={`absolute pointer-events-none ${
-              section === 'explainers'
-                ? 'left-4 -top-6 w-36 h-36'
-                : section === 'journal'
-                ? 'left-4 -top-6 w-36 h-36'
-                : 'right-2 -top-6 w-32 h-32'
-            }`}
-          >
-            <SectionWatermark section={section} className="w-full h-full" />
-          </div>
+          {section === 'explainers' ? (
+            <>
+              {/* Explore link on LEFT */}
+              <Link
+                href={href}
+                className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              >
+                {isSectionPage ? 'All Articles' : 'Explore →'}
+              </Link>
+              {/* Title on RIGHT */}
+              <div className="relative z-10 flex items-center gap-3">
+                <Link href={href} className="group inline-flex items-center">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-red-600 transition-colors text-right">
+                    {title}
+                  </h3>
+                </Link>
+              </div>
+              {/* Star watermark on the RIGHT (flush with right edge) */}
+              <div className="absolute pointer-events-none right-0 -top-4 w-36 h-36">
+                <SectionWatermark section={section} className="w-full h-full" />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Title on LEFT */}
+              <div className="relative z-10 flex items-center gap-3">
+                <Link href={href} className="group inline-flex items-center">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-red-600 transition-colors">
+                    {title}
+                  </h3>
+                </Link>
+              </div>
+              {/* Explore link on RIGHT */}
+              <Link
+                href={href}
+                className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              >
+                {isSectionPage ? 'All Articles' : 'Explore →'}
+              </Link>
+              {/* Watermark */}
+              <div
+                className={`absolute pointer-events-none ${
+                  section === 'journal'
+                    ? 'left-4 -top-6 w-36 h-36'
+                    : 'right-2 -top-6 w-32 h-32'
+                }`}
+              >
+                <SectionWatermark section={section} className="w-full h-full" />
+              </div>
+            </>
+          )}
         </div>
 
         {/* (2) Big featured article */}

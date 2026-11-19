@@ -52,10 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             
             {/* ── Desktop Layout (lg and up) ── */}
             <div className="hidden lg:block">
-              <div className="relative grid grid-cols-12 gap-10 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
+              <div className="grid grid-cols-12 gap-8 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
                 
-                {/* Left Column: Brand & Manifesto (col-span-6) */}
-                <div className="col-span-6 space-y-5 pr-8">
+                {/* Col 1 (col-span-5): Brand & Manifesto */}
+                <div className="col-span-5 space-y-5 pr-6">
                   <Link href="/" className="inline-block">
                     <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
                     <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
@@ -66,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </p>
                 </div>
 
-                {/* Middle Column: Sections (col-span-3) */}
+                {/* Col 2 (col-span-3): Sections */}
                 <div className="col-span-3 space-y-4">
                   <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
                     Sections
@@ -100,8 +100,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </ul>
                 </div>
 
-                {/* Right Column: Contact Us (col-span-3) */}
-                <div className="col-span-3 space-y-4 relative">
+                {/* Col 3 (col-span-2): Contact Us */}
+                <div className="col-span-2 space-y-4">
                   <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
                     Contact Us
                   </span>
@@ -110,20 +110,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <span className="text-neutral-400 block mb-1">Editorial Desk:</span>
                       <a
                         href="mailto:anandhu.krishne@theopenbrief.app"
-                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
                         anandhu.krishne@theopenbrief.app
                       </a>
                       <a
                         href="mailto:sooryakiran@theopenbrief.app"
-                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
                       >
                         sooryakiran@theopenbrief.app
                       </a>
                     </div>
                     <div className="pt-2 flex flex-col gap-2 text-neutral-600 dark:text-neutral-400">
                       <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors underline">
-                        About The Open Brief
+                        About
                       </Link>
                       <a
                         href="https://admin.theopenbrief.app"
@@ -137,8 +137,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 </div>
 
-                {/* Decorative design element moved to top-right of footer */}
-                <div className="absolute right-0 -top-2 pointer-events-none select-none hidden lg:block">
+                {/* Col 4 (col-span-2): footer-art.png linear non-overlapping */}
+                <div className="col-span-2 flex items-start justify-end pr-4 pointer-events-none select-none">
                   <img
                     src="/footer-art.png"
                     alt=""
@@ -150,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Desktop Bottom Bar: Copyright on Left, Legal & Credits on Right */}
               <div className="pt-6 flex items-center justify-between gap-4 text-xs font-mono text-neutral-500 dark:text-neutral-400">
-                <p>© {new Date().getFullYear()} TheOpenBrief. All rights reserved.</p>
+                <p>© {currentYear} TheOpenBrief. All rights reserved.</p>
 
                 <div className="flex items-center gap-4 text-neutral-400">
                   <span>Global</span>
@@ -182,101 +182,103 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
 
-            {/* ── Mobile Layout (< lg) — All Center-Aligned ── */}
-            <div className="block lg:hidden space-y-8 text-center">
+            {/* ── Mobile Layout (< lg) ── */}
+            <div className="block lg:hidden space-y-8">
               
-              {/* Row 1: Logo, Art & Manifesto */}
-              <div className="flex flex-col items-center space-y-3">
-                <Link href="/" className="inline-block">
-                  <img src="/logo.png" alt="TheOpenBrief.app" className="h-7 w-auto object-contain dark:hidden mx-auto" />
-                  <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-7 w-auto object-contain hidden dark:block mx-auto" />
-                </Link>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm mx-auto">
-                  An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
-                </p>
-                <div className="w-20 pt-1 pointer-events-none select-none mx-auto">
+              {/* Brand Section with footer-art.png placed as a top-right accent */}
+              <div className="relative space-y-3 text-left px-4 pr-20">
+                <div className="absolute right-4 top-0 w-16 pointer-events-none select-none">
                   <img
                     src="/footer-art.png"
                     alt=""
-                    className="w-full h-auto object-contain opacity-80 dark:opacity-70 mx-auto"
+                    className="w-full h-auto object-contain opacity-75 dark:opacity-65"
                   />
                 </div>
+                <Link href="/" className="inline-block">
+                  <img src="/logo.png" alt="TheOpenBrief.app" className="h-7 w-auto object-contain dark:hidden" />
+                  <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-7 w-auto object-contain hidden dark:block" />
+                </Link>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
+                  An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
+                </p>
               </div>
 
-              {/* Row 2: Sections (Center-Aligned) */}
-              <div className="space-y-3 pt-2 border-t border-neutral-200 dark:border-neutral-800">
-                <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 font-bold block">
-                  Sections
-                </span>
-                <ul className="flex flex-col items-center space-y-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                  <li>
-                    <Link href="/journal" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      OpenBrief Plus
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/explainers" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      TOB Explainers
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/tech" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      TechnoBrief
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/cinebrief" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                      CinēBrief
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors text-neutral-500">
-                      General
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+              {/* Side-by-side 2-column grid for SECTIONS and CONTACT US */}
+              <div className="grid grid-cols-2 gap-6 text-left px-4 pt-4 border-t border-neutral-200 dark:border-neutral-800">
+                {/* Sections Column */}
+                <div className="space-y-3">
+                  <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
+                    Sections
+                  </span>
+                  <ul className="flex flex-col space-y-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    <li>
+                      <Link href="/journal" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        OpenBrief Plus
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/explainers" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        TOB Explainers
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/tech" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        TechnoBrief
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/cinebrief" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                        CinēBrief
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors text-neutral-500">
+                        General
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
 
-              {/* Row 3: Contact Us (Center-Aligned) */}
-              <div className="space-y-2 pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-col items-center">
-                <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 font-bold block">
-                  Contact Us
-                </span>
-                <div className="text-xs font-mono space-y-2 flex flex-col items-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-neutral-400">Editorial Desk:</span>
-                    <a
-                      href="mailto:anandhu.krishne@theopenbrief.app"
-                      className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline"
-                    >
-                      anandhu.krishne@theopenbrief.app
-                    </a>
-                    <a
-                      href="mailto:sooryakiran@theopenbrief.app"
-                      className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline"
-                    >
-                      sooryakiran@theopenbrief.app
-                    </a>
-                  </div>
-                  <div className="flex items-center justify-center gap-3 pt-1 text-neutral-600 dark:text-neutral-400">
-                    <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors underline">
-                      About
-                    </Link>
-                    <span>•</span>
-                    <a
-                      href="https://admin.theopenbrief.app"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:text-black dark:hover:text-white transition-colors underline"
-                    >
-                      Author Studio ↗
-                    </a>
+                {/* Contact Us Column */}
+                <div className="space-y-3">
+                  <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
+                    Contact Us
+                  </span>
+                  <div className="text-xs font-mono space-y-2">
+                    <div>
+                      <span className="text-neutral-400 block mb-1">Editorial Desk:</span>
+                      <a
+                        href="mailto:anandhu.krishne@theopenbrief.app"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
+                      >
+                        anandhu.krishne@theopenbrief.app
+                      </a>
+                      <a
+                        href="mailto:sooryakiran@theopenbrief.app"
+                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
+                      >
+                        sooryakiran@theopenbrief.app
+                      </a>
+                    </div>
+                    <div className="flex flex-col gap-1 pt-1 text-neutral-600 dark:text-neutral-400">
+                      <Link href="/about" className="hover:text-black dark:hover:text-white transition-colors underline">
+                        About
+                      </Link>
+                      <a
+                        href="https://admin.theopenbrief.app"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:text-black dark:hover:text-white transition-colors underline"
+                      >
+                        Author Studio ↗
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Row 4: Mobile Legal Links & Copyright (Center-Aligned) */}
-              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3 text-xs font-mono text-neutral-500 dark:text-neutral-400 flex flex-col items-center">
+              {/* Mobile Legal Links & Copyright */}
+              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3 text-xs font-mono text-neutral-500 dark:text-neutral-400 px-4 text-center">
                 <div className="flex items-center justify-center gap-6">
                   <Link href="/privacy" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
                     Privacy
@@ -289,7 +291,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Link>
                 </div>
                 <div className="flex flex-col items-center gap-1 pt-1">
-                  <p>© {new Date().getFullYear()} TheOpenBrief. All rights reserved.</p>
+                  <p>© {currentYear} TheOpenBrief. All rights reserved.</p>
                   <div className="flex items-center justify-center gap-2 text-neutral-400 text-[11px]">
                     <span>Global</span>
                     <span>•</span>
