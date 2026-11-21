@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { fetchArticleBySlug, fetchArticles, Article } from '@/lib/api'
+import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 
@@ -9,7 +10,7 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -67,9 +68,7 @@ export default async function ArticlePage({ params }: Props) {
     .join('')
     .toUpperCase() || 'TOB'
 
-  const authorSlug = encodeURIComponent(
-    article.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-  )
+  const authorSlug = getAuthorSlug(article.authorName)
 
   return (
     <main className="min-h-screen bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
@@ -140,7 +139,7 @@ export default async function ArticlePage({ params }: Props) {
               </p>
             )}
 
-            {/* Byline Strip (Author link, published date, read time - Global removed) */}
+            {/* Byline Strip (Author link, published date, read time) */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-2.5 mb-6 border-y border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-500">
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <Link
@@ -241,27 +240,8 @@ export default async function ArticlePage({ params }: Props) {
                       <pre key={index} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
                         {trimmed.replace(/```/g, '')}
                       </pre>
-                    )
+                    ) 
                   }
-
-                  // Regular paragraph with Drop Cap on the first paragraph
-                  const isFirst = !dropCapApplied
-                  if (isFirst) {
-                    dropCapApplied = true
-                  }
-
-                  return (
-                    <p
-                      key={index}
-                      className={`text-neutral-800 dark:text-neutral-200 ${
-                        isFirst
-                          ? 'first-letter:float-left first-letter:text-5xl sm:first-letter:text-6xl first-letter:font-extrabold first-letter:mr-3.5 first-letter:leading-none first-letter:text-neutral-900 dark:first-letter:text-neutral-100'
-                          : ''
-                      }`}
-                    >
-                      {trimmed}
-                    </p>
-                  )
                 })
               })()}
             </div>

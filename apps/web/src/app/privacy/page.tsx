@@ -72,12 +72,11 @@ export default function PrivacyPage() {
           </section>
 
           <p className="text-sm text-neutral-400 font-mono pt-4 border-t border-neutral-200 dark:border-neutral-800">
-            Last updated: November 2026 · Global
+            Last updated: November 2026
           </p>
         </div>
 
         <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
-          <span>Global</span>
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
             ← Back to Home
           </Link>

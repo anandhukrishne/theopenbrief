@@ -8,7 +8,7 @@ interface Props {
   params: Promise<{ author: string }>
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function AuthorProfilePage({ params }: Props) {
   const { author } = await params

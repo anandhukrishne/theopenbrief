@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { fetchArticles } from '@/lib/api'
+import { fetchArticles, Article } from '@/lib/api'
+import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import HomeNav from '@/components/HomeNav'
@@ -7,6 +8,14 @@ import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
 export const revalidate = 60
+
+const SECTIONS_CONFIG = [
+  { section: 'explainers', title: 'TOB Explainers', href: '/explainers', layout: 'featured-left', trio1: 'big-left', trio2: 'big-center' },
+  { section: 'journal', title: 'OpenBrief Plus', href: '/journal', layout: 'featured-right', trio1: 'big-center', trio2: 'big-left' },
+  { section: 'tech', title: 'TechnoBrief', href: '/tech', layout: 'featured-left', trio1: 'big-right', trio2: 'big-left' },
+  { section: 'cinebrief', title: 'CinēBrief', href: '/cinebrief', layout: 'featured-right', trio1: 'big-center', trio2: 'big-right' },
+  { section: 'general', title: 'General', href: '/general', layout: 'featured-left', trio1: 'big-left', trio2: 'big-center' },
+] as const
 
 export default async function HomePage() {
   const allArticles = await fetchArticles()
@@ -22,15 +31,17 @@ export default async function HomePage() {
   const heroArticle = allArticles[0] || null
   const topPicks = allArticles.slice(0, 4)
 
-  // Section-specific article sets limited to 1 + 3 + 3 = 7 articles per section
-  const explainerArticles = allArticles.filter((a) => a.section === 'explainers').slice(0, 7)
-  const journalArticles = allArticles.filter((a) => a.section === 'journal').slice(0, 7)
-  const techArticles = allArticles.filter((a) => a.section === 'tech').slice(0, 7)
-  const cineArticles = allArticles.filter((a) => a.section === 'cinebrief').slice(0, 7)
-  const generalArticles = allArticles.filter((a) => a.section === 'general' || a.section === 'standalone').slice(0, 7)
+  // Group articles by section
+  const sectionArticlesMap: Record<string, Article[]> = {
+    explainers: allArticles.filter((a) => a.section === 'explainers').slice(0, 7),
+    journal: allArticles.filter((a) => a.section === 'journal').slice(0, 7),
+    tech: allArticles.filter((a) => a.section === 'tech').slice(0, 7),
+    cinebrief: allArticles.filter((a) => a.section === 'cinebrief').slice(0, 7),
+    general: allArticles.filter((a) => a.section === 'general' || a.section === 'standalone').slice(0, 7),
+  }
 
   // Helper to render remaining articles for a section in 1+3+3=7 architecture
-  const renderSectionTrios = (articles: typeof allArticles, trio1Pattern: TrioPattern, trio2Pattern: TrioPattern) => {
+  const renderSectionTrios = (articles: Article[], trio1Pattern: TrioPattern, trio2Pattern: TrioPattern) => {
     if (articles.length <= 3) return null
 
     const trio1 = articles.slice(3, 6)
@@ -157,7 +168,7 @@ export default async function HomePage() {
                           </h3>
                         </Link>
                         <Link
-                          href={`/authors/${encodeURIComponent(pick.authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}`}
+                          href={`/authors/${getAuthorSlug(pick.authorName)}`}
                           className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate hover:underline hover:text-red-600 dark:hover:text-red-400 block transition-colors"
                         >
                           {pick.authorName}
@@ -171,75 +182,24 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── SECTION 1: TOB Explainers (Featured-Left, 5-Point Coral Star Watermark) ── */}
-        {explainerArticles.length > 0 && (
-          <div className="space-y-0">
-            <SectionHeroBlock
-              section="explainers"
-              title="TOB Explainers"
-              href="/explainers"
-              layout="featured-left"
-              articles={explainerArticles}
-            />
-            {renderSectionTrios(explainerArticles, 'big-left', 'big-center')}
-          </div>
-        )}
+        {/* ── Editorial Section Streams (1+3+3=7 Architecture) ── */}
+        {SECTIONS_CONFIG.map(({ section, title, href, layout, trio1, trio2 }) => {
+          const articles = sectionArticlesMap[section] || []
+          if (articles.length === 0) return null
 
-        {/* ── SECTION 2: OpenBrief Plus (Featured-Right, Intersecting Crossroads Watermark) ── */}
-        {journalArticles.length > 0 && (
-          <div className="space-y-0">
-            <SectionHeroBlock
-              section="journal"
-              title="OpenBrief Plus"
-              href="/journal"
-              layout="featured-right"
-              articles={journalArticles}
-            />
-            {renderSectionTrios(journalArticles, 'big-center', 'big-left')}
-          </div>
-        )}
-
-        {/* ── SECTION 3: TechnoBrief (Featured-Left, Simple Circuit Watermark) ── */}
-        {techArticles.length > 0 && (
-          <div className="space-y-0">
-            <SectionHeroBlock
-              section="tech"
-              title="TechnoBrief"
-              href="/tech"
-              layout="featured-left"
-              articles={techArticles}
-            />
-            {renderSectionTrios(techArticles, 'big-right', 'big-left')}
-          </div>
-        )}
-
-        {/* ── SECTION 4: CinēBrief (Featured-Right, Simple Projector Watermark) ── */}
-        {cineArticles.length > 0 && (
-          <div className="space-y-0">
-            <SectionHeroBlock
-              section="cinebrief"
-              title="CinēBrief"
-              href="/cinebrief"
-              layout="featured-right"
-              articles={cineArticles}
-            />
-            {renderSectionTrios(cineArticles, 'big-center', 'big-right')}
-          </div>
-        )}
-
-        {/* ── SECTION 5: General / Standalone (Featured-Left, Articles Pile Watermark) ── */}
-        {generalArticles.length > 0 && (
-          <div className="space-y-0">
-            <SectionHeroBlock
-              section="general"
-              title="General"
-              href="/general"
-              layout="featured-left"
-              articles={generalArticles}
-            />
-            {renderSectionTrios(generalArticles, 'big-left', 'big-center')}
-          </div>
-        )}
+          return (
+            <div key={section} className="space-y-0">
+              <SectionHeroBlock
+                section={section}
+                title={title}
+                href={href}
+                layout={layout}
+                articles={articles}
+              />
+              {renderSectionTrios(articles, trio1, trio2)}
+            </div>
+          )
+        })}
       </div>
     </main>
   )

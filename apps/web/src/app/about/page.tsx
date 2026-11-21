@@ -53,7 +53,6 @@ export default function AboutPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
-          <span>Global</span>
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
             ← Back to Home
           </Link>

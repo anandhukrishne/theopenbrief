@@ -1,13 +1,26 @@
 ﻿import type { Metadata } from 'next'
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+})
 
 export const metadata: Metadata = {
   title: {
     default: 'The Open Brief — Independent Journal & Dispatches',
     template: '%s — The Open Brief',
   },
-  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, cinematic essays in CinēBrief, and standalone dispatches.',
+  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, cinematic essays in CinēBrief, and standalone articles.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app'),
   icons: {
     icon: '/favicon.png',
@@ -25,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const currentYear = new Date().getFullYear()
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" type="image/png" href="/favicon.png" />
@@ -54,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="hidden lg:block">
               <div className="grid grid-cols-12 gap-8 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
                 
-                {/* Col 1 (col-span-5): Brand & Manifesto */}
+                {/* Col 1 (col-span-5): About Brand */}
                 <div className="col-span-5 space-y-5 pr-6">
                   <Link href="/" className="inline-block">
                     <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
@@ -62,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Link>
 
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-md pt-1">
-                    An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements. Free from algorithmic noise.
+                    An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
                   </p>
                 </div>
 
@@ -93,7 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       </Link>
                     </li>
                     <li>
-                      <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block text-neutral-500">
+                      <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
                         General
                       </Link>
                     </li>
@@ -102,6 +115,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                 {/* Col 3 (col-span-2): Contact Us */}
                 <div className="col-span-2 space-y-4">
+                  <img
+                    src="/footer-art.png"
+                    alt=""
+                    className="w-32 h-auto d-10 object-contain opacity-70 dark:opacity-60"
+                  />
                   <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold block">
                     Contact Us
                   </span>
@@ -112,13 +130,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         href="mailto:anandhu.krishne@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
-                        anandhu.krishne@theopenbrief.app
+                        anandhu.krishne
                       </a>
                       <a
                         href="mailto:sooryakiran@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
                       >
-                        sooryakiran@theopenbrief.app
+                        sooryakiran
                       </a>
                     </div>
                     <div className="pt-2 flex flex-col gap-2 text-neutral-600 dark:text-neutral-400">
@@ -136,16 +154,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </div>
                   </div>
                 </div>
-
-                {/* Col 4 (col-span-2): footer-art.png linear non-overlapping */}
-                <div className="col-span-2 flex items-start justify-end pr-4 pointer-events-none select-none">
-                  <img
-                    src="/footer-art.png"
-                    alt=""
-                    className="w-32 h-auto object-contain opacity-70 dark:opacity-60"
-                  />
-                </div>
-
               </div>
 
               {/* Desktop Bottom Bar: Copyright on Left, Legal & Credits on Right */}
@@ -232,7 +240,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       </Link>
                     </li>
                     <li>
-                      <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors text-neutral-500">
+                      <Link href="/general" className="hover:text-red-600 dark:hover:text-red-400 transition-colors">
                         General
                       </Link>
                     </li>
@@ -251,13 +259,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         href="mailto:anandhu.krishne@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
-                        anandhu.krishne@theopenbrief.app
+                        anandhu.krishne
                       </a>
                       <a
                         href="mailto:sooryakiran@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
                       >
-                        sooryakiran@theopenbrief.app
+                        sooryakiran
                       </a>
                     </div>
                     <div className="flex flex-col gap-1 pt-1 text-neutral-600 dark:text-neutral-400">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Article } from '@/lib/api'
+import { getAuthorSlug } from '@/lib/utils'
 import CoverImage from '@/components/CoverImage'
 import SectionWatermark from '@/components/SectionWatermark'
 
@@ -13,10 +14,6 @@ interface SectionHeroBlockProps {
   articles: Article[]
   isSectionPage?: boolean
 }
-
-// Author slug helper
-const getAuthorSlug = (authorName: string) =>
-  encodeURIComponent(authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
 
 export default function SectionHeroBlock({
   section,

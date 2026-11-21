@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Article } from '@/lib/api'
+import { getAuthorSlug } from '@/lib/utils'
 import CoverImage from '@/components/CoverImage'
 
 export type TrioPattern = 'big-left' | 'big-center' | 'big-right'
@@ -19,9 +20,6 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
   const art1 = articles[0]
   const art2 = articles[1] || null
   const art3 = articles[2] || null
-
-  const getAuthorSlug = (authorName: string) =>
-    encodeURIComponent(authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
 
   // ── Big Article Card Component (Displays large 16:9 cover image) ──
   const BigCard = ({ article }: { article: Article }) => (
