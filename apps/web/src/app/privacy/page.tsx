@@ -65,8 +65,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">7. Contact</h2>
             <p>
               For privacy-related inquiries, contact us at{' '}
-              <a href="mailto:anandhu.krishne@theopenbrief.app" className="font-semibold underline">
-                anandhu.krishne@theopenbrief.app
+              <a href="mailto:support1@theoverbrief.app" className="font-semibold underline">
+                support1@theopenbrief.app
               </a>.
             </p>
           </section>

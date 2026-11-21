@@ -130,16 +130,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <div>
                       <span className="text-neutral-400 dark:text-neutral-500 block mb-1">Editorial Desk:</span>
                       <a
-                        href="mailto:anandhu.krishne@theopenbrief.app"
+                        href="mailto:support1@theoverbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
-                        anandhu.krishne@theopenbrief.app
-                      </a>
-                      <a
-                        href="mailto:sooryakiran@theopenbrief.app"
-                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
-                      >
-                        sooryakiran@theopenbrief.app
+                        support1@theopenbrief.app
                       </a>
                     </div>
                     <div className="pt-2 flex flex-col gap-2 text-neutral-600 dark:text-neutral-400 font-medium">
@@ -270,16 +264,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <div>
                       <span className="text-neutral-400 dark:text-neutral-500 block mb-1">Editorial Desk:</span>
                       <a
-                        href="mailto:anandhu.krishne@theopenbrief.app"
+                        href="mailto:support1@theoverbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
-                        anandhu.krishne@theopenbrief.app
-                      </a>
-                      <a
-                        href="mailto:sooryakiran@theopenbrief.app"
-                        className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block mt-1 break-all"
-                      >
-                        sooryakiran@theopenbrief.app
+                        support1@theoverbrief.app
                       </a>
                     </div>
                     <div className="flex flex-col gap-1 pt-1 text-neutral-600 dark:text-neutral-400 font-medium">

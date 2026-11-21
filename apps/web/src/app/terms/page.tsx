@@ -17,9 +17,6 @@ export default function TermsPage() {
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-10 tracking-tight leading-tight">
           Terms of Use
         </h1>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans font-medium pt-4 border-t border-neutral-200 dark:border-neutral-800">
-          Last updated on November 21, 2026
-        </p>
 
         <div className="space-y-8 text-neutral-700 dark:text-neutral-300 leading-relaxed text-base">
           <section>
@@ -64,6 +61,9 @@ export default function TermsPage() {
             </p>
           </section>
         </div>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans font-medium pt-4 border-t border-neutral-200 dark:border-neutral-800">
+          Last updated on November 21, 2026
+        </p>
 
         <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
