@@ -78,7 +78,7 @@ export default async function ArticlePage({ params }: Props) {
           {/* Left: Back link */}
           <Link
             href={sectionMeta.href}
-            className="text-xs font-mono font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors whitespace-nowrap shrink-0"
+            className="text-xs font-sans font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors whitespace-nowrap shrink-0"
           >
             ← Back
           </Link>
@@ -101,7 +101,7 @@ export default async function ArticlePage({ params }: Props) {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href={sectionMeta.href}
-              className="hidden sm:block text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              className="hidden sm:block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
             >
               {sectionMeta.name}
             </Link>
@@ -117,7 +117,7 @@ export default async function ArticlePage({ params }: Props) {
           {/* ── Left / Center Column: Article Body (col-span-8) ── */}
           <article className="lg:col-span-8 max-w-3xl">
             {/* Section Breadcrumbs */}
-            <nav className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-400">
+            <nav className="mb-4 flex items-center gap-2 font-sans text-xs uppercase tracking-wider text-neutral-400 font-medium">
               <Link href="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
                 Home
               </Link>
@@ -132,15 +132,15 @@ export default async function ArticlePage({ params }: Props) {
               {article.title}
             </h1>
 
-            {/* Standfirst / Excerpt */}
+            {/* Standfirst / Excerpt in Literary Serif */}
             {article.excerpt && (
-              <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed font-normal mb-6 border-l-2 border-neutral-900 dark:border-neutral-100 pl-5">
+              <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 font-serif italic leading-relaxed mb-6 border-l-2 border-red-600 dark:border-red-400 pl-5">
                 {article.excerpt}
               </p>
             )}
 
             {/* Byline Strip (Author link, published date, read time) */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2.5 mb-6 border-y border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-500">
+            <div className="flex flex-wrap items-center justify-between gap-4 py-2.5 mb-6 border-y border-neutral-200 dark:border-neutral-800 text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <Link
                   href={`/authors/${authorSlug}`}
@@ -173,18 +173,19 @@ export default async function ArticlePage({ params }: Props) {
                   />
                 </div>
                 {article.coverImageCaption && (
-                  <figcaption className="mt-2 text-xs font-mono text-neutral-500 dark:text-neutral-400 text-center">
+                  <figcaption className="mt-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 text-center font-medium">
                     {article.coverImageCaption}
                   </figcaption>
                 )}
               </figure>
             )}
 
-            {/* Content Body with Image Support & Editorial Drop Cap */}
+            {/* Content Body with Image Support & Editorial Typography */}
             <div className="text-neutral-800 dark:text-neutral-200 leading-[1.8] sm:leading-[1.9] text-base sm:text-lg space-y-6">
-              {(() => {
-                let dropCapApplied = false
-                return article.content.split('\n\n').map((paragraph, index) => {
+              {article.content
+                .replace(/\r\n/g, '\n')
+                .split(/\n{2,}/)
+                .map((paragraph, index) => {
                   const trimmed = paragraph.trim()
                   if (!trimmed) return null
 
@@ -200,7 +201,7 @@ export default async function ArticlePage({ params }: Props) {
                             <img src={imgUrl} alt={caption || 'Article image'} className="w-full h-auto object-cover" />
                           </div>
                           {caption && (
-                            <figcaption className="mt-2 text-xs font-mono text-neutral-500 dark:text-neutral-400 text-center">
+                            <figcaption className="mt-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 text-center font-medium">
                               {caption}
                             </figcaption>
                           )}
@@ -225,16 +226,16 @@ export default async function ArticlePage({ params }: Props) {
                     )
                   }
 
-                  // Quotes
+                  // Quotes in Literary Serif
                   if (trimmed.startsWith('> ')) {
                     return (
-                      <blockquote key={index} className="text-xl border-l-2 border-neutral-900 dark:border-neutral-100 pl-6 my-8 text-neutral-700 dark:text-neutral-300 font-medium">
+                      <blockquote key={index} className="text-xl sm:text-2xl font-serif italic border-l-2 border-red-600 dark:border-red-400 pl-6 my-8 text-neutral-800 dark:text-neutral-200 font-medium">
                         {trimmed.replace('> ', '')}
                       </blockquote>
                     )
                   }
 
-                  // Code
+                  // Code snippets in monospace
                   if (trimmed.startsWith('```')) {
                     return (
                       <pre key={index} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
@@ -242,13 +243,19 @@ export default async function ArticlePage({ params }: Props) {
                       </pre>
                     ) 
                   }
-                })
-              })()}
+
+                  // Standard text paragraph
+                  return (
+                    <p key={index} className="leading-[1.8] sm:leading-[1.9] text-base sm:text-lg text-neutral-800 dark:text-neutral-200">
+                      {trimmed}
+                    </p>
+                  )
+                })}
             </div>
 
             {/* ── About Author (Unboxed editorial layout) ── */}
             <div className="mt-14 pt-8 border-t border-neutral-200 dark:border-neutral-800">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 font-bold mb-4">
+              <div className="font-sans text-[10px] uppercase tracking-widest text-neutral-400 font-bold mb-4">
                 About Author
               </div>
               <div className="flex items-start gap-4 sm:gap-5">
@@ -281,7 +288,7 @@ export default async function ArticlePage({ params }: Props) {
                   <div className="mt-2.5">
                     <Link
                       href={`/authors/${authorSlug}`}
-                      className="text-xs font-mono font-medium text-red-600 dark:text-red-400 hover:underline"
+                      className="text-xs font-sans font-semibold text-red-600 dark:text-red-400 hover:underline"
                     >
                       View all articles by {article.authorName} →
                     </Link>
@@ -293,7 +300,7 @@ export default async function ArticlePage({ params }: Props) {
             {/* ── Mobile "Also Read" Section ── */}
             {alsoReadArticles.length > 0 && (
               <div className="block lg:hidden mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800">
-                <h3 className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold mb-4">
+                <h3 className="font-sans text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold mb-4">
                   Also Read
                 </h3>
                 <div className="space-y-4">
@@ -307,13 +314,13 @@ export default async function ArticlePage({ params }: Props) {
                         <CoverImage src={art.coverImage} alt={art.title} monogramSize="sm" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
-                        <span className="text-[10px] font-mono uppercase text-red-600 dark:text-red-400 font-semibold block">
+                        <span className="text-[10px] font-sans uppercase text-red-600 dark:text-red-400 font-bold block">
                           {art.section}
                         </span>
                         <h4 className="text-sm sm:text-base font-bold leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
                           {art.title}
                         </h4>
-                        <span className="text-[11px] text-neutral-500 font-mono block">
+                        <span className="text-[11px] text-neutral-500 font-sans block font-medium">
                           {art.authorName} · {art.readTime}m read
                         </span>
                       </div>
@@ -324,7 +331,7 @@ export default async function ArticlePage({ params }: Props) {
             )}
 
             {/* Bottom Back Button */}
-            <div className="mt-14 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between font-mono text-xs text-neutral-500">
+            <div className="mt-14 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between font-sans text-xs text-neutral-500 font-medium">
               <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
                 ← Return to Home
               </Link>
@@ -336,10 +343,10 @@ export default async function ArticlePage({ params }: Props) {
             <aside className="hidden lg:block lg:col-span-4 sticky top-20">
               <div className="pt-2 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
-                  <h3 className="font-bold text-sm tracking-tight text-neutral-900 dark:text-neutral-100 uppercase font-mono">
+                  <h3 className="font-bold text-xs tracking-wider text-neutral-900 dark:text-neutral-100 uppercase font-sans">
                     Also Read
                   </h3>
-                  <span className="text-[10px] font-mono text-neutral-400">
+                  <span className="text-[10px] font-sans text-neutral-400 uppercase tracking-wider font-semibold">
                     Selected
                   </span>
                 </div>
@@ -355,13 +362,13 @@ export default async function ArticlePage({ params }: Props) {
                         <CoverImage src={art.coverImage} alt={art.title} monogramSize="sm" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
-                        <span className="text-[10px] font-mono uppercase text-red-600 dark:text-red-400 font-bold block">
+                        <span className="text-[10px] font-sans uppercase text-red-600 dark:text-red-400 font-bold block">
                           {art.section}
                         </span>
                         <h4 className="text-sm sm:text-base font-bold leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
                           {art.title}
                         </h4>
-                        <span className="text-[11px] text-neutral-500 font-mono block">
+                        <span className="text-[11px] text-neutral-500 font-sans block font-medium">
                           {art.authorName} · {art.readTime}m read
                         </span>
                       </div>

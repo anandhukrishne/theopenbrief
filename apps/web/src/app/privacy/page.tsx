@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <SiteHeader section={null} />
 
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
-        <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
+        <div className="font-sans text-[10px] uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
           Legal
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-10 tracking-tight leading-tight">
@@ -71,12 +71,12 @@ export default function PrivacyPage() {
             </p>
           </section>
 
-          <p className="text-sm text-neutral-400 font-mono pt-4 border-t border-neutral-200 dark:border-neutral-800">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans font-medium pt-4 border-t border-neutral-200 dark:border-neutral-800">
             Last updated: November 2026
           </p>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
+        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
             ← Back to Home
           </Link>

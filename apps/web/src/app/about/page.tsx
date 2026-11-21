@@ -12,14 +12,14 @@ export default function AboutPage() {
       <SiteHeader section="about" />
 
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
-        <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
+        <div className="font-sans text-[10px] uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
           Origins and Manifesto
         </div>
         <h1 className="text-4xl sm:text-6xl font-extrabold mb-8 tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
           A deliberate attempt at removing the harm that social media is doing to society.
         </h1>
 
-        <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-10 font-normal border-l-2 border-neutral-900 dark:border-neutral-100 pl-6">
+        <p className="text-xl sm:text-2xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-10 font-serif italic border-l-2 border-red-600 dark:border-red-400 pl-6">
           The Open Brief is an independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
         </p>
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
+        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
             ← Back to Home
           </Link>

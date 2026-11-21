@@ -44,7 +44,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
         </p>
       )}
 
-      <div className="pt-1 flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+      <div className="pt-1 flex items-center gap-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
         <Link
           href={`/authors/${getAuthorSlug(article.authorName)}`}
           className="hover:underline hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -61,7 +61,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
   const SmallCard = ({ article }: { article: Article }) => (
     <article className="group flex flex-col justify-between p-4 sm:p-5 rounded-xs bg-white dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors h-full">
       <div className="space-y-2">
-        <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-red-600 dark:text-red-400 block">
+        <span className="text-[10px] font-sans uppercase tracking-wider font-bold text-red-600 dark:text-red-400 block">
           {article.section}
         </span>
         <Link href={`/articles/${article.slug}`}>
@@ -76,7 +76,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
         )}
       </div>
 
-      <div className="pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+      <div className="pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] font-sans text-neutral-500 dark:text-neutral-400 font-medium">
         <Link
           href={`/authors/${getAuthorSlug(article.authorName)}`}
           className="hover:underline hover:text-red-600 dark:hover:text-red-400 transition-colors truncate max-w-[120px]"

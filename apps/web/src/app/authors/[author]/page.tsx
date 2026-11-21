@@ -47,7 +47,7 @@ export default async function AuthorProfilePage({ params }: Props) {
             </div>
 
             <div className="space-y-2">
-              <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
+              <div className="font-sans text-[10px] uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
                 Author &amp; Contributor
               </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight capitalize text-neutral-900 dark:text-neutral-50">
@@ -56,7 +56,7 @@ export default async function AuthorProfilePage({ params }: Props) {
               <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
                 {authorBio}
               </p>
-              <div className="pt-1 font-mono text-xs text-neutral-400">
+              <div className="pt-1 font-sans text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 {articles.length} {articles.length === 1 ? 'Article' : 'Articles'} Published
               </div>
             </div>
@@ -65,7 +65,7 @@ export default async function AuthorProfilePage({ params }: Props) {
 
         {/* Author Articles Grid */}
         <div>
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 mb-6">
+          <h2 className="text-xs font-sans font-bold uppercase tracking-wider text-neutral-500 mb-6">
             Articles by {authorName}
           </h2>
 
@@ -75,7 +75,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                 No articles published by this author yet.
               </p>
               <div className="mt-4">
-                <Link href="/" className="text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100 underline">
+                <Link href="/" className="text-xs font-sans font-bold text-neutral-900 dark:text-neutral-100 underline">
                   ← Return to Home
                 </Link>
               </div>
@@ -93,7 +93,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                         <CoverImage src={art.coverImage} alt={art.title} monogramSize="md" className="w-full h-full object-cover" />
                       </Link>
                     )}
-                    <span className="text-[10px] font-mono uppercase font-bold text-red-600 dark:text-red-400 block mb-1">
+                    <span className="text-[10px] font-sans uppercase font-bold text-red-600 dark:text-red-400 block mb-1">
                       {art.section}
                     </span>
                     <Link href={`/articles/${art.slug}`}>
@@ -107,7 +107,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                       </p>
                     )}
                   </div>
-                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-[11px] font-mono text-neutral-400 flex items-center justify-between">
+                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-[11px] font-sans text-neutral-500 dark:text-neutral-400 flex items-center justify-between font-medium">
                     <span>
                       {new Date(art.publishedDate).toLocaleDateString('en-US', {
                         month: 'short',

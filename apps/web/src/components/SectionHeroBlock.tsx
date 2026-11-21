@@ -56,7 +56,7 @@ export default function SectionHeroBlock({
       )}
 
       {/* Byline */}
-      <div className="pt-1 flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+      <div className="pt-1 flex items-center gap-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
         <Link
           href={`/authors/${getAuthorSlug(leadArticle.authorName)}`}
           className="hover:underline hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium"
@@ -86,7 +86,7 @@ export default function SectionHeroBlock({
         {/* Explore link */}
         <Link
           href={href}
-          className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          className="relative z-10 text-[11px] font-sans font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
         >
           {isSectionPage ? 'All Articles' : 'Explore →'}
         </Link>
@@ -134,7 +134,7 @@ export default function SectionHeroBlock({
                   </h4>
                 </Link>
 
-                <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                <div className="flex items-center gap-2 text-[11px] font-sans text-neutral-500 dark:text-neutral-400 font-medium">
                   <Link
                     href={`/authors/${getAuthorSlug(art.authorName)}`}
                     className="hover:underline hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -148,7 +148,7 @@ export default function SectionHeroBlock({
             </article>
           ))
         ) : (
-          <p className="text-xs text-neutral-400 font-mono py-4">No additional stories in this section.</p>
+          <p className="text-xs text-neutral-400 font-sans py-4">No additional stories in this section.</p>
         )}
       </div>
     </div>
@@ -180,7 +180,7 @@ export default function SectionHeroBlock({
               {/* Explore link on LEFT */}
               <Link
                 href={href}
-                className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                className="relative z-10 text-[11px] font-sans font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
                 {isSectionPage ? 'All Articles' : 'Explore →'}
               </Link>
@@ -210,7 +210,7 @@ export default function SectionHeroBlock({
               {/* Explore link on RIGHT */}
               <Link
                 href={href}
-                className="relative z-10 text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                className="relative z-10 text-[11px] font-sans font-bold uppercase tracking-wider text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
                 {isSectionPage ? 'All Articles' : 'Explore →'}
               </Link>
@@ -256,7 +256,7 @@ export default function SectionHeroBlock({
                       {art.title}
                     </h4>
                   </Link>
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-2 text-[11px] font-sans text-neutral-500 dark:text-neutral-400 font-medium">
                     <Link
                       href={`/authors/${getAuthorSlug(art.authorName)}`}
                       className="hover:underline hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -270,7 +270,7 @@ export default function SectionHeroBlock({
               </article>
             ))
           ) : (
-            <p className="text-xs text-neutral-400 font-mono py-4">No additional stories in this section.</p>
+            <p className="text-xs text-neutral-400 font-sans py-4">No additional stories in this section.</p>
           )}
         </div>
       </div>

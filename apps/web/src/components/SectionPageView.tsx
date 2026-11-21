@@ -37,7 +37,7 @@ export default async function SectionPageView({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {articles.length === 0 ? (
           <div className="py-24 text-center border border-dashed border-neutral-300 dark:border-neutral-800 rounded-xs p-8 max-w-xl mx-auto my-12">
-            <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
+            <span className="font-sans text-[10px] uppercase tracking-widest text-neutral-400 block mb-2 font-bold">
               {title}
             </span>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
@@ -46,7 +46,7 @@ export default async function SectionPageView({
             <div className="mt-6">
               <Link
                 href="/"
-                className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
+                className="inline-block text-xs font-sans font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 underline hover:text-red-600 dark:hover:text-red-400"
               >
                 ← Back to Home
               </Link>

@@ -59,8 +59,8 @@ export default async function HomePage() {
     <main className="min-h-screen bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
       {/* ── Top Masthead Header ── */}
       <div className="border-b border-neutral-300 dark:border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col md:flex-row items-center justify-between gap-2 text-xs font-mono text-neutral-600 dark:text-neutral-400">
-          <div className="w-full md:w-1/4 text-center md:text-left font-medium">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col md:flex-row items-center justify-between gap-2 text-xs font-sans text-neutral-600 dark:text-neutral-400 font-medium">
+          <div className="w-full md:w-1/4 text-center md:text-left">
             {dateFormatted}
           </div>
           <div className="w-full md:w-2/4 flex items-center justify-center px-6 py-1">
@@ -108,7 +108,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
               {/* Left Side: Story of the day */}
               <div className="lg:col-span-7 space-y-3">
-                <div className="text-[10px] font-bold text-red-600 dark:text-red-500 uppercase tracking-widest font-mono">
+                <div className="text-[10px] font-bold text-red-600 dark:text-red-500 uppercase tracking-widest font-sans">
                   Story of the day · {heroArticle.section.toUpperCase()}
                 </div>
 
@@ -139,7 +139,7 @@ export default async function HomePage() {
 
               {/* Right Side: Top Picks */}
               <div className="lg:col-span-5 space-y-2">
-                <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                <h2 className="text-xs font-sans font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 pb-2 border-b border-neutral-200 dark:border-neutral-800">
                   Top Picks of the day
                 </h2>
 
@@ -159,7 +159,7 @@ export default async function HomePage() {
                       </Link>
 
                       <div className="flex-1 min-w-0 space-y-1">
-                        <span className="text-[10px] font-mono font-bold uppercase text-red-600 dark:text-red-400 block">
+                        <span className="text-[10px] font-sans font-bold uppercase text-red-600 dark:text-red-400 block">
                           {pick.section}
                         </span>
                         <Link href={`/articles/${pick.slug}`}>

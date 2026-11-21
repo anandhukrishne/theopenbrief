@@ -9,12 +9,12 @@ export default function Loading() {
         <div className="absolute w-14 h-14 rounded-full border-2 border-transparent border-t-red-600 dark:border-t-red-500 animate-spin" />
         
         {/* Center TOB Monogram */}
-        <span className="absolute font-bold text-[11px] tracking-wider text-neutral-900 dark:text-neutral-100 font-mono select-none">
+        <span className="absolute font-bold text-[11px] tracking-wider text-neutral-900 dark:text-neutral-100 font-sans select-none">
           TOB
         </span>
       </div>
 
-      <p className="mt-4 text-xs font-mono tracking-widest uppercase text-neutral-400 dark:text-neutral-500 select-none animate-pulse">
+      <p className="mt-4 text-xs font-sans font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 select-none animate-pulse">
         Loading...
       </p>
     </div>

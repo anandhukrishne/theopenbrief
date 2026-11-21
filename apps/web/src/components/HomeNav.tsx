@@ -36,7 +36,7 @@ export default function HomeNav() {
         <div className="md:hidden w-full flex items-center justify-between">
           <button
             onClick={() => setOpen((v) => !v)}
-            className="font-mono text-xs font-bold tracking-wider uppercase text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1.5 py-1 px-1 rounded"
+            className="font-sans text-xs font-bold tracking-wider uppercase text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1.5 py-1 px-1 rounded"
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>

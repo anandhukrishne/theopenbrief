@@ -18,7 +18,7 @@ export default async function RssPage() {
       <SiteHeader section={null} />
 
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
-        <div className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
+        <div className="font-sans text-[10px] uppercase tracking-widest text-red-600 dark:text-red-400 mb-4 font-bold">
           Syndication
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-6 tracking-tight leading-tight">
@@ -32,14 +32,14 @@ export default async function RssPage() {
         {/* Feed URL Box */}
         <div className="p-6 border border-neutral-300 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 rounded-sm mb-12 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs uppercase tracking-wider text-neutral-500 font-bold">
+            <span className="font-sans text-xs uppercase tracking-wider text-neutral-500 font-bold">
               Feed URL
             </span>
             <a
               href="/rss.xml"
               target="_blank"
               rel="noreferrer"
-              className="text-xs font-mono font-bold text-red-600 dark:text-red-400 hover:underline"
+              className="text-xs font-sans font-bold text-red-600 dark:text-red-400 hover:underline"
             >
               View XML Feed ↗
             </a>
@@ -65,7 +65,7 @@ export default async function RssPage() {
         {/* Recent Articles in Feed */}
         {articles.length > 0 && (
           <div className="pt-8 border-t border-neutral-200 dark:border-neutral-800">
-            <h2 className="text-sm font-mono uppercase tracking-wider text-neutral-500 font-bold mb-4">
+            <h2 className="text-xs font-sans uppercase tracking-wider text-neutral-500 font-bold mb-4">
               Recently Syndicated ({articles.length})
             </h2>
             <ul className="space-y-3 text-sm">
@@ -77,7 +77,7 @@ export default async function RssPage() {
                   >
                     {art.title}
                   </Link>
-                  <span className="text-xs text-neutral-400 font-mono">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400 font-sans font-medium">
                     {art.section} · {art.authorName}
                   </span>
                 </li>
@@ -86,7 +86,7 @@ export default async function RssPage() {
           </div>
         )}
 
-        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
+        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
             ← Back to Home
           </Link>
