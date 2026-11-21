@@ -331,36 +331,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 </div>
               </div>
-                <div className="flex items-center justify-center gap-6">
-                  <Link href="/privacy" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
-                    Privacy
-                  </Link>
-                  <Link href="/terms" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
-                    Terms
-                  </Link>
-                  <Link href="/rss" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
-                    RSS
-                  </Link>
-                </div>
-                <div className="flex flex-col items-center gap-1 pt-1">
-                  <p>© {currentYear} TheOpenBrief. All rights reserved.</p>
-                  <div className="flex items-center justify-center gap-2 text-neutral-400 text-[11px]">
-                    <span>Global</span>
-                    <span>•</span>
-                    <span>
-                      Developed by{' '}
-                      <a
-                        href="https://anandhukrishne.tech"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-neutral-600 dark:text-neutral-300 hover:text-black dark:hover:text-white underline transition-colors"
-                      >
-                        45 STUDioS
-                      </a>
-                    </span>
-                  </div>
-                </div>
-              </div>
 
             </div>
 
