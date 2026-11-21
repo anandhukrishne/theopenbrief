@@ -71,17 +71,22 @@ export async function POST(req: NextRequest) {
 
       console.log(`[OTP] Verification code for ${targetEmail}: ${code}`)
 
+      let emailSent = false
+      let emailErrorMessage: string | null = null
+
       // If Resend API key is configured, send real email via Resend API
       if (process.env.RESEND_API_KEY) {
         try {
-          await fetch('https://api.resend.com/emails', {
+          // Use verified custom domain if set via EMAIL_FROM, otherwise default to Resend's free sandbox sender
+          const resendFrom = process.env.EMAIL_FROM || 'The Open Brief <onboarding@resend.dev>'
+          const resendRes = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: process.env.EMAIL_FROM || 'The Open Brief <auth@theopenbrief.app>',
+              from: resendFrom,
               to: [targetEmail],
               subject: `Your Author Studio Verification Code: ${code}`,
               html: `
@@ -99,21 +104,35 @@ export async function POST(req: NextRequest) {
               `,
             }),
           })
-        } catch (mailErr) {
+
+          const resendData = await resendRes.json()
+          if (resendRes.ok) {
+            emailSent = true
+            console.log(`[OTP] Email sent successfully via Resend to ${targetEmail}, message id:`, resendData.id)
+          } else {
+            console.error('[OTP] Resend API error response:', resendData)
+            emailErrorMessage = resendData.message || 'Resend domain unverified'
+          }
+        } catch (mailErr: any) {
           console.error('[OTP] Failed to send email via Resend:', mailErr)
+          emailErrorMessage = mailErr.message
         }
       }
 
-      const responsePayload: { status: string; message: string; code?: string } = {
+      const responsePayload: { status: string; message: string; code?: string; devNotice?: string } = {
         status: 'sent',
-        message: process.env.RESEND_API_KEY
+        message: emailSent
           ? 'Verification code sent to your registered email.'
           : 'Verification code generated.',
       }
 
-      // If email provider is not yet set up, return code so newsroom is never locked out
-      if (!process.env.RESEND_API_KEY || process.env.NODE_ENV !== 'production') {
+      // If email was not successfully sent (or in development/unverified domain),
+      // ALWAYS provide the code so newsroom staff is NEVER locked out!
+      if (!emailSent || process.env.NODE_ENV !== 'production') {
         responsePayload.code = code
+        if (emailErrorMessage) {
+          responsePayload.devNotice = `Email notice: ${emailErrorMessage} (Fallback code active)`
+        }
       }
 
       return NextResponse.json(responsePayload)

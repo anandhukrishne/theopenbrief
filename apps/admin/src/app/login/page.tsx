@@ -53,7 +53,7 @@ export default function LoginPage() {
       }
 
       setStep('otp')
-      setInfoMessage('Verification code sent to your registered email.')
+      setInfoMessage(data.devNotice || data.message || 'Verification code sent to your registered email.')
       if (data.code) {
         setDevCode(data.code)
       }
