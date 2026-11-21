@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb } from '@/lib/db'
+import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rateLimit'
 
 const EXPIRES_IN_SEC = 60 * 60 * 24 * 5 // 5 days (432000 seconds)
 
@@ -8,6 +9,7 @@ export async function POST(req: NextRequest) {
     await initDb()
     const body = await req.json()
     const action = body.action || (body.code ? 'verify' : 'send')
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
     if (action === 'send') {
       const { email, password } = body
@@ -22,6 +24,23 @@ export async function POST(req: NextRequest) {
       const cleanEmail = String(email).trim().toLowerCase()
       const cleanPassword = String(password).trim()
 
+      // 1. Enforce rate limiting against brute-force attacks
+      const emailLimit = await checkRateLimit(cleanEmail)
+      if (!emailLimit.allowed) {
+        return NextResponse.json(
+          { error: emailLimit.message || 'Too many failed attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(emailLimit.retryAfterSeconds || 900) } }
+        )
+      }
+
+      const ipLimit = await checkRateLimit(`ip_${clientIp}`)
+      if (!ipLimit.allowed) {
+        return NextResponse.json(
+          { error: ipLimit.message || 'Too many failed attempts from this network. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(ipLimit.retryAfterSeconds || 900) } }
+        )
+      }
+
       // Validate credentials against Neon DB profiles
       const res = await db.query(
         `SELECT id, email, name, role, beat, password_plain
@@ -31,6 +50,8 @@ export async function POST(req: NextRequest) {
       )
 
       if (res.rows.length === 0) {
+        await recordFailedAttempt(cleanEmail)
+        await recordFailedAttempt(`ip_${clientIp}`)
         return NextResponse.json(
           { error: 'Account not found in newsroom roster' },
           { status: 404 }
@@ -41,31 +62,39 @@ export async function POST(req: NextRequest) {
 
       // Verify password if set on profile
       if (user.password_plain && user.password_plain !== cleanPassword) {
+        await recordFailedAttempt(cleanEmail)
+        await recordFailedAttempt(`ip_${clientIp}`)
         return NextResponse.json(
           { error: 'Invalid password. Please check your credentials.' },
           { status: 401 }
         )
       }
 
+      // Reset login credential rate limits on valid password
+      await resetRateLimit(cleanEmail)
+      await resetRateLimit(`ip_${clientIp}`)
+
       // Generate 6-digit numeric OTP
       const code = Math.floor(100000 + Math.random() * 900000).toString()
 
-      // Ensure otps table exists
+      // Ensure otps table exists with attempts tracking
       await db.query(`
         CREATE TABLE IF NOT EXISTS otps (
           email TEXT PRIMARY KEY,
           code TEXT NOT NULL,
+          attempts INT NOT NULL DEFAULT 0,
           expires_at TIMESTAMPTZ NOT NULL
-        )
+        );
+        ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
       `)
 
-      // Store in Neon DB with 10 minute expiry
+      // Store in Neon DB with 10 minute expiry and reset attempts to 0
       const targetEmail = String(user.email).trim().toLowerCase()
       await db.query(
-        `INSERT INTO otps (email, code, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '10 minutes')
+        `INSERT INTO otps (email, code, attempts, expires_at)
+         VALUES ($1, $2, 0, NOW() + INTERVAL '10 minutes')
          ON CONFLICT (email) DO UPDATE
-         SET code = EXCLUDED.code, expires_at = EXCLUDED.expires_at`,
+         SET code = EXCLUDED.code, attempts = 0, expires_at = EXCLUDED.expires_at`,
         [targetEmail, code]
       )
 
@@ -156,13 +185,15 @@ export async function POST(req: NextRequest) {
         CREATE TABLE IF NOT EXISTS otps (
           email TEXT PRIMARY KEY,
           code TEXT NOT NULL,
+          attempts INT NOT NULL DEFAULT 0,
           expires_at TIMESTAMPTZ NOT NULL
-        )
+        );
+        ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
       `)
 
       // Check OTP in Neon DB
       const otpRes = await db.query(
-        `SELECT email, code, expires_at FROM otps WHERE LOWER(email) = $1`,
+        `SELECT email, code, attempts, expires_at FROM otps WHERE LOWER(email) = $1`,
         [cleanEmail]
       )
 
@@ -177,6 +208,7 @@ export async function POST(req: NextRequest) {
       const isExpired = new Date(otpRow.expires_at).getTime() < Date.now()
 
       if (isExpired) {
+        await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
         return NextResponse.json(
           { error: 'Verification code has expired. Please request a new one.' },
           { status: 400 }
@@ -184,14 +216,36 @@ export async function POST(req: NextRequest) {
       }
 
       if (otpRow.code !== cleanCode) {
+        const nextAttempts = (Number(otpRow.attempts) || 0) + 1
+
+        if (nextAttempts >= 5) {
+          // Invalidate OTP immediately upon 5 failed attempts to prevent brute force
+          await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
+          await recordFailedAttempt(cleanEmail)
+          await recordFailedAttempt(`ip_${clientIp}`)
+          return NextResponse.json(
+            { error: 'Too many incorrect attempts. For security, this verification code has been revoked. Please request a new OTP.' },
+            { status: 429 }
+          )
+        }
+
+        // Increment attempt counter
+        await db.query(
+          `UPDATE otps SET attempts = $1 WHERE LOWER(email) = $2`,
+          [nextAttempts, cleanEmail]
+        )
+
+        const remaining = 5 - nextAttempts
         return NextResponse.json(
-          { error: 'Invalid verification code. Please check and try again.' },
+          { error: `Invalid verification code. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before code is revoked.` },
           { status: 401 }
         )
       }
 
-      // Code is valid: remove from table
+      // Code is valid: remove from table and reset any rate limit counters
       await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
+      await resetRateLimit(cleanEmail)
+      await resetRateLimit(`ip_${clientIp}`)
 
       // Fetch user profile from profiles
       const profileRes = await db.query(
