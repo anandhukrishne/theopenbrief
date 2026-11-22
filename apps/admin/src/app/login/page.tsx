@@ -3,6 +3,34 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+const CAROUSEL_SLIDES = [
+  {
+    image: '/carousel/slide-1.jpg',
+    title: 'Really Simple Syndication',
+    subtitle: 'High-speed, distraction-free feeds for readers',
+  },
+  {
+    image: '/carousel/slide-2.png',
+    title: 'Editorial Newspaper Edition',
+    subtitle: 'Uncluttered broadsheet layout free from algorithmic noise',
+  },
+  {
+    image: '/carousel/slide-3.png',
+    title: 'Newsroom & Staff Access',
+    subtitle: 'Role-based access control and contributor permissions',
+  },
+  {
+    image: '/carousel/slide-4.png',
+    title: 'Author Studio & Writing Desk',
+    subtitle: 'Distraction-free Markdown authoring with instant preview',
+  },
+  {
+    image: '/carousel/slide-5.png',
+    title: 'Neon PostgreSQL Archive',
+    subtitle: 'High-performance dispatch indexing and live sync',
+  },
+]
+
 export default function LoginPage() {
   const router = useRouter()
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
@@ -17,10 +45,10 @@ export default function LoginPage() {
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  // Auto-advance placeholder carousel slides
+  // Auto-advance carousel slides
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3)
+      setCurrentSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length)
     }, 4500)
     return () => clearInterval(timer)
   }, [])
@@ -175,49 +203,79 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-[#F3F4F6] font-sans antialiased text-neutral-900">
       <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-neutral-200/80 flex flex-col lg:flex-row min-h-[580px]">
-        {/* Left Column: Dark Demo Carousel (55%) */}
-        <div className="hidden lg:flex lg:w-[55%] bg-[#18181B] p-10 flex-col justify-between relative overflow-hidden select-none">
+        {/* Left/Top Column: Dark Demo Carousel (Desktop 55% left column, Mobile sleek top showcase) */}
+        <div className="w-full lg:w-[55%] bg-[#18181B] p-6 sm:p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden select-none border-b lg:border-b-0 lg:border-r border-neutral-800">
           {/* Top subtle brand status */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
-              The Open Brief Studio
+          <div className="flex items-center justify-between pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
+                The Open Brief Studio
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+              {currentSlide + 1} / {CAROUSEL_SLIDES.length}
             </span>
           </div>
 
-          {/* Carousel Showcase Area: 3 Blank Slides */}
-          <div className="my-auto py-8">
-            <div className="relative w-full aspect-[16/10] bg-[#222226] rounded-2xl border border-neutral-800 shadow-2xl flex items-center justify-center p-6 transition-all duration-500">
-              {currentSlide === 0 && (
-                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
-                  <div className="h-4 w-32 bg-neutral-800 rounded mb-2.5" />
-                  <div className="h-2.5 w-48 bg-neutral-800/60 rounded" />
+          {/* Carousel Showcase Area with Real Product Images */}
+          <div className="my-auto py-2 sm:py-6">
+            <div className="relative w-full aspect-[16/10] bg-[#121214] rounded-2xl border border-neutral-800 shadow-2xl overflow-hidden group">
+              {CAROUSEL_SLIDES.map((slide, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out flex flex-col ${
+                    currentSlide === idx ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
+                  }`}
+                >
+                  <div className="relative flex-1 w-full overflow-hidden bg-black/40">
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="w-full h-full object-cover object-top"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181B] via-transparent to-transparent opacity-60" />
+                  </div>
+                  <div className="p-3 sm:p-4 bg-[#18181B]/95 backdrop-blur-xs border-t border-neutral-800/80">
+                    <p className="text-xs sm:text-sm font-bold text-neutral-100 truncate">
+                      {slide.title}
+                    </p>
+                    <p className="text-[11px] text-neutral-400 truncate mt-0.5">
+                      {slide.subtitle}
+                    </p>
+                  </div>
                 </div>
-              )}
-              {currentSlide === 1 && (
-                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
-                  <div className="h-4 w-40 bg-neutral-800 rounded mb-2.5" />
-                  <div className="h-2.5 w-36 bg-neutral-800/60 rounded" />
-                </div>
-              )}
-              {currentSlide === 2 && (
-                <div className="w-full h-full rounded-xl bg-[#141417] border border-neutral-800/80 flex flex-col justify-end p-6">
-                  <div className="h-4 w-28 bg-neutral-800 rounded mb-2.5" />
-                  <div className="h-2.5 w-52 bg-neutral-800/60 rounded" />
-                </div>
-              )}
+              ))}
+
+              {/* Prev / Next buttons on hover */}
+              <button
+                type="button"
+                onClick={() => setCurrentSlide((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length)}
+                aria-label="Previous slide"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-black transition-all text-sm font-bold select-none cursor-pointer"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length)}
+                aria-label="Next slide"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-black transition-all text-sm font-bold select-none cursor-pointer"
+              >
+                ›
+              </button>
             </div>
           </div>
 
           {/* Bottom Dot Indicators */}
-          <div className="flex items-center justify-center gap-2">
-            {[0, 1, 2].map((idx) => (
+          <div className="flex items-center justify-center gap-2 pt-2">
+            {CAROUSEL_SLIDES.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setCurrentSlide(idx)}
                 aria-label={`Slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 ${
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                   currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-neutral-600 hover:bg-neutral-500'
                 }`}
               />
