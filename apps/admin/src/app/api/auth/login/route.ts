@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, initDb } from '@/lib/db'
+import { getSupabaseAdmin } from '@/lib/supabaseServer'
+import { getOrCreateProfile, db, initDb } from '@/lib/db'
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rateLimit'
 
 const EXPIRES_IN_SEC = 60 * 60 * 24 * 5 // 5 days
@@ -34,47 +35,51 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Query profiles in Supabase database by email or name/handle
-    const res = await db.query(
-      `SELECT id, email, name, role, beat, password_plain
-       FROM profiles
-       WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(REPLACE(name, ' ', '')) = $1`,
-      [cleanEmail]
-    )
+    // 2. Verify credentials via Supabase Auth (passwords securely hashed in auth.users)
+    const supabase = getSupabaseAdmin()
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password: cleanPassword,
+    })
 
-    if (res.rows.length === 0) {
+    if (authError || !authData.user) {
       await recordFailedAttempt(cleanEmail)
       await recordFailedAttempt(`ip_${clientIp}`)
-      return NextResponse.json({ error: 'Account not found in newsroom roster' }, { status: 404 })
-    }
-
-    const user = res.rows[0]
-
-    // Verify password if set on profile
-    if (user.password_plain && user.password_plain !== cleanPassword) {
-      await recordFailedAttempt(cleanEmail)
-      await recordFailedAttempt(`ip_${clientIp}`)
-      return NextResponse.json({ error: 'Invalid password. Please check your credentials.' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Invalid email or password. Please verify your newsroom credentials.' },
+        { status: 401 }
+      )
     }
 
     // Login successful: reset rate limits
     await resetRateLimit(cleanEmail)
     await resetRateLimit(`ip_${clientIp}`)
 
-    // Create session token
-    const sessionPayload = {
-      uid: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      ts: Date.now(),
-    }
+    const user = authData.user
+    const accessToken = authData.session?.access_token
 
-    const sessionToken = Buffer.from(JSON.stringify(sessionPayload)).toString('base64')
+    // Fetch or create profile in public.profiles
+    const profile = await getOrCreateProfile(
+      user.id,
+      cleanEmail,
+      user.user_metadata?.name || cleanEmail.split('@')[0]
+    )
+
+    const sessionToken =
+      accessToken ||
+      Buffer.from(
+        JSON.stringify({
+          uid: user.id,
+          email: cleanEmail,
+          name: profile.name,
+          role: profile.role,
+          ts: Date.now(),
+        })
+      ).toString('base64')
 
     const response = NextResponse.json({
       status: 'success',
-      user: { uid: user.id, email: user.email, name: user.name, role: user.role },
+      user: { uid: user.id, email: cleanEmail, name: profile.name, role: profile.role },
     })
 
     response.cookies.set('openbrief_session', sessionToken, {

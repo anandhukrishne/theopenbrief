@@ -1425,32 +1425,11 @@ export default function Dashboard() {
                               {m.email}
                             </td>
 
-                            {/* Password with Eye Reveal Toggle */}
+                            {/* Password Status */}
                             <td className="py-3.5 pr-3 font-mono text-slate-700">
-                              <div className="flex items-center gap-1.5">
-                                <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px]">
-                                  {isPasswordRevealed
-                                    ? (m.password_plain || '••••••••')
-                                    : '••••••••'}
-                                </span>
-                                {m.password_plain && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setVisiblePasswords((prev) => ({
-                                        ...prev,
-                                        [m.id]: !prev[m.id],
-                                      }))
-                                    }
-                                    className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
-                                    title={isPasswordRevealed ? 'Hide Password' : 'Show Password'}
-                                  >
-                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                    </svg>
-                                  </button>
-                                )}
-                              </div>
+                              <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] uppercase font-semibold">
+                                Supabase Auth (Hashed)
+                              </span>
                             </td>
 
                             {/* Role Badge */}
@@ -1475,7 +1454,7 @@ export default function Dashboard() {
                                 type="button"
                                 onClick={() => {
                                   setEditingStaffMember(m)
-                                  setEditPasswordValue(m.password_plain || '')
+                                  setEditPasswordValue('')
                                   setEditRoleValue(m.role)
                                 }}
                                 className="p-1.5 text-slate-500 hover:text-black hover:bg-slate-100 rounded transition-colors inline-block"

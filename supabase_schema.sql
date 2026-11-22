@@ -1,67 +1,61 @@
 -- ==============================================================================
--- THE OPEN BRIEF - SUPABASE SCHEMA MIGRATION
+-- THE OPEN BRIEF - VERIFIED SUPABASE SCHEMA
 -- Run this script in the Supabase SQL Editor (Dashboard -> SQL Editor -> New Query)
 -- ==============================================================================
 
--- 1. Profiles Table (Newsroom Roster, Staff & Password Access)
+-- 1. Profiles Table (Newsroom Roster & Contributor Metadata - Zero Plaintext Passwords)
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  bio TEXT DEFAULT '',
-  avatar_url TEXT DEFAULT '',
-  beat TEXT DEFAULT '',
-  password_plain TEXT DEFAULT '',
-  role TEXT NOT NULL DEFAULT 'writer', -- 'admin', 'editor', 'writer'
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  id text NOT NULL,
+  email text NOT NULL UNIQUE,
+  name text NOT NULL,
+  bio text DEFAULT ''::text,
+  avatar_url text DEFAULT ''::text,
+  beat text DEFAULT ''::text,
+  role text NOT NULL DEFAULT 'writer'::text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id)
 );
 
--- 2. Articles Table (Dispatches & Essays)
+-- 2. Articles Table (Dispatches, Essays, and Investigations)
 CREATE TABLE IF NOT EXISTS public.articles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  section TEXT NOT NULL DEFAULT 'journal', -- 'journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general'
-  status TEXT NOT NULL DEFAULT 'published', -- 'draft', 'published'
-  excerpt TEXT DEFAULT '',
-  content TEXT NOT NULL,
-  cover_image_url TEXT DEFAULT '',
-  cover_image_caption TEXT DEFAULT '',
-  author_id TEXT NOT NULL,
-  author_name TEXT NOT NULL DEFAULT 'The Open Brief Desk',
-  author_bio TEXT DEFAULT '',
-  author_avatar_url TEXT DEFAULT '',
-  read_time_minutes INT DEFAULT 5,
-  published_at TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  section text NOT NULL DEFAULT 'journal'::text,
+  status text NOT NULL DEFAULT 'published'::text,
+  excerpt text DEFAULT ''::text,
+  content text NOT NULL,
+  cover_image_url text DEFAULT ''::text,
+  cover_image_caption text DEFAULT ''::text,
+  author_id text NOT NULL,
+  author_name text NOT NULL DEFAULT 'The Open Brief Desk'::text,
+  author_bio text DEFAULT ''::text,
+  author_avatar_url text DEFAULT ''::text,
+  read_time_minutes integer DEFAULT 5,
+  published_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT articles_pkey PRIMARY KEY (id)
 );
 
--- 3. One-Time Password Verification Table (2FA Newsroom Verification)
-CREATE TABLE IF NOT EXISTS public.otps (
-  email TEXT PRIMARY KEY,
-  code TEXT NOT NULL,
-  attempts INT NOT NULL DEFAULT 0,
-  expires_at TIMESTAMPTZ NOT NULL
-);
-
--- 4. Brute-Force Rate Limiting Table
+-- 3. Brute-Force Rate Limiting Table
 CREATE TABLE IF NOT EXISTS public.auth_rate_limits (
-  identifier TEXT PRIMARY KEY,
-  failed_attempts INT NOT NULL DEFAULT 0,
-  locked_until TIMESTAMPTZ,
-  last_attempt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  identifier text NOT NULL,
+  failed_attempts integer NOT NULL DEFAULT 0,
+  locked_until timestamp with time zone,
+  last_attempt timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT auth_rate_limits_pkey PRIMARY KEY (identifier)
 );
 
--- 5. Performance Indexes
+-- 4. Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.articles(slug);
 CREATE INDEX IF NOT EXISTS idx_articles_author_id ON public.articles(author_id);
 CREATE INDEX IF NOT EXISTS idx_articles_status ON public.articles(status);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 
--- 6. Enable Row Level Security (RLS)
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 

@@ -35,6 +35,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +60,7 @@ export default function LoginPage() {
     }
   }, [step])
 
-  // Step 1: Request OTP
+  // Step 1: Verify Password & Request OTP
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -70,7 +71,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', email }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await res.json()
@@ -80,10 +81,7 @@ export default function LoginPage() {
       }
 
       setStep('otp')
-      setInfoMessage(data.devNotice || data.message || 'Verification code sent to your registered email.')
-      if (data.code) {
-        setDevCode(data.code)
-      }
+      setInfoMessage(data.message || 'Password verified. 6-digit OTP sent to your email.')
     } catch (err: any) {
       setError(err.message || 'Authentication error. Please check your credentials.')
     } finally {
@@ -135,7 +133,7 @@ export default function LoginPage() {
     otpRefs.current[nextIndex]?.focus()
   }
 
-  // Step 2: Verify OTP and Login
+  // Step 2: Verify 6-Digit OTP and Login
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     const fullCode = otp.join('').trim()
@@ -148,10 +146,10 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const res = await fetch('/api/auth/otp', {
+      const res = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', email, code: fullCode }),
+        body: JSON.stringify({ email, code: fullCode }),
       })
 
       const data = await res.json()
@@ -179,7 +177,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', email }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await res.json()
@@ -189,9 +187,6 @@ export default function LoginPage() {
       }
 
       setInfoMessage('A new verification code has been sent to your email.')
-      if (data.code) {
-        setDevCode(data.code)
-      }
     } catch (err: any) {
       setError(err.message || 'Unable to resend verification code.')
     } finally {
@@ -351,9 +346,20 @@ export default function LoginPage() {
                     placeholder="editor@theopenbrief.app"
                     className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
                   />
-                  <p className="text-[11px] text-neutral-500 leading-relaxed mt-2">
-                    Enter your email address to receive a secure 6-digit one-time login code.
-                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
+                    Newsroom Password / Key
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••••••"
+                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                  />
                 </div>
 
                 <div className="pt-2">
@@ -362,7 +368,7 @@ export default function LoginPage() {
                     disabled={loading}
                     className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
                   >
-                    {loading ? 'Sending Code...' : 'Get Login Code'}
+                    {loading ? 'Verifying Password...' : 'Verify Password & Get OTP'}
                   </button>
                 </div>
               </form>
