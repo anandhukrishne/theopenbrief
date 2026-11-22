@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, initDb } from '@/lib/db'
+import { getSupabaseAdmin } from '@/lib/supabaseServer'
+import { getOrCreateProfile, db, initDb } from '@/lib/db'
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rateLimit'
 
 const EXPIRES_IN_SEC = 60 * 60 * 24 * 5 // 5 days (432000 seconds)
@@ -11,6 +12,9 @@ export async function POST(req: NextRequest) {
     const action = body.action || (body.code ? 'verify' : 'send')
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
+    // =========================================================================
+    // STEP 1: Generate & Send OTP via Supabase Auth
+    // =========================================================================
     if (action === 'send') {
       const { email } = body
 
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest) {
 
       const cleanEmail = String(email).trim().toLowerCase()
 
-      // 1. Enforce rate limiting against brute-force attacks
+      // Enforce rate limiting against brute force
       const emailLimit = await checkRateLimit(cleanEmail)
       if (!emailLimit.allowed) {
         return NextResponse.json(
@@ -40,135 +44,38 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Validate email exists in Supabase DB profiles
-      const res = await db.query(
-        `SELECT id, email, name, role, beat
-         FROM profiles
-         WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(REPLACE(name, ' ', '')) = $1`,
-        [cleanEmail]
-      )
+      // 1. Call Supabase Auth to generate & send the OTP to user's email
+      const supabase = getSupabaseAdmin()
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          shouldCreateUser: true,
+        },
+      })
 
-      let user = res.rows[0]
-
-      // If database has no profiles yet, allow registering the initial admin user
-      if (!user) {
-        const countRes = await db.query('SELECT COUNT(*) FROM profiles')
-        const isFirstUser = parseInt(countRes.rows[0].count, 10) === 0
-        if (isFirstUser) {
-          const insertRes = await db.query(
-            `INSERT INTO profiles (id, email, name, role)
-             VALUES (gen_random_uuid()::text, $1, $2, 'admin')
-             RETURNING *`,
-            [cleanEmail, cleanEmail.split('@')[0]]
-          )
-          user = insertRes.rows[0]
-        } else {
-          await recordFailedAttempt(cleanEmail)
-          await recordFailedAttempt(`ip_${clientIp}`)
-          return NextResponse.json(
-            { error: 'Account not found in newsroom roster' },
-            { status: 404 }
-          )
-        }
+      if (error) {
+        console.error('[Supabase Auth] signInWithOtp error:', error.message)
+        await recordFailedAttempt(cleanEmail)
+        await recordFailedAttempt(`ip_${clientIp}`)
+        return NextResponse.json(
+          { error: `Supabase Auth error: ${error.message}` },
+          { status: 400 }
+        )
       }
 
-      // Reset login credential rate limits on valid email request
+      // Reset login rate limits on successful dispatch
       await resetRateLimit(cleanEmail)
       await resetRateLimit(`ip_${clientIp}`)
 
-      // Generate 6-digit numeric OTP
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-
-      // Ensure otps table exists with attempts tracking
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS otps (
-          email TEXT PRIMARY KEY,
-          code TEXT NOT NULL,
-          attempts INT NOT NULL DEFAULT 0,
-          expires_at TIMESTAMPTZ NOT NULL
-        );
-        ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
-      `)
-
-      // Store in Supabase DB with 10 minute expiry and reset attempts to 0
-      const targetEmail = String(user.email).trim().toLowerCase()
-      await db.query(
-        `INSERT INTO otps (email, code, attempts, expires_at)
-         VALUES ($1, $2, 0, NOW() + INTERVAL '10 minutes')
-         ON CONFLICT (email) DO UPDATE
-         SET code = EXCLUDED.code, attempts = 0, expires_at = EXCLUDED.expires_at`,
-        [targetEmail, code]
-      )
-
-      console.log(`[OTP] Verification code for ${targetEmail}: ${code}`)
-
-      let emailSent = false
-      let emailErrorMessage: string | null = null
-
-      // If Resend API key is configured, send real email via Resend API
-      if (process.env.RESEND_API_KEY) {
-        try {
-          // Use verified custom domain if set via EMAIL_FROM, otherwise default to Resend's free sandbox sender
-          const resendFrom = process.env.EMAIL_FROM || 'The Open Brief <onboarding@resend.dev>'
-          const resendRes = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-              from: resendFrom,
-              to: [targetEmail],
-              subject: `Your Author Studio Verification Code: ${code}`,
-              html: `
-                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px;">
-                  <div style="margin-bottom: 24px; text-align: center;">
-                    <h2 style="font-size: 20px; font-weight: 800; color: #18181b; margin: 0;">The Open Brief</h2>
-                    <p style="font-size: 12px; font-family: monospace; color: #a1a1aa; text-transform: uppercase; letter-spacing: 2px; margin: 4px 0 0 0;">Author Studio</p>
-                  </div>
-                  <p style="font-size: 14px; color: #3f3f46; line-height: 1.5; margin-bottom: 20px;">Use the following 6-digit verification code to complete your login:</p>
-                  <div style="font-size: 32px; font-weight: 800; letter-spacing: 8px; padding: 20px; background: #f4f4f5; text-align: center; border-radius: 10px; color: #09090b; font-family: monospace;">
-                    ${code}
-                  </div>
-                  <p style="color: #71717a; font-size: 12px; margin-top: 24px; text-align: center;">This code will expire in 10 minutes. If you did not request this, please ignore.</p>
-                </div>
-              `,
-            }),
-          })
-
-          const resendData = await resendRes.json()
-          if (resendRes.ok) {
-            emailSent = true
-            console.log(`[OTP] Email sent successfully via Resend to ${targetEmail}, message id:`, resendData.id)
-          } else {
-            console.error('[OTP] Resend API error response:', resendData)
-            emailErrorMessage = resendData.message || 'Resend domain unverified'
-          }
-        } catch (mailErr: any) {
-          console.error('[OTP] Failed to send email via Resend:', mailErr)
-          emailErrorMessage = mailErr.message
-        }
-      }
-
-      const responsePayload: { status: string; message: string; code?: string; devNotice?: string } = {
+      return NextResponse.json({
         status: 'sent',
-        message: emailSent
-          ? 'Verification code sent to your registered email.'
-          : 'Verification code generated.',
-      }
-
-      // If email was not successfully sent (or in development/unverified domain),
-      // ALWAYS provide the code so newsroom staff is NEVER locked out!
-      if (!emailSent || process.env.NODE_ENV !== 'production') {
-        responsePayload.code = code
-        if (emailErrorMessage) {
-          responsePayload.devNotice = `Email notice: ${emailErrorMessage} (Fallback code active)`
-        }
-      }
-
-      return NextResponse.json(responsePayload)
+        message: 'A 6-digit verification code has been generated and sent to your email by Supabase.',
+      })
     }
 
+    // =========================================================================
+    // STEP 2: Verify Supabase OTP and Establish Session
+    // =========================================================================
     if (action === 'verify') {
       const { email, code } = body
 
@@ -182,111 +89,65 @@ export async function POST(req: NextRequest) {
       const cleanEmail = String(email).trim().toLowerCase()
       const cleanCode = String(code).trim()
 
-      // Ensure otps table exists
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS otps (
-          email TEXT PRIMARY KEY,
-          code TEXT NOT NULL,
-          attempts INT NOT NULL DEFAULT 0,
-          expires_at TIMESTAMPTZ NOT NULL
-        );
-        ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
-      `)
+      const supabase = getSupabaseAdmin()
 
-      // Check OTP in Supabase DB
-      const otpRes = await db.query(
-        `SELECT email, code, attempts, expires_at FROM otps WHERE LOWER(email) = $1`,
-        [cleanEmail]
-      )
+      // 1. Verify the OTP token directly via Supabase Auth
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanCode,
+        type: 'email',
+      })
 
-      if (otpRes.rows.length === 0) {
+      if (error || !data.user) {
+        console.error('[Supabase Auth] verifyOtp failed:', error?.message)
+        await recordFailedAttempt(cleanEmail)
+        await recordFailedAttempt(`ip_${clientIp}`)
         return NextResponse.json(
-          { error: 'No verification code found. Please request a new OTP.' },
-          { status: 400 }
-        )
-      }
-
-      const otpRow = otpRes.rows[0]
-      const isExpired = new Date(otpRow.expires_at).getTime() < Date.now()
-
-      if (isExpired) {
-        await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
-        return NextResponse.json(
-          { error: 'Verification code has expired. Please request a new one.' },
-          { status: 400 }
-        )
-      }
-
-      if (otpRow.code !== cleanCode) {
-        const nextAttempts = (Number(otpRow.attempts) || 0) + 1
-
-        if (nextAttempts >= 5) {
-          // Invalidate OTP immediately upon 5 failed attempts to prevent brute force
-          await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
-          await recordFailedAttempt(cleanEmail)
-          await recordFailedAttempt(`ip_${clientIp}`)
-          return NextResponse.json(
-            { error: 'Too many incorrect attempts. For security, this verification code has been revoked. Please request a new OTP.' },
-            { status: 429 }
-          )
-        }
-
-        // Increment attempt counter
-        await db.query(
-          `UPDATE otps SET attempts = $1 WHERE LOWER(email) = $2`,
-          [nextAttempts, cleanEmail]
-        )
-
-        const remaining = 5 - nextAttempts
-        return NextResponse.json(
-          { error: `Invalid verification code. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before code is revoked.` },
+          { error: error?.message || 'Invalid or expired verification code.' },
           { status: 401 }
         )
       }
 
-      // Code is valid: remove from table and reset any rate limit counters
-      await db.query(`DELETE FROM otps WHERE LOWER(email) = $1`, [cleanEmail])
+      // Verification succeeded: reset rate limits
       await resetRateLimit(cleanEmail)
       await resetRateLimit(`ip_${clientIp}`)
 
-      // Fetch user profile from profiles
-      const profileRes = await db.query(
-        `SELECT id, email, name, role, beat
-         FROM profiles
-         WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(REPLACE(name, ' ', '')) = $1`,
-        [cleanEmail]
-      )
+      const user = data.user
+      const accessToken = data.session?.access_token
 
-      if (profileRes.rows.length === 0) {
-        return NextResponse.json(
-          { error: 'User profile not found in newsroom roster' },
-          { status: 404 }
-        )
-      }
+      // Retrieve or create newsroom profile in Supabase database
+      const defaultName =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        cleanEmail.split('@')[0] ||
+        'Staff Writer'
 
-      const user = profileRes.rows[0]
+      const profile = await getOrCreateProfile(user.id, cleanEmail, defaultName)
 
-      // Generate session token
-      const sessionPayload = {
-        uid: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        ts: Date.now(),
-      }
-
-      const sessionToken = Buffer.from(JSON.stringify(sessionPayload)).toString('base64')
+      // Fallback session token if Supabase session is stateless
+      const sessionToken =
+        accessToken ||
+        Buffer.from(
+          JSON.stringify({
+            uid: user.id,
+            email: cleanEmail,
+            name: profile.name,
+            role: profile.role,
+            ts: Date.now(),
+          })
+        ).toString('base64')
 
       const response = NextResponse.json({
         status: 'success',
         user: {
           uid: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
+          email: cleanEmail,
+          name: profile.name,
+          role: profile.role,
         },
       })
 
+      // Set 5-day secure HttpOnly session cookie
       response.cookies.set('openbrief_session', sessionToken, {
         maxAge: EXPIRES_IN_SEC,
         httpOnly: true,
@@ -303,7 +164,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     )
   } catch (err: any) {
-    console.error('OTP authentication error:', err)
+    console.error('Supabase OTP authentication error:', err)
     return NextResponse.json(
       { error: err.message || 'Authentication error' },
       { status: 500 }
