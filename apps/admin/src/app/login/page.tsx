@@ -33,6 +33,7 @@ const CAROUSEL_SLIDES = [
 
 export default function LoginPage() {
   const router = useRouter()
+  const [authMode, setAuthMode] = useState<'password_otp' | 'email_otp'>('password_otp')
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -71,7 +72,11 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', email, password }),
+        body: JSON.stringify({
+          action: 'send',
+          email,
+          password: authMode === 'password_otp' ? password : undefined,
+        }),
       })
 
       const data = await res.json()
@@ -180,7 +185,11 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', email, password }),
+        body: JSON.stringify({
+          action: 'send',
+          email,
+          password: authMode === 'password_otp' ? password : undefined,
+        }),
       })
 
       const data = await res.json()
@@ -339,6 +348,31 @@ export default function LoginPage() {
                 />
               </div>
 
+              <div className="flex p-1 bg-neutral-100 rounded-xl mb-4 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('password_otp'); setError(null); }}
+                  className={`flex-1 py-1.5 text-center rounded-lg transition-all ${
+                    authMode === 'password_otp'
+                      ? 'bg-white text-neutral-900 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-900'
+                  }`}
+                >
+                  Password + OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('email_otp'); setError(null); }}
+                  className={`flex-1 py-1.5 text-center rounded-lg transition-all ${
+                    authMode === 'email_otp'
+                      ? 'bg-white text-neutral-900 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-900'
+                  }`}
+                >
+                  Email + OTP
+                </button>
+              </div>
+
               <form onSubmit={handleRequestOtp} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
@@ -354,19 +388,25 @@ export default function LoginPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                    Secret Key / Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="••••••••••••"
-                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
-                  />
-                </div>
+                {authMode === 'password_otp' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
+                      Secret Key / Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••••••"
+                      className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-neutral-500 leading-relaxed bg-neutral-50 p-2.5 rounded-lg border border-neutral-200">
+                    We will send a secure 6-digit one-time verification code directly to your registered newsroom email.
+                  </p>
+                )}
 
                 <div className="pt-2">
                   <button
@@ -374,21 +414,28 @@ export default function LoginPage() {
                     disabled={loading}
                     className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm"
                   >
-                    {loading ? 'Sending OTP...' : 'Get OTP'}
+                    {loading
+                      ? 'Sending OTP...'
+                      : authMode === 'password_otp'
+                      ? 'Get OTP'
+                      : 'Send Login Code'}
                   </button>
                 </div>
 
-                <div className="text-center pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setError('Please contact your editorial desk administrator to reset your credentials.')
-                    }}
-                    className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors inline-block"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
+                {authMode === 'password_otp' && (
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('email_otp')
+                        setError(null)
+                      }}
+                      className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors inline-block"
+                    >
+                      Forgot password? Use Email + OTP instead
+                    </button>
+                  </div>
+                )}
               </form>
             </div>
           )}

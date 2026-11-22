@@ -14,15 +14,15 @@ export async function POST(req: NextRequest) {
     if (action === 'send') {
       const { email, password } = body
 
-      if (!email || !password) {
+      if (!email) {
         return NextResponse.json(
-          { error: 'Email and password are required' },
+          { error: 'Registered email address is required' },
           { status: 400 }
         )
       }
 
       const cleanEmail = String(email).trim().toLowerCase()
-      const cleanPassword = String(password).trim()
+      const cleanPassword = password ? String(password).trim() : null
 
       // 1. Enforce rate limiting against brute-force attacks
       const emailLimit = await checkRateLimit(cleanEmail)
@@ -49,28 +49,43 @@ export async function POST(req: NextRequest) {
         [cleanEmail]
       )
 
-      if (res.rows.length === 0) {
-        await recordFailedAttempt(cleanEmail)
-        await recordFailedAttempt(`ip_${clientIp}`)
-        return NextResponse.json(
-          { error: 'Account not found in newsroom roster' },
-          { status: 404 }
-        )
+      let user = res.rows[0]
+
+      // If database has no profiles yet, allow registering the initial admin user
+      if (!user) {
+        const countRes = await db.query('SELECT COUNT(*) FROM profiles')
+        const isFirstUser = parseInt(countRes.rows[0].count, 10) === 0
+        if (isFirstUser) {
+          const insertRes = await db.query(
+            `INSERT INTO profiles (id, email, name, role, password_plain)
+             VALUES (gen_random_uuid()::text, $1, $2, 'admin', $3)
+             RETURNING *`,
+            [cleanEmail, cleanEmail.split('@')[0], cleanPassword || '']
+          )
+          user = insertRes.rows[0]
+        } else {
+          await recordFailedAttempt(cleanEmail)
+          await recordFailedAttempt(`ip_${clientIp}`)
+          return NextResponse.json(
+            { error: 'Account not found in newsroom roster' },
+            { status: 404 }
+          )
+        }
       }
 
-      const user = res.rows[0]
-
-      // Verify password if set on profile
-      if (user.password_plain && user.password_plain !== cleanPassword) {
-        await recordFailedAttempt(cleanEmail)
-        await recordFailedAttempt(`ip_${clientIp}`)
-        return NextResponse.json(
-          { error: 'Invalid password. Please check your credentials.' },
-          { status: 401 }
-        )
+      // If password was provided (Password + OTP mode), verify password
+      if (cleanPassword !== null) {
+        if (user.password_plain && user.password_plain !== cleanPassword) {
+          await recordFailedAttempt(cleanEmail)
+          await recordFailedAttempt(`ip_${clientIp}`)
+          return NextResponse.json(
+            { error: 'Invalid password. Please check your credentials.' },
+            { status: 401 }
+          )
+        }
       }
 
-      // Reset login credential rate limits on valid password
+      // Reset login credential rate limits on valid password/request
       await resetRateLimit(cleanEmail)
       await resetRateLimit(`ip_${clientIp}`)
 
