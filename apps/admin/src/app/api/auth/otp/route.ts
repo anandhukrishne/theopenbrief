@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
     if (action === 'send') {
-      const { email, password } = body
+      const { email } = body
 
       if (!email) {
         return NextResponse.json(
@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
       }
 
       const cleanEmail = String(email).trim().toLowerCase()
-      const cleanPassword = password ? String(password).trim() : null
 
       // 1. Enforce rate limiting against brute-force attacks
       const emailLimit = await checkRateLimit(cleanEmail)
@@ -41,9 +40,9 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Validate credentials against Supabase DB profiles
+      // Validate email exists in Supabase DB profiles
       const res = await db.query(
-        `SELECT id, email, name, role, beat, password_plain
+        `SELECT id, email, name, role, beat
          FROM profiles
          WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(REPLACE(name, ' ', '')) = $1`,
         [cleanEmail]
@@ -57,10 +56,10 @@ export async function POST(req: NextRequest) {
         const isFirstUser = parseInt(countRes.rows[0].count, 10) === 0
         if (isFirstUser) {
           const insertRes = await db.query(
-            `INSERT INTO profiles (id, email, name, role, password_plain)
-             VALUES (gen_random_uuid()::text, $1, $2, 'admin', $3)
+            `INSERT INTO profiles (id, email, name, role)
+             VALUES (gen_random_uuid()::text, $1, $2, 'admin')
              RETURNING *`,
-            [cleanEmail, cleanEmail.split('@')[0], cleanPassword || '']
+            [cleanEmail, cleanEmail.split('@')[0]]
           )
           user = insertRes.rows[0]
         } else {
@@ -73,19 +72,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // If password was provided (Password + OTP mode), verify password
-      if (cleanPassword !== null) {
-        if (user.password_plain && user.password_plain !== cleanPassword) {
-          await recordFailedAttempt(cleanEmail)
-          await recordFailedAttempt(`ip_${clientIp}`)
-          return NextResponse.json(
-            { error: 'Invalid password. Please check your credentials.' },
-            { status: 401 }
-          )
-        }
-      }
-
-      // Reset login credential rate limits on valid password/request
+      // Reset login credential rate limits on valid email request
       await resetRateLimit(cleanEmail)
       await resetRateLimit(`ip_${clientIp}`)
 
