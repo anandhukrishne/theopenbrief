@@ -18,7 +18,7 @@ export interface Article {
 }
 
 /**
- * Normalizes an article row from Neon PostgreSQL
+ * Normalizes an article row from Supabase PostgreSQL
  */
 function normalizeArticle(item: any): Article {
   let sec: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'general' = 'standalone'
@@ -58,7 +58,7 @@ function normalizeArticle(item: any): Article {
 }
 
 /**
- * Fetch published articles from Admin Neon PostgreSQL API.
+ * Fetch published articles from Admin Supabase PostgreSQL API.
  */
 export async function fetchArticles(sectionFilter?: string): Promise<Article[]> {
   try {
@@ -86,7 +86,7 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
 }
 
 /**
- * Fetch a single article by slug from Neon PostgreSQL
+ * Fetch a single article by slug from Supabase PostgreSQL
  */
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   try {

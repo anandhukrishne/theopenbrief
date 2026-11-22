@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth } from '@/lib/firebaseAdmin'
+import { getAuthUser } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify session cookie using Google's public certificates
-    const token = req.cookies.get('openbrief_session')?.value
-    if (!token) {
+    // 1. Verify session cookie
+    const user = await getAuthUser(req)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
-    }
-
-    try {
-      await adminAuth.verifyIdToken(token)
-    } catch {
-      return NextResponse.json({ error: 'Unauthorized: Invalid or expired session' }, { status: 401 })
     }
 
     // 2. Parse form data

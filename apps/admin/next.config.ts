@@ -31,11 +31,11 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: `
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com https://vercel.live;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live;
       style-src 'self' 'unsafe-inline';
       img-src 'self' data: blob: https:;
       font-src 'self' data:;
-      connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com https://api.resend.com https://*.neon.tech;
+      connect-src 'self' https://api.resend.com https://*.supabase.co wss://*.supabase.co;
       frame-ancestors 'none';
       base-uri 'self';
       form-action 'self';

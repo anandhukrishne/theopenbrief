@@ -10,5 +10,8 @@
     "dev:admin": "npm run dev --workspace=apps/admin",
     "build:web": "npm run build --workspace=apps/web",
     "build:admin": "npm run build --workspace=apps/admin"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.2"
   }
 }

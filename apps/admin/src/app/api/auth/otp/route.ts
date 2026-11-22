@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Validate credentials against Neon DB profiles
+      // Validate credentials against Supabase DB profiles
       const res = await db.query(
         `SELECT id, email, name, role, beat, password_plain
          FROM profiles
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
       `)
 
-      // Store in Neon DB with 10 minute expiry and reset attempts to 0
+      // Store in Supabase DB with 10 minute expiry and reset attempts to 0
       const targetEmail = String(user.email).trim().toLowerCase()
       await db.query(
         `INSERT INTO otps (email, code, attempts, expires_at)
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
         ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
       `)
 
-      // Check OTP in Neon DB
+      // Check OTP in Supabase DB
       const otpRes = await db.query(
         `SELECT email, code, attempts, expires_at FROM otps WHERE LOWER(email) = $1`,
         [cleanEmail]

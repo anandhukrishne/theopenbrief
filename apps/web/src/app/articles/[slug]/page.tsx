@@ -31,6 +31,161 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+function renderInlineFormatting(text: string): (string | React.ReactNode)[] {
+  const regex = /(\[.*?\]\(.*?\)|\*\*.*?\*\*|`.*?`)/g
+  const parts = text.split(regex)
+
+  return parts.map((part, i) => {
+    if (part.startsWith('[') && part.includes('](') && part.endsWith(')')) {
+      const m = part.match(/^\[(.*?)\]\((.*?)\)$/)
+      if (m) {
+        return (
+          <a
+            key={i}
+            href={m[2]}
+            target={m[2].startsWith('http') ? '_blank' : undefined}
+            rel={m[2].startsWith('http') ? 'noopener noreferrer' : undefined}
+            className="text-red-600 dark:text-red-400 hover:underline font-medium"
+          >
+            {m[1]}
+          </a>
+        )
+      }
+    }
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      return (
+        <strong key={i} className="font-bold text-neutral-950 dark:text-neutral-50">
+          {part.slice(2, -2)}
+        </strong>
+      )
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+      return (
+        <code key={i} className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-xs sm:text-sm font-mono text-neutral-800 dark:text-neutral-200">
+          {part.slice(1, -1)}
+        </code>
+      )
+    }
+    return part
+  })
+}
+
+function renderMarkdownContent(rawContent: string) {
+  if (!rawContent || !rawContent.trim()) {
+    return (
+      <p className="text-base text-neutral-500 dark:text-neutral-400 italic">
+        Full dispatch text is being prepared by the editorial desk.
+      </p>
+    )
+  }
+
+  const normalized = rawContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const rawBlocks = normalized.split(/\n{2,}/)
+
+  return rawBlocks.map((block, blockIndex) => {
+    const trimmed = block.trim()
+    if (!trimmed) return null
+
+    // Markdown Images: ![caption](url)
+    if (trimmed.startsWith('![') && trimmed.includes('](')) {
+      const match = trimmed.match(/!\[(.*?)\]\((.*?)\)/)
+      if (match) {
+        const caption = match[1]
+        const imgUrl = match[2]
+        return (
+          <figure key={blockIndex} className="my-8 w-full">
+            <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+              <img src={imgUrl} alt={caption || 'Article image'} className="w-full h-auto object-cover" />
+            </div>
+            {caption && (
+              <figcaption className="mt-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 text-center font-medium">
+                {caption}
+              </figcaption>
+            )}
+          </figure>
+        )
+      }
+    }
+
+    // Code snippets in monospace
+    if (trimmed.startsWith('```')) {
+      const codeText = trimmed.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '')
+      return (
+        <pre key={blockIndex} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
+          <code>{codeText}</code>
+        </pre>
+      )
+    }
+
+    // Subheadings
+    if (trimmed.startsWith('# ')) {
+      return (
+        <h2 key={blockIndex} className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4 tracking-tight">
+          {trimmed.replace(/^#\s+/, '')}
+        </h2>
+      )
+    }
+    if (trimmed.startsWith('## ')) {
+      return (
+        <h2 key={blockIndex} className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4 tracking-tight">
+          {trimmed.replace(/^##\s+/, '')}
+        </h2>
+      )
+    }
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h3 key={blockIndex} className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 mt-8 mb-3 tracking-tight">
+          {trimmed.replace(/^###\s+/, '')}
+        </h3>
+      )
+    }
+
+    // Quotes in Literary Serif
+    if (trimmed.startsWith('> ')) {
+      const quoteText = trimmed.split('\n').map((l) => l.replace(/^>\s?/, '')).join(' ')
+      return (
+        <blockquote key={blockIndex} className="text-xl sm:text-2xl font-serif italic border-l-2 border-red-600 dark:border-red-400 pl-6 my-8 text-neutral-800 dark:text-neutral-200 font-medium">
+          {renderInlineFormatting(quoteText)}
+        </blockquote>
+      )
+    }
+
+    // Unordered list
+    const lines = trimmed.split('\n')
+    if (lines.length > 0 && lines.every((line) => /^\s*[-*]\s+/.test(line))) {
+      return (
+        <ul key={blockIndex} className="my-6 space-y-2 list-disc list-outside pl-6 text-base sm:text-lg">
+          {lines.map((line, idx) => (
+            <li key={idx} className="leading-relaxed">
+              {renderInlineFormatting(line.replace(/^\s*[-*]\s+/, ''))}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    // Ordered list
+    if (lines.length > 0 && lines.every((line) => /^\s*\d+\.\s+/.test(line))) {
+      return (
+        <ol key={blockIndex} className="my-6 space-y-2 list-decimal list-outside pl-6 text-base sm:text-lg">
+          {lines.map((line, idx) => (
+            <li key={idx} className="leading-relaxed">
+              {renderInlineFormatting(line.replace(/^\s*\d+\.\s+/, ''))}
+            </li>
+          ))}
+        </ol>
+      )
+    }
+
+    // Standard text paragraph with inline links/formatting
+    return (
+      <p key={blockIndex} className="leading-[1.8] sm:leading-[1.9] text-base sm:text-lg text-neutral-800 dark:text-neutral-200">
+        {renderInlineFormatting(trimmed)}
+      </p>
+    )
+  })
+}
+
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
   const article = await fetchArticleBySlug(slug)
@@ -182,75 +337,7 @@ export default async function ArticlePage({ params }: Props) {
 
             {/* Content Body with Image Support & Editorial Typography */}
             <div className="text-neutral-800 dark:text-neutral-200 leading-[1.8] sm:leading-[1.9] text-base sm:text-lg space-y-6">
-              {article.content
-                .replace(/\r\n/g, '\n')
-                .split(/\n{2,}/)
-                .map((paragraph, index) => {
-                  const trimmed = paragraph.trim()
-                  if (!trimmed) return null
-
-                  // Markdown Images: ![caption](url)
-                  if (trimmed.startsWith('![') && trimmed.includes('](')) {
-                    const match = trimmed.match(/!\[(.*?)\]\((.*?)\)/)
-                    if (match) {
-                      const caption = match[1]
-                      const imgUrl = match[2]
-                      return (
-                        <figure key={index} className="my-8 w-full">
-                          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-                            <img src={imgUrl} alt={caption || 'Article image'} className="w-full h-auto object-cover" />
-                          </div>
-                          {caption && (
-                            <figcaption className="mt-2 text-xs font-sans text-neutral-500 dark:text-neutral-400 text-center font-medium">
-                              {caption}
-                            </figcaption>
-                          )}
-                        </figure>
-                      )
-                    }
-                  }
-
-                  // Subheadings
-                  if (trimmed.startsWith('## ')) {
-                    return (
-                      <h2 key={index} className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4 tracking-tight">
-                        {trimmed.replace('## ', '')}
-                      </h2>
-                    )
-                  }
-                  if (trimmed.startsWith('### ')) {
-                    return (
-                      <h3 key={index} className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 mt-8 mb-3 tracking-tight">
-                        {trimmed.replace('### ', '')}
-                      </h3>
-                    )
-                  }
-
-                  // Quotes in Literary Serif
-                  if (trimmed.startsWith('> ')) {
-                    return (
-                      <blockquote key={index} className="text-xl sm:text-2xl font-serif italic border-l-2 border-red-600 dark:border-red-400 pl-6 my-8 text-neutral-800 dark:text-neutral-200 font-medium">
-                        {trimmed.replace('> ', '')}
-                      </blockquote>
-                    )
-                  }
-
-                  // Code snippets in monospace
-                  if (trimmed.startsWith('```')) {
-                    return (
-                      <pre key={index} className="bg-neutral-900 dark:bg-black text-neutral-100 p-4 rounded text-xs font-mono overflow-x-auto my-6 border border-neutral-800">
-                        {trimmed.replace(/```/g, '')}
-                      </pre>
-                    ) 
-                  }
-
-                  // Standard text paragraph
-                  return (
-                    <p key={index} className="leading-[1.8] sm:leading-[1.9] text-base sm:text-lg text-neutral-800 dark:text-neutral-200">
-                      {trimmed}
-                    </p>
-                  )
-                })}
+              {renderMarkdownContent(article.content)}
             </div>
 
             {/* ── About Author (Unboxed editorial layout) ── */}

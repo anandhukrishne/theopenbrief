@@ -43,14 +43,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">4. Data Security</h2>
             <p>
-              All data is transmitted over HTTPS. Authentication is handled through Firebase Auth with Google Sign-In. Article data and user profiles are stored in Neon PostgreSQL with industry-standard security practices.
+              All data is transmitted over HTTPS. Authentication is handled through Supabase Auth. Article data and user profiles are stored in Supabase PostgreSQL with industry-standard security practices.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">5. Third-Party Services</h2>
             <p>
-              We use the following third-party services: Google Firebase (authentication), Neon (database hosting), and Vercel (site hosting). Each service has its own privacy policy governing their handling of data.
+              We use the following third-party services: Supabase (authentication and database hosting) and Vercel (site hosting). Each service has its own privacy policy governing their handling of data.
             </p>
           </section>
 

@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import WebPUploader from '@/components/WebPUploader'
-import { clientAuth } from '@/lib/firebaseClient'
-import { onAuthStateChanged } from 'firebase/auth'
+import { supabaseClient } from '@/lib/supabaseClient'
 
 interface UserProfile {
   id: string
@@ -143,27 +142,32 @@ export default function Dashboard() {
     fetchStaff()
   }, [])
 
-  // Refresh Firebase session cookie whenever auth state is confirmed (fixes token expiry after browser restart)
+  // Refresh Supabase session cookie whenever auth state is confirmed
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
-      // Only allow Firebase auth flow if server session is checked and no active profile exists
-      if (!sessionChecked || profile !== null) return
-      if (user) {
-        try {
-          const freshToken = await user.getIdToken(true) // force refresh
-          await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken: freshToken }),
-          })
-          // Re-sync profile after session refresh
-          await loadProfile()
-        } catch (e) {
-          console.error('Session refresh failed', e)
+    let subscription: any = null
+    try {
+      const { data } = supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+        if (!sessionChecked || profile !== null) return
+        if (session?.access_token) {
+          try {
+            await fetch('/api/auth/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ accessToken: session.access_token }),
+            })
+            await loadProfile()
+          } catch (e) {
+            console.error('Supabase session sync failed', e)
+          }
         }
-      }
-    })
-    return () => unsubscribe()
+      })
+      subscription = data?.subscription
+    } catch (_) {
+      // Supabase client session not present, server session cookie takes precedence
+    }
+    return () => {
+      subscription?.unsubscribe?.()
+    }
   }, [sessionChecked, profile])
 
   // Load articles for archive
@@ -354,7 +358,7 @@ export default function Dashboard() {
   }
 
   const handleLogout = async () => {
-    try { await clientAuth.signOut() } catch (_) {}
+    try { await supabaseClient.auth.signOut() } catch (_) {}
     await fetch('/api/auth/session', { method: 'DELETE' })
     router.push('/login')
     router.refresh()
@@ -482,7 +486,7 @@ export default function Dashboard() {
 
       setMessage({
         type: 'success',
-        text: `Article "${title}" published live to Neon PostgreSQL!`,
+        text: `Article "${title}" published live to Supabase PostgreSQL!`,
         link: `https://theopenbrief.app/articles/${slug}`,
       })
       fetchArchive()
@@ -973,7 +977,7 @@ export default function Dashboard() {
                   className="w-full py-3 px-4 bg-slate-900 text-white font-semibold text-sm rounded-xl hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-2"
                 >
                   {publishing ? (
-                    <span>Saving to Neon...</span>
+                    <span>Saving to Supabase...</span>
                   ) : (
                     <span>{editingId ? 'Update Live Article' : 'Publish Article'}</span>
                   )}
@@ -1081,7 +1085,7 @@ export default function Dashboard() {
           <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Articles in Neon Database</h2>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Articles in Supabase Database</h2>
                 <p className="text-xs text-slate-500 mt-1">
                   Manage, edit, or delete published articles ({profile?.role?.toUpperCase()} permissions active)
                 </p>

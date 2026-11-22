@@ -63,8 +63,8 @@ export async function GET(req: NextRequest) {
     const values: any[] = ['published']
 
     if (slug) {
-      query += ' AND slug = $2'
-      values.push(slug)
+      query += ' AND (slug = $2 OR LOWER(slug) = LOWER($2))'
+      values.push(slug.trim())
     } else {
       if (section) {
         if (section === 'general' || section === 'standalone') {

@@ -26,8 +26,8 @@ const CAROUSEL_SLIDES = [
   },
   {
     image: '/carousel/slide-5.png',
-    title: 'Neon PostgreSQL Archive',
-    subtitle: 'High-performance dispatch indexing and live sync',
+    title: 'Supabase PostgreSQL Archive',
+    subtitle: 'High-performance dispatch indexing and real-time sync',
   },
 ]
 

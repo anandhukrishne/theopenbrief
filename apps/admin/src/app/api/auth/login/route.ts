@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Query profiles in Neon database by email or name/handle
+    // Query profiles in Supabase database by email or name/handle
     const res = await db.query(
       `SELECT id, email, name, role, beat, password_plain
        FROM profiles
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     return response
   } catch (err: any) {
-    console.error('Login error:', err)
+    console.error('Supabase login error:', err)
     return NextResponse.json({ error: err.message || 'Authentication error' }, { status: 500 })
   }
 }

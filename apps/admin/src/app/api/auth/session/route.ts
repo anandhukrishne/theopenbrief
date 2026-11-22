@@ -1,28 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth } from '@/lib/firebaseAdmin'
+import { getSupabaseAdmin } from '@/lib/supabaseServer'
+import { getOrCreateProfile } from '@/lib/db'
 
-// 5 days duration for session cookie
+// 5 days duration for session cookie (432000 seconds)
 const EXPIRES_IN_SEC = 60 * 60 * 24 * 5
 
 export async function POST(req: NextRequest) {
   try {
-    const { idToken } = await req.json()
+    const { idToken, accessToken } = await req.json()
+    const token = accessToken || idToken
 
-    if (!idToken) {
-      return NextResponse.json({ error: 'Missing ID token' }, { status: 400 })
+    if (!token) {
+      return NextResponse.json({ error: 'Missing authentication token' }, { status: 400 })
     }
 
-    // Verify the Firebase ID token using Google's public certificates (Zero private key required)
-    const decodedToken = await adminAuth.verifyIdToken(idToken)
+    const supabase = getSupabaseAdmin()
+    const { data: { user }, error } = await supabase.auth.getUser(token)
 
-    if (!decodedToken.uid) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    if (error || !user?.id) {
+      return NextResponse.json({ error: 'Invalid or expired Supabase authentication token' }, { status: 401 })
     }
 
-    const res = NextResponse.json({ status: 'success', user: { uid: decodedToken.uid, email: decodedToken.email } })
+    const email = user.email || ''
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0] || 'Staff Member'
+    const profile = await getOrCreateProfile(user.id, email, name)
 
-    // Store verified ID token directly as the HttpOnly session cookie
-    res.cookies.set('openbrief_session', idToken, {
+    const res = NextResponse.json({
+      status: 'success',
+      user: {
+        uid: user.id,
+        email,
+        name: profile.name,
+        role: profile.role,
+      },
+    })
+
+    // Store verified token directly as HttpOnly session cookie
+    res.cookies.set('openbrief_session', token, {
       maxAge: EXPIRES_IN_SEC,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -32,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     return res
   } catch (err: any) {
-    console.error('Session verification error:', err)
+    console.error('Supabase session verification error:', err)
     return NextResponse.json({ error: err.message || 'Authentication failed' }, { status: 401 })
   }
 }

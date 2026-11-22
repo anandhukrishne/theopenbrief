@@ -1,7 +1,7 @@
 /**
  * Client-Side Ultra-Compressed WebP Processor using HTML5 <canvas>
  * Resizes images to max 1200px and exports as highly-optimized WebP (quality 0.72)
- * Stored directly with the article record in Neon PostgreSQL (zero CDN dependencies).
+ * Stored directly with the article record in Supabase PostgreSQL (zero CDN dependencies).
  */
 export async function compressImageToDataUrlWebP(
   file: File,
