@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       status: 'sent',
-      message: 'Password verified. 6-digit OTP sent to your email.',
+      message: 'Password verified. OTP code sent to your email.',
     })
   } catch (err: any) {
     console.error('Error in /api/auth/otp:', err)

@@ -7,27 +7,22 @@ const CAROUSEL_SLIDES = [
   {
     image: '/carousel/slide-1.jpg',
     title: 'Really Simple Syndication',
-    subtitle: 'High-speed, distraction-free feeds for readers',
   },
   {
     image: '/carousel/slide-2.png',
     title: 'Editorial Newspaper Edition',
-    subtitle: 'Uncluttered broadsheet layout free from algorithmic noise',
   },
   {
     image: '/carousel/slide-3.png',
     title: 'Newsroom & Staff Access',
-    subtitle: 'Role-based access control and contributor permissions',
   },
   {
     image: '/carousel/slide-4.png',
     title: 'Author Studio & Writing Desk',
-    subtitle: 'Distraction-free Markdown authoring with instant preview',
   },
   {
     image: '/carousel/slide-5.png',
     title: 'Supabase PostgreSQL Archive',
-    subtitle: 'High-performance dispatch indexing and real-time sync',
   },
 ]
 
@@ -36,7 +31,7 @@ export default function LoginPage() {
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [otp, setOtp] = useState(['', '', '', '', '', ''])
+  const [otp, setOtp] = useState(['', '', '', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
@@ -81,7 +76,7 @@ export default function LoginPage() {
       }
 
       setStep('otp')
-      setInfoMessage(data.message || 'Password verified. 6-digit OTP sent to your email.')
+      setInfoMessage(data.message || 'Password verified. OTP code sent to your email.')
     } catch (err: any) {
       setError(err.message || 'Authentication error. Please check your credentials.')
     } finally {
@@ -89,16 +84,16 @@ export default function LoginPage() {
     }
   }
 
-  // Handle OTP digit changes
+  // Handle OTP digit changes (supports up to 8 digits)
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
-      const digits = value.replace(/\D/g, '').slice(0, 6).split('')
+      const digits = value.replace(/\D/g, '').slice(0, 8).split('')
       const nextOtp = [...otp]
       digits.forEach((d, i) => {
-        if (i < 6) nextOtp[i] = d
+        if (i < 8) nextOtp[i] = d
       })
       setOtp(nextOtp)
-      const nextIndex = Math.min(digits.length, 5)
+      const nextIndex = Math.min(digits.length, 7)
       otpRefs.current[nextIndex]?.focus()
       return
     }
@@ -108,7 +103,7 @@ export default function LoginPage() {
     nextOtp[index] = digit
     setOtp(nextOtp)
 
-    if (digit && index < 5) {
+    if (digit && index < 7) {
       otpRefs.current[index + 1]?.focus()
     }
   }
@@ -121,24 +116,24 @@ export default function LoginPage() {
 
   const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8)
     if (!pasted) return
     const digits = pasted.split('')
-    const nextOtp = [...otp]
+    const nextOtp = ['', '', '', '', '', '', '', '']
     digits.forEach((d, i) => {
-      if (i < 6) nextOtp[i] = d
+      if (i < 8) nextOtp[i] = d
     })
     setOtp(nextOtp)
-    const nextIndex = Math.min(digits.length, 5)
+    const nextIndex = Math.min(digits.length, 7)
     otpRefs.current[nextIndex]?.focus()
   }
 
-  // Step 2: Verify 6-Digit OTP and Login
+  // Step 2: Verify OTP and Login (supports both 6 and 8 digit tokens)
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     const fullCode = otp.join('').trim()
-    if (fullCode.length !== 6) {
-      setError('Please enter all 6 digits of your verification code.')
+    if (fullCode.length < 6) {
+      setError('Please enter your full verification code.')
       return
     }
 
@@ -233,9 +228,6 @@ export default function LoginPage() {
                   <div className="p-3 sm:p-4 bg-[#18181B]/95 backdrop-blur-xs border-t border-neutral-800/80">
                     <p className="text-xs sm:text-sm font-bold text-neutral-100 truncate">
                       {slide.title}
-                    </p>
-                    <p className="text-[11px] text-neutral-400 truncate mt-0.5">
-                      {slide.subtitle}
                     </p>
                   </div>
                 </div>
@@ -395,16 +387,16 @@ export default function LoginPage() {
 
               <div>
                 <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
-                  Mobile Verification
+                  Security Verification
                 </h2>
                 <p className="text-sm text-neutral-500 mt-1">
-                  Enter the 6 digit OTP you received in your email
+                  Enter the verification code sent to your email
                 </p>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="space-y-5 pt-2">
-                {/* 6 Digit Inputs */}
-                <div className="flex items-center justify-between gap-2 sm:gap-2.5">
+                {/* 8-Digit / 6-Digit OTP Inputs */}
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
                   {otp.map((digit, idx) => (
                     <input
                       key={idx}
@@ -418,7 +410,7 @@ export default function LoginPage() {
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       onPaste={handleOtpPaste}
-                      className="w-10 h-12 sm:w-11 sm:h-13 text-center text-xl font-bold text-neutral-900 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                      className="w-8 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-neutral-900 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
                     />
                   ))}
                 </div>
@@ -426,10 +418,10 @@ export default function LoginPage() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={loading || otp.join('').length < 6}
-                    className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm"
+                    disabled={loading || otp.join('').trim().length < 6}
+                    className="w-full py-3 px-6 bg-[#0080FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-full transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
                   >
-                    {loading ? 'Verifying...' : 'Verify & Login'}
+                    {loading ? 'Verifying...' : 'Verify & Enter Studio'}
                   </button>
                 </div>
 
