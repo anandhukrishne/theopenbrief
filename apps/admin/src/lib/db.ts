@@ -121,9 +121,10 @@ export async function initDb() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
-      -- Add edition columns to articles if missing
+      -- Add edition and story_of_the_day columns to articles if missing
       ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_id UUID;
       ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_slug TEXT DEFAULT '';
+      ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS is_story_of_the_day BOOLEAN DEFAULT false;
 
       -- Performance indexes for Supabase queries
       CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);

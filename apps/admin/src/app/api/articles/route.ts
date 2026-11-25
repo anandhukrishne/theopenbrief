@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
       const auth = await getAuthUser(req)
       if (auth) {
         const result = await db.query(
-          `SELECT id, title, slug, section, status, author_id, author_name, read_time_minutes, published_at, excerpt
+          `SELECT id, title, slug, section, status, author_id, author_name, read_time_minutes, published_at, excerpt, is_story_of_the_day
            FROM articles
            WHERE status = 'published'
            ORDER BY published_at DESC
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
 
     let query = slug
       ? 'SELECT * FROM articles WHERE status = $1'
-      : 'SELECT id, title, slug, section, excerpt, cover_image_url, cover_image_caption, author_id, author_name, read_time_minutes, published_at FROM articles WHERE status = $1'
+      : 'SELECT id, title, slug, section, excerpt, cover_image_url, cover_image_caption, author_id, author_name, read_time_minutes, published_at, is_story_of_the_day FROM articles WHERE status = $1'
     const values: any[] = ['published']
 
     if (slug) {
@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
       {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
         },
@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
       read_time_minutes = 5,
       edition_id = null,
       edition_slug = '',
+      is_story_of_the_day = false,
       id,
     } = body
 
@@ -155,6 +156,11 @@ export async function POST(req: NextRequest) {
 
     const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general', 'editions']
     const safeSection = validSections.includes(section) ? section : 'standalone'
+    const pinStoryOfTheDay = Boolean(is_story_of_the_day)
+
+    if (pinStoryOfTheDay) {
+      await db.query('UPDATE articles SET is_story_of_the_day = false WHERE is_story_of_the_day = true')
+    }
 
     let targetArticle = null
     if (id) {
@@ -189,8 +195,9 @@ export async function POST(req: NextRequest) {
           read_time_minutes = $7,
           edition_id = $8,
           edition_slug = $9,
+          is_story_of_the_day = $10,
           updated_at = NOW()
-        WHERE id = $10
+        WHERE id = $11
         RETURNING *;
       `
       const updateValues = [
@@ -203,6 +210,7 @@ export async function POST(req: NextRequest) {
         read_time_minutes,
         edition_id || null,
         edition_slug || '',
+        pinStoryOfTheDay,
         targetArticle.id,
       ]
 
@@ -217,8 +225,8 @@ export async function POST(req: NextRequest) {
       INSERT INTO articles (
         title, slug, section, excerpt, content, cover_image_url, cover_image_caption,
         author_id, author_name, author_bio, author_avatar_url, read_time_minutes,
-        edition_id, edition_slug
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        edition_id, edition_slug, is_story_of_the_day
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *;
     `
 
@@ -237,6 +245,7 @@ export async function POST(req: NextRequest) {
       read_time_minutes,
       edition_id || null,
       edition_slug || '',
+      pinStoryOfTheDay,
     ]
 
     const result = await db.query(insertQuery, values)
@@ -247,6 +256,56 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('Error saving article:', err)
     return NextResponse.json({ error: err.message || 'Failed to save article' }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const auth = await getAuthUser(req)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 })
+    }
+
+    await initDb()
+    const { id, is_story_of_the_day } = await req.json()
+    if (!id) {
+      return NextResponse.json({ error: 'Article ID is required' }, { status: 400 })
+    }
+
+    const findRes = await db.query('SELECT * FROM articles WHERE id = $1', [id])
+    if (findRes.rows.length === 0) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+    }
+
+    const article = findRes.rows[0]
+    const canManage =
+      auth.profile.role === 'admin' ||
+      auth.profile.role === 'editor' ||
+      article.author_id === auth.uid
+
+    if (!canManage) {
+      return NextResponse.json(
+        { error: 'Forbidden: Only editors, admins, or the article author can update Story of the Day.' },
+        { status: 403 }
+      )
+    }
+
+    const nextValue = Boolean(is_story_of_the_day)
+    if (nextValue) {
+      await db.query('UPDATE articles SET is_story_of_the_day = false WHERE is_story_of_the_day = true')
+    }
+
+    const updated = await db.query(
+      'UPDATE articles SET is_story_of_the_day = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [nextValue, id]
+    )
+
+    await triggerWebRevalidation(article.slug, article.section)
+
+    return NextResponse.json({ success: true, article: updated.rows[0] })
+  } catch (err: any) {
+    console.error('Error updating Story of the Day:', err)
+    return NextResponse.json({ error: err.message || 'Failed to update Story of the Day' }, { status: 500 })
   }
 }
 
@@ -304,7 +363,7 @@ export async function OPTIONS() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   })

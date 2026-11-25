@@ -15,6 +15,7 @@ export interface Article {
   authorAvatar?: string
   editionId?: string
   editionSlug?: string
+  isStoryOfTheDay?: boolean
   publishedDate: string
   readTime: number
 }
@@ -79,6 +80,7 @@ function normalizeArticle(item: any): Article {
     authorAvatar: item.author_avatar_url || undefined,
     editionId: item.edition_id || undefined,
     editionSlug: item.edition_slug || undefined,
+    isStoryOfTheDay: Boolean(item.is_story_of_the_day),
     publishedDate: item.published_at || item.created_at || new Date().toISOString(),
     readTime: Number(item.read_time_minutes || 5),
   }

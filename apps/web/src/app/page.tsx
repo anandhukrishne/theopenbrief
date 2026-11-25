@@ -19,14 +19,12 @@ const SECTIONS_CONFIG = [
 
 function pickStoryOfTheDay(articles: Article[]): Article | null {
   if (articles.length === 0) return null
-  // Prefer a recent flagship story (journal/explainers) with a cover image, else newest with cover, else newest
-  const flagshipWithCover = articles.find(
-    (a) => a.coverImage && (a.section === 'journal' || a.section === 'explainers')
-  )
-  if (flagshipWithCover) return flagshipWithCover
+  // 1. If a specific story is pinned as Story of the Day in Admin, feature it
+  const selected = articles.find((a) => a.isStoryOfTheDay)
+  if (selected) return selected
 
-  const anyWithCover = articles.find((a) => Boolean(a.coverImage))
-  return anyWithCover || articles[0]
+  // 2. Otherwise default to the latest published article
+  return articles[0]
 }
 
 export default async function HomePage() {

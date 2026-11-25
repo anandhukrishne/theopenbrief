@@ -59,9 +59,10 @@ CREATE TABLE IF NOT EXISTS public.editions (
   CONSTRAINT editions_pkey PRIMARY KEY (id)
 );
 
--- Ensure edition columns exist on articles
+-- Ensure edition and story of the day columns exist on articles
 ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_id uuid;
 ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_slug text DEFAULT ''::text;
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS is_story_of_the_day boolean DEFAULT false;
 
 -- 4. Brute-Force Rate Limiting Table
 CREATE TABLE IF NOT EXISTS public.auth_rate_limits (
