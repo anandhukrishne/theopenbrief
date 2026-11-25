@@ -8,7 +8,7 @@ interface Props {
   params: Promise<{ author: string }>
 }
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export default async function AuthorProfilePage({ params }: Props) {
   const { author } = await params

@@ -4,7 +4,6 @@ import { getAuthUser as verifyToken } from '@/lib/auth'
 
 const WEB_APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.theopenbrief.app'
 
-// Trigger instant on-demand ISR cache invalidation on the reader frontend
 async function triggerWebRevalidation(slug?: string, section?: string, previousSection?: string) {
   const secret = process.env.REVALIDATION_SECRET
   if (!secret) return
@@ -30,7 +29,6 @@ async function triggerWebRevalidation(slug?: string, section?: string, previousS
   }
 }
 
-// Helper to authenticate user from session cookie
 async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: string; profile: UserProfile } | null> {
   const user = await verifyToken(req)
   if (!user) return null
@@ -42,7 +40,6 @@ async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: stri
   }
 }
 
-// GET /api/articles - Fetch articles for public frontend, or authenticated admin requests
 export async function GET(req: NextRequest) {
   try {
     await initDb()
@@ -53,7 +50,6 @@ export async function GET(req: NextRequest) {
     const fullParam = searchParams.get('full')
     const authorParam = searchParams.get('author') || searchParams.get('author_id') || searchParams.get('authorId')
 
-    // --- Authenticated admin path: ?id=X or ?full=true (fetch full article for editing) ---
     if (idParam || fullParam) {
       const auth = await getAuthUser(req)
       if (!auth) {
@@ -66,7 +62,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // --- Authenticated admin archive list: no slug/section/author = admin listing ---
     if (!slug && !section && !authorParam && !idParam && !fullParam) {
       const auth = await getAuthUser(req)
       if (auth) {
@@ -81,7 +76,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // --- Public frontend path: full SELECT for single article, lightweight columns for list queries ---
     let query = slug
       ? 'SELECT * FROM articles WHERE status = $1'
       : 'SELECT id, title, slug, section, excerpt, cover_image_url, cover_image_caption, author_id, author_name, read_time_minutes, published_at FROM articles WHERE status = $1'
@@ -125,7 +119,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/articles - Create or Update article with Role Hierarchy & Protected Attribution
 export async function POST(req: NextRequest) {
   try {
     const auth = await getAuthUser(req)
@@ -209,7 +202,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, article: saved })
     }
 
-    // Creating a new article - strictly lock author attribution to current user's profile
     const insertQuery = `
       INSERT INTO articles (
         title, slug, section, excerpt, content, cover_image_url, cover_image_caption,
@@ -244,7 +236,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/articles - Delete an article (Admin/Editor or Article Owner)
 export async function DELETE(req: NextRequest) {
   try {
     const auth = await getAuthUser(req)

@@ -1,6 +1,6 @@
 import SectionPageView from '@/components/SectionPageView'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export const metadata = {
   title: 'CinēBrief',

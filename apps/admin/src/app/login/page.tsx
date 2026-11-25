@@ -84,11 +84,11 @@ export default function LoginPage() {
     }
   }
 
-  // Handle OTP digit changes (supports up to 8 digits)
+  // Handle OTP digit changes (supports up to 8 digits & mobile autofill)
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
       const digits = value.replace(/\D/g, '').slice(0, 8).split('')
-      const nextOtp = [...otp]
+      const nextOtp = ['', '', '', '', '', '', '', '']
       digits.forEach((d, i) => {
         if (i < 8) nextOtp[i] = d
       })
@@ -190,11 +190,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-[#F3F4F6] font-sans antialiased text-neutral-900">
-      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-neutral-200/80 flex flex-col lg:flex-row min-h-[580px]">
-        {/* Left/Top Column: Dark Demo Carousel (Desktop 55% left column, Mobile sleek top showcase) */}
-        <div className="w-full lg:w-[55%] bg-[#18181B] p-6 sm:p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden select-none border-b lg:border-b-0 lg:border-r border-neutral-800">
-          {/* Top subtle brand status */}
+    <div className="min-h-screen flex items-center justify-center p-3.5 sm:p-8 bg-[#F3F4F6] font-sans antialiased text-neutral-900">
+      <div className="max-w-4xl w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-neutral-200/80 flex flex-col lg:flex-row lg:min-h-[580px]">
+        {/* Mobile Compact Dark Studio Header (< lg) */}
+        <div className="lg:hidden bg-[#18181B] px-5 py-3.5 flex items-center justify-between border-b border-neutral-800 select-none">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+              The Open Brief Studio
+            </span>
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold">
+            Staff Portal
+          </span>
+        </div>
+
+        {/* Desktop Left Column: Dark Demo Carousel (55% on lg+) */}
+        <div className="hidden lg:flex w-[55%] bg-[#18181B] p-10 flex-col justify-between relative overflow-hidden select-none border-r border-neutral-800">
           <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -207,8 +219,7 @@ export default function LoginPage() {
             </span>
           </div>
 
-          {/* Carousel Showcase Area with Real Product Images */}
-          <div className="my-auto py-2 sm:py-6">
+          <div className="my-auto py-6">
             <div className="relative w-full aspect-[16/10] bg-[#121214] rounded-2xl border border-neutral-800 shadow-2xl overflow-hidden group">
               {CAROUSEL_SLIDES.map((slide, idx) => (
                 <div
@@ -225,15 +236,14 @@ export default function LoginPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#18181B] via-transparent to-transparent opacity-60" />
                   </div>
-                  <div className="p-3 sm:p-4 bg-[#18181B]/95 backdrop-blur-xs border-t border-neutral-800/80">
-                    <p className="text-xs sm:text-sm font-bold text-neutral-100 truncate">
+                  <div className="p-4 bg-[#18181B]/95 backdrop-blur-xs border-t border-neutral-800/80">
+                    <p className="text-sm font-bold text-neutral-100 truncate">
                       {slide.title}
                     </p>
                   </div>
                 </div>
               ))}
 
-              {/* Prev / Next buttons on hover */}
               <button
                 type="button"
                 onClick={() => setCurrentSlide((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length)}
@@ -253,7 +263,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Bottom Dot Indicators */}
           <div className="flex items-center justify-center gap-2 pt-2">
             {CAROUSEL_SLIDES.map((_, idx) => (
               <button
@@ -269,16 +278,15 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Column: White Authentication Panel (45%) */}
-        <div className="w-full lg:w-[45%] bg-white relative overflow-hidden p-8 sm:p-12 flex flex-col justify-center">
-          {/* Diagonal Admin Corner Ribbon */}
-          <div className="absolute top-0 right-0 w-28 h-28 overflow-hidden pointer-events-none z-20">
+        {/* Right Column: White Authentication Panel */}
+        <div className="w-full lg:w-[45%] bg-white relative overflow-hidden p-5 sm:p-10 lg:p-12 flex flex-col justify-center">
+          {/* Diagonal Admin Corner Ribbon (Desktop only; mobile uses compact header badge) */}
+          <div className="hidden lg:block absolute top-0 right-0 w-28 h-28 overflow-hidden pointer-events-none z-20">
             <div className="absolute top-5 -right-9 w-36 bg-[#FA5252] text-white text-[11px] font-bold py-1 text-center rotate-45 shadow-sm uppercase tracking-wider select-none">
               Admin
             </div>
           </div>
 
-          {/* Feedback messages */}
           {error && (
             <div className="mb-4 p-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl leading-relaxed">
               {error}
@@ -297,9 +305,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => {
-                  const digits = devCode.split('')
-                  setOtp(digits)
-                  otpRefs.current[5]?.focus()
+                  const padded = [...devCode.split(''), '', '', '', '', '', '', ''].slice(0, 8)
+                  setOtp(padded)
+                  otpRefs.current[Math.min(devCode.length - 1, 7)]?.focus()
                 }}
                 className="text-[11px] uppercase tracking-wider font-semibold text-emerald-700 hover:underline"
               >
@@ -310,18 +318,16 @@ export default function LoginPage() {
 
           {/* Step 1: Credentials Form */}
           {step === 'credentials' && (
-            <div className="space-y-6">
+            <div className="space-y-5 sm:space-y-6">
               <div className="text-center">
-                {/* TOB Monogram Badge */}
-                <div className="w-10 h-10 bg-black text-white font-black text-xs rounded-xl flex items-center justify-center mx-auto mb-4 tracking-tight shadow-sm select-none">
+                <div className="w-10 h-10 bg-black text-white font-black text-xs rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 tracking-tight shadow-sm select-none">
                   TOB
                 </div>
 
-                {/* Hello Again Heading */}
                 <img
                   src="/hello-again.png"
                   alt="Hello again!"
-                  className="h-10 sm:h-12 w-auto mx-auto mb-2 object-contain select-none"
+                  className="h-9 sm:h-12 w-auto mx-auto mb-1 object-contain select-none"
                 />
               </div>
 
@@ -332,11 +338,12 @@ export default function LoginPage() {
                   </label>
                   <input
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="editor@theopenbrief.app"
-                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 text-base sm:text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -346,15 +353,16 @@ export default function LoginPage() {
                   </label>
                   <input
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••••••"
-                    className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 text-base sm:text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-1 sm:pt-2">
                   <button
                     type="submit"
                     disabled={loading}
@@ -369,15 +377,14 @@ export default function LoginPage() {
 
           {/* Step 2: OTP Verification Form */}
           {step === 'otp' && (
-            <div className="space-y-5">
-              {/* Back Button */}
+            <div className="space-y-4 sm:space-y-5">
               <button
                 type="button"
                 onClick={() => {
                   setStep('credentials')
                   setError(null)
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors mb-2"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6" />
@@ -386,17 +393,16 @@ export default function LoginPage() {
               </button>
 
               <div>
-                <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
                   Security Verification
                 </h2>
-                <p className="text-sm text-neutral-500 mt-1">
-                  Enter the verification code sent to your email
+                <p className="text-xs sm:text-sm text-neutral-500 mt-1">
+                  Enter the verification code sent to <span className="font-mono text-neutral-700">{email}</span>
                 </p>
               </div>
 
-              <form onSubmit={handleVerifyOtp} className="space-y-5 pt-2">
-                {/* 8-Digit / 6-Digit OTP Inputs */}
-                <div className="flex items-center justify-between gap-1 sm:gap-2">
+              <form onSubmit={handleVerifyOtp} className="space-y-5 pt-1">
+                <div className="grid grid-cols-8 gap-1.5 sm:gap-2">
                   {otp.map((digit, idx) => (
                     <input
                       key={idx}
@@ -405,17 +411,19 @@ export default function LoginPage() {
                       }}
                       type="text"
                       inputMode="numeric"
-                      maxLength={1}
+                      pattern="[0-9]*"
+                      autoComplete={idx === 0 ? 'one-time-code' : 'off'}
+                      maxLength={idx === 0 ? 8 : 1}
                       value={digit}
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       onPaste={handleOtpPaste}
-                      className="w-8 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-neutral-900 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
+                      className="w-full h-11 sm:h-12 text-center text-base sm:text-xl font-bold text-neutral-900 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0080FF] focus:border-transparent transition-all"
                     />
                   ))}
                 </div>
 
-                <div className="pt-2">
+                <div>
                   <button
                     type="submit"
                     disabled={loading || otp.join('').trim().length < 6}

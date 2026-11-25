@@ -17,9 +17,6 @@ export interface Article {
   readTime: number
 }
 
-/**
- * Normalizes an article row from Supabase PostgreSQL
- */
 function normalizeArticle(item: any): Article {
   let sec: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'general' = 'standalone'
   const rawType = (item.section || '').toLowerCase()
@@ -30,15 +27,6 @@ function normalizeArticle(item: any): Article {
   else if (rawType === 'general') sec = 'general'
   else sec = 'standalone'
 
-  const authorName = item.author_name || 'The Open Brief Desk'
-  const authorBio = item.author_bio || ''
-  const authorAvatar = item.author_avatar_url || undefined
-  const authorId = item.author_id || undefined
-  const coverImage = item.cover_image_url || undefined
-  const coverImageCaption = item.cover_image_caption || undefined
-  const readTime = Number(item.read_time_minutes || 5)
-  const publishedDate = item.published_at || item.created_at || new Date().toISOString()
-
   return {
     id: String(item.id || item.slug),
     title: item.title || 'Untitled Dispatch',
@@ -46,20 +34,17 @@ function normalizeArticle(item: any): Article {
     section: sec,
     excerpt: item.excerpt || '',
     content: item.content || '',
-    coverImage,
-    coverImageCaption,
-    authorId,
-    authorName,
-    authorBio,
-    authorAvatar,
-    publishedDate,
-    readTime,
+    coverImage: item.cover_image_url || undefined,
+    coverImageCaption: item.cover_image_caption || undefined,
+    authorId: item.author_id || undefined,
+    authorName: item.author_name || 'The Open Brief Desk',
+    authorBio: item.author_bio || '',
+    authorAvatar: item.author_avatar_url || undefined,
+    publishedDate: item.published_at || item.created_at || new Date().toISOString(),
+    readTime: Number(item.read_time_minutes || 5),
   }
 }
 
-/**
- * Fetch published articles from Admin Supabase PostgreSQL API.
- */
 export async function fetchArticles(sectionFilter?: string): Promise<Article[]> {
   try {
     const params = new URLSearchParams()
@@ -67,8 +52,9 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
       params.append('section', sectionFilter)
     }
 
+    const tags = sectionFilter ? ['articles', `section:${sectionFilter}`] : ['articles']
     const res = await fetch(`${CMS_URL}/api/articles?${params.toString()}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags },
       headers: { Accept: 'application/json' },
     })
 
@@ -85,13 +71,10 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
   return []
 }
 
-/**
- * Fetch a single article by slug from Supabase PostgreSQL
- */
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const res = await fetch(`${CMS_URL}/api/articles?slug=${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ['articles', `article:${slug}`] },
       headers: { Accept: 'application/json' },
     })
 
@@ -108,13 +91,10 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   return null
 }
 
-/**
- * Fetch all articles written by a specific author
- */
 export async function fetchArticlesByAuthor(author: string): Promise<Article[]> {
   try {
     const res = await fetch(`${CMS_URL}/api/articles?author=${encodeURIComponent(author)}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600, tags: ['articles', `author:${author}`] },
       headers: { Accept: 'application/json' },
     })
 
@@ -128,7 +108,6 @@ export async function fetchArticlesByAuthor(author: string): Promise<Article[]> 
     console.warn(`[CMS API] Failed to fetch articles by author '${author}':`, (err as any)?.message)
   }
 
-  // Fallback: fetch all and filter in memory
   const all = await fetchArticles()
   const cleanTarget = author.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   return all.filter((a) => {

@@ -20,12 +20,9 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
     setCompressing(true)
 
     try {
-      // Direct high-efficiency client-side WebP compression
       const { dataUrl, originalSizeKb, compressedSizeKb } = await compressImageToDataUrlWebP(file, 1200, 900, 0.72)
       const reduction = Math.round((1 - compressedSizeKb / Math.max(originalSizeKb, 1)) * 100)
       setFileSizeInfo(`${originalSizeKb} KB → ${compressedSizeKb} KB WebP (-${reduction}%)`)
-
-      // Stored directly with article record in database
       onUploadComplete(dataUrl)
     } catch (err: any) {
       setError(err.message || 'Image processing failed')
@@ -57,7 +54,7 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
             alt="Cover preview"
             className="w-full aspect-[16/9] object-cover"
           />
-          <div className="p-3 bg-white border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="p-3 bg-white border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
             <div className="space-y-0.5">
               <span className="font-mono text-emerald-700 font-semibold flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -69,7 +66,7 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
             <div className="flex items-center gap-2">
               <label
                 htmlFor="cover-image-replace"
-                className="px-2.5 py-1 text-slate-700 hover:text-black font-medium border border-slate-200 rounded-lg bg-slate-50 cursor-pointer transition-colors"
+                className="flex-1 sm:flex-none text-center px-3 py-2 sm:py-1 text-slate-700 hover:text-black font-medium border border-slate-200 rounded-lg bg-slate-50 cursor-pointer transition-colors"
               >
                 Replace
               </label>
@@ -84,7 +81,7 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
                 <button
                   type="button"
                   onClick={onRemove}
-                  className="px-2.5 py-1 text-red-600 hover:text-red-800 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                  className="flex-1 sm:flex-none text-center px-3 py-2 sm:py-1 text-red-600 hover:text-red-800 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   Remove
                 </button>
@@ -97,7 +94,7 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
           onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+          className={`border-2 border-dashed rounded-xl p-5 sm:p-6 text-center transition-all ${
             dragOver ? 'border-slate-900 bg-slate-100' : 'border-slate-200 bg-white hover:border-slate-400'
           }`}
         >
@@ -121,10 +118,10 @@ export default function WebPUploader({ coverImageUrl, onUploadComplete, onRemove
               )}
             </div>
             <div className="text-sm font-semibold text-slate-800">
-              {compressing ? 'Compressing to WebP...' : 'Add Cover Image (Auto-Compressed WebP)'}
+              {compressing ? 'Compressing to WebP...' : 'Tap to Add Cover Image (WebP)'}
             </div>
             <p className="text-xs text-slate-400">
-              Client-side HTML5 canvas compresses to ~35-65 KB and embeds directly into article data.
+              Auto-compresses on device to ~35–65 KB WebP before saving.
             </p>
           </label>
         </div>
