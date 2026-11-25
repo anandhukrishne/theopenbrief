@@ -50,6 +50,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'cdn.theopenbrief.app',
+      },
+      {
+        protocol: 'https',
         hostname: 'admin.theopenbrief.app',
       },
       {
