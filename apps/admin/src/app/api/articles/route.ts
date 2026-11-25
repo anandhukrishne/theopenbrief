@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, getOrCreateProfile, UserProfile } from '@/lib/db'
 import { getAuthUser as verifyToken } from '@/lib/auth'
 
-const WEB_APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.theopenbrief.app'
+const WEB_APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app'
 
 async function triggerWebRevalidation(slug?: string, section?: string, previousSection?: string) {
   const secret = process.env.REVALIDATION_SECRET

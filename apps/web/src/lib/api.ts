@@ -55,7 +55,10 @@ export async function fetchArticles(sectionFilter?: string): Promise<Article[]> 
     const tags = sectionFilter ? ['articles', `section:${sectionFilter}`] : ['articles']
     const res = await fetch(`${CMS_URL}/api/articles?${params.toString()}`, {
       next: { revalidate: 3600, tags },
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+      },
     })
 
     if (res.ok) {
@@ -75,7 +78,10 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   try {
     const res = await fetch(`${CMS_URL}/api/articles?slug=${encodeURIComponent(slug)}`, {
       next: { revalidate: 3600, tags: ['articles', `article:${slug}`] },
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+      },
     })
 
     if (res.ok) {
@@ -95,7 +101,10 @@ export async function fetchArticlesByAuthor(author: string): Promise<Article[]> 
   try {
     const res = await fetch(`${CMS_URL}/api/articles?author=${encodeURIComponent(author)}`, {
       next: { revalidate: 3600, tags: ['articles', `author:${author}`] },
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+      },
     })
 
     if (res.ok) {
