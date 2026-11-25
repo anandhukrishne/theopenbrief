@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getOrCreateProfile } from '@/lib/db'
+import { createSessionToken } from '@/lib/auth'
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -14,7 +15,8 @@ const supabaseAnonKey =
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-const EXPIRES_IN_SEC = 60 * 60 * 24 * 5 // 5 days
+// 30 days duration for persistent admin session cookie
+const EXPIRES_IN_SEC = 60 * 60 * 24 * 30
 
 export async function POST(req: Request) {
   try {
@@ -39,13 +41,20 @@ export async function POST(req: Request) {
       )
     }
 
-    // OTP verified -> Look up staff profile in public.profiles & set 5-day openbrief_session cookie
+    // OTP verified -> Look up staff profile in public.profiles & set 30-day session token
     const user = data.user
     const profile = await getOrCreateProfile(
       user.id,
       normalizedEmail,
       user.user_metadata?.name || normalizedEmail.split('@')[0]
     )
+
+    const sessionToken = createSessionToken({
+      uid: user.id,
+      email: normalizedEmail,
+      name: profile.name,
+      role: profile.role,
+    }, 30)
 
     const response = NextResponse.json({
       status: 'success',
@@ -58,7 +67,7 @@ export async function POST(req: Request) {
       },
     })
 
-    response.cookies.set('openbrief_session', data.session.access_token, {
+    response.cookies.set('openbrief_session', sessionToken, {
       maxAge: EXPIRES_IN_SEC,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

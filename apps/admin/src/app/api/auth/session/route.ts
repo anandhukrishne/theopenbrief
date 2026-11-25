@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseServer'
 import { getOrCreateProfile } from '@/lib/db'
+import { createSessionToken } from '@/lib/auth'
 
-// 5 days duration for session cookie (432000 seconds)
-const EXPIRES_IN_SEC = 60 * 60 * 24 * 5
+// 30 days duration for persistent admin session cookie
+const EXPIRES_IN_SEC = 60 * 60 * 24 * 30
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +26,13 @@ export async function POST(req: NextRequest) {
     const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0] || 'Staff Member'
     const profile = await getOrCreateProfile(user.id, email, name)
 
+    const sessionToken = createSessionToken({
+      uid: user.id,
+      email,
+      name: profile.name,
+      role: profile.role,
+    }, 30)
+
     const res = NextResponse.json({
       status: 'success',
       user: {
@@ -35,8 +43,8 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Store verified token directly as HttpOnly session cookie
-    res.cookies.set('openbrief_session', token, {
+    // Store verified 30-day session token as HttpOnly session cookie
+    res.cookies.set('openbrief_session', sessionToken, {
       maxAge: EXPIRES_IN_SEC,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -52,13 +60,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
-  const res = NextResponse.json({ status: 'logged_out' })
-  res.cookies.set('openbrief_session', '', {
-    maxAge: 0,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  })
+  const res = NextResponse.json({ status: 'success', message: 'Logged out successfully' })
+  res.cookies.delete('openbrief_session')
   return res
 }
+

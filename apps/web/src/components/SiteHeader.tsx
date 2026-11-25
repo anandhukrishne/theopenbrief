@@ -9,7 +9,6 @@ const NAV_LINKS = [
   { label: 'TECHNOBRIEF', href: '/tech', section: 'tech' },
   { label: 'CINĒBRIEF', href: '/cinebrief', section: 'cinebrief' },
   { label: 'GENERAL', href: '/general', section: 'general' },
-  { label: 'SPECIAL EDITIONS', href: '/editions', section: 'editions' },
   { label: 'ABOUT', href: '/about', section: 'about' },
 ]
 

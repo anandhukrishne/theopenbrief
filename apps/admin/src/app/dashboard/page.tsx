@@ -165,7 +165,15 @@ export default function Dashboard() {
           setProfileName(data.profile.name)
           setProfileBio(data.profile.bio || '')
           setProfileAvatarUrl(data.profile.avatar_url || '')
+          try {
+            localStorage.setItem('openbrief_cached_profile', JSON.stringify(data.profile))
+          } catch {}
         }
+      } else if (res.status === 401) {
+        try {
+          localStorage.removeItem('openbrief_cached_profile')
+        } catch {}
+        router.replace('/login')
       }
     } catch (err) {
       console.error('Failed to fetch profile:', err)
@@ -175,6 +183,19 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem('openbrief_cached_profile')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (parsed?.name) {
+          setProfile(parsed)
+          setProfileName(parsed.name)
+          setProfileBio(parsed.bio || '')
+          setProfileAvatarUrl(parsed.avatar_url || '')
+        }
+      }
+    } catch {}
+
     loadProfile()
     fetchArchive()
     fetchStaff()
@@ -419,6 +440,9 @@ export default function Dashboard() {
   }
 
   const handleLogout = async () => {
+    try {
+      localStorage.removeItem('openbrief_cached_profile')
+    } catch {}
     try { await supabaseClient.auth.signOut() } catch (_) {}
     await fetch('/api/auth/session', { method: 'DELETE' })
     router.push('/login')
@@ -2109,9 +2133,10 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setEditingEditionModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg text-sm font-bold"
+                aria-label="Close"
               >
-                ✕
+                &times;
               </button>
             </div>
 

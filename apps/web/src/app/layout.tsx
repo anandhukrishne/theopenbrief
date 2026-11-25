@@ -2,6 +2,7 @@
 import { Plus_Jakarta_Sans, Merriweather, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
+import BackToTop from '@/components/BackToTop'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -75,8 +76,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="hidden lg:block">
               <div className="grid grid-cols-12 gap-8 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
                 
-                {/* Col 1 (col-span-4): About Brand */}
-                <div className="col-span-4 space-y-5 pr-6">
+                {/* Col 1 (col-span-6): About Brand */}
+                <div className="col-span-6 space-y-5 pr-6">
                   <Link href="/" className="inline-block">
                     <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
                     <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
@@ -118,6 +119,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         General
                       </Link>
                     </li>
+                    <li>
+                      <Link href="/editions" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
+                        Special Editions
+                      </Link>
+                    </li>
                   </ul>
                 </div>
 
@@ -150,15 +156,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       </a>
                     </div>
                   </div>
-                </div>
-
-                {/* Col 4 (col-span-2): Footer Art, positioned away to the right in same linear row */}
-                <div className="col-span-2 flex justify-end items-start pt-1 pointer-events-none select-none">
-                  <img
-                    src="/footer-art.png"
-                    alt=""
-                    className="w-28 h-auto object-contain opacity-80 dark:opacity-70"
-                  />
                 </div>
               </div>
 
@@ -208,15 +205,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
                   An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
                 </p>
-              </div>
-
-              {/* Centered Footer Art illustration between brand and links */}
-              <div className="flex justify-center py-1 pointer-events-none select-none">
-                <img
-                  src="/footer-art.png"
-                  alt=""
-                  className="w-24 h-auto object-contain opacity-80 dark:opacity-70"
-                />
               </div>
 
               {/* Side-by-side 2-column grid for SECTIONS and CONTACT US */}
@@ -324,6 +312,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           </div>
         </footer>
+        <BackToTop />
       </body>
     </html>
   )

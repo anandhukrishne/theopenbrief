@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseServer'
-import { getOrCreateProfile, db, initDb } from '@/lib/db'
+import { getOrCreateProfile, initDb } from '@/lib/db'
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rateLimit'
+import { createSessionToken } from '@/lib/auth'
 
-const EXPIRES_IN_SEC = 60 * 60 * 24 * 5 // 5 days
+// 30 days duration for persistent admin session cookie
+const EXPIRES_IN_SEC = 60 * 60 * 24 * 30
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,7 +58,6 @@ export async function POST(req: NextRequest) {
     await resetRateLimit(`ip_${clientIp}`)
 
     const user = authData.user
-    const accessToken = authData.session?.access_token
 
     // Fetch or create profile in public.profiles
     const profile = await getOrCreateProfile(
@@ -65,17 +66,12 @@ export async function POST(req: NextRequest) {
       user.user_metadata?.name || cleanEmail.split('@')[0]
     )
 
-    const sessionToken =
-      accessToken ||
-      Buffer.from(
-        JSON.stringify({
-          uid: user.id,
-          email: cleanEmail,
-          name: profile.name,
-          role: profile.role,
-          ts: Date.now(),
-        })
-      ).toString('base64')
+    const sessionToken = createSessionToken({
+      uid: user.id,
+      email: cleanEmail,
+      name: profile.name,
+      role: profile.role,
+    }, 30)
 
     const response = NextResponse.json({
       status: 'success',
