@@ -4,6 +4,7 @@ import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import HomeNav from '@/components/HomeNav'
+import LocalDate from '@/components/LocalDate'
 import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
@@ -32,13 +33,6 @@ export default async function HomePage() {
     fetchArticles(),
     fetchEditions(),
   ])
-
-  const dateFormatted = new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date())
 
   // Track rendered article IDs so Story of the Day, Top Picks, and Section Strips never repeat
   const usedIds = new Set<string>()
@@ -109,7 +103,7 @@ export default async function HomePage() {
       <div className="border-b border-neutral-300 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col md:flex-row items-center justify-between gap-2 text-xs font-sans text-neutral-600 dark:text-neutral-400 font-medium">
           <div className="w-full md:w-1/4 text-center md:text-left">
-            {dateFormatted}
+            <LocalDate format="masthead" />
           </div>
           <div className="w-full md:w-2/4 flex items-center justify-center px-6 py-1">
             <Link href="/" className="inline-block py-1">
@@ -202,7 +196,7 @@ export default async function HomePage() {
               {/* Left Side: Story of the day */}
               <div className="lg:col-span-7 space-y-3">
                 <div className="text-[10px] font-bold text-red-600 dark:text-red-500 uppercase tracking-widest font-sans">
-                  Story of the day · {heroArticle.section.toUpperCase()}
+                  Story of the day · {heroArticle.section === 'standalone' ? 'GENERAL' : heroArticle.section.toUpperCase()}
                 </div>
 
                 <Link href={`/articles/${heroArticle.slug}`} prefetch={false} className="group block">

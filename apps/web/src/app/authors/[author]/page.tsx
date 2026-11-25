@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { fetchArticlesByAuthor } from '@/lib/api'
 import SiteHeader from '@/components/SiteHeader'
 import CoverImage from '@/components/CoverImage'
-import { notFound } from 'next/navigation'
+import LocalDate from '@/components/LocalDate'
 
 interface Props {
   params: Promise<{ author: string }>
@@ -17,8 +17,8 @@ export default async function AuthorProfilePage({ params }: Props) {
 
   // Use author details from the first matching article or decoded slug
   const authorName = articles[0]?.authorName || decodedAuthor.replace(/-/g, ' ')
-  const authorBio = articles[0]?.authorBio || 'Staff Author & Contributor at The Open Brief.'
-  const authorAvatar = articles[0]?.authorAvatar
+  const authorBio = articles[0]?.authorBio?.trim() || ''
+  const authorAvatar = articles[0]?.authorAvatar?.trim() || ''
 
   const authorInitials = authorName
     .split(' ')
@@ -47,15 +47,17 @@ export default async function AuthorProfilePage({ params }: Props) {
             </div>
 
             <div className="space-y-2">
-              <div className="font-sans text-[10px] uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
-                Author &amp; Contributor
-              </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight capitalize text-neutral-900 dark:text-neutral-50">
                 {authorName}
               </h1>
-              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
-                {authorBio}
+              <p className="text-xs sm:text-sm font-sans font-semibold text-red-600 dark:text-red-400">
+                Staff Author &amp; Contributor at The Open Brief
               </p>
+              {authorBio && (
+                <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal pt-0.5">
+                  {authorBio}
+                </p>
+              )}
               <div className="pt-1 font-sans text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 {articles.length} {articles.length === 1 ? 'Article' : 'Articles'} Published
               </div>
@@ -94,7 +96,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                       </Link>
                     )}
                     <span className="text-[10px] font-sans uppercase font-bold text-red-600 dark:text-red-400 block mb-1">
-                      {art.section}
+                      {art.section === 'standalone' ? 'general' : art.section}
                     </span>
                     <Link href={`/articles/${art.slug}`}>
                       <h3 className="text-base font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
@@ -108,13 +110,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                     )}
                   </div>
                   <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-[11px] font-sans text-neutral-500 dark:text-neutral-400 flex items-center justify-between font-medium">
-                    <span>
-                      {new Date(art.publishedDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
+                    <LocalDate date={art.publishedDate} format="short" />
                     <span>{art.readTime} min read</span>
                   </div>
                 </article>

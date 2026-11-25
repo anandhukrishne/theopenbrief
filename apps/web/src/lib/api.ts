@@ -61,9 +61,9 @@ function normalizeArticle(item: any): Article {
   else if (rawType === 'explainers') sec = 'explainers'
   else if (rawType === 'tech') sec = 'tech'
   else if (rawType === 'cinebrief' || rawType === 'cine') sec = 'cinebrief'
-  else if (rawType === 'general') sec = 'general'
+  else if (rawType === 'general' || rawType === 'standalone') sec = 'general'
   else if (rawType === 'editions' || rawType === 'edition') sec = 'editions'
-  else sec = 'standalone'
+  else sec = 'general'
 
   return {
     id: String(item.id || item.slug),

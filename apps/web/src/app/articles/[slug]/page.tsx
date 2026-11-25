@@ -5,6 +5,7 @@ import { fetchArticleBySlug, fetchArticles, Article } from '@/lib/api'
 import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
+import LocalDate from '@/components/LocalDate'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -304,13 +305,7 @@ export default async function ArticlePage({ params }: Props) {
                   {article.authorName}
                 </Link>
                 <span>•</span>
-                <span>
-                  {new Date(article.publishedDate).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
+                <LocalDate date={article.publishedDate} format="long" />
                 <span>•</span>
                 <span>{article.readTime} min read</span>
               </div>

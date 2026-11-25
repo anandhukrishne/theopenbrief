@@ -78,33 +78,39 @@ export async function GET(req: NextRequest) {
     }
 
     let query = slug
-      ? 'SELECT * FROM articles WHERE status = $1'
-      : 'SELECT id, title, slug, section, excerpt, cover_image_url, cover_image_caption, author_id, author_name, read_time_minutes, published_at, is_story_of_the_day FROM articles WHERE status = $1'
+      ? `SELECT a.*, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url
+         FROM articles a
+         LEFT JOIN public.profiles p ON a.author_id = p.id
+         WHERE a.status = $1`
+      : `SELECT a.id, a.title, a.slug, a.section, a.excerpt, a.cover_image_url, a.cover_image_caption, a.author_id, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url, a.read_time_minutes, a.published_at, a.is_story_of_the_day
+         FROM articles a
+         LEFT JOIN public.profiles p ON a.author_id = p.id
+         WHERE a.status = $1`
     const values: any[] = ['published']
 
     if (slug) {
-      query += ' AND (slug = $2 OR LOWER(slug) = LOWER($2))'
+      query += ' AND (a.slug = $2 OR LOWER(a.slug) = LOWER($2))'
       values.push(slug.trim())
     } else {
       if (section) {
         if (section === 'general' || section === 'standalone') {
-          query += ` AND (section = 'general' OR section = 'standalone')`
+          query += ` AND (a.section = 'general' OR a.section = 'standalone')`
         } else {
-          query += ` AND section = $${values.length + 1}`
+          query += ` AND a.section = $${values.length + 1}`
           values.push(section)
         }
       }
       if (authorParam) {
-        query += ` AND (author_id = $${values.length + 1} OR LOWER(author_name) = LOWER($${values.length + 1}) OR REPLACE(LOWER(author_name), ' ', '-') = LOWER($${values.length + 1}))`
+        query += ` AND (a.author_id = $${values.length + 1} OR LOWER(COALESCE(NULLIF(p.name, ''), a.author_name)) = LOWER($${values.length + 1}) OR REPLACE(LOWER(COALESCE(NULLIF(p.name, ''), a.author_name)), ' ', '-') = LOWER($${values.length + 1}))`
         values.push(authorParam.trim())
       }
       if (editionParam) {
-        query += ` AND (edition_slug = $${values.length + 1} OR LOWER(edition_slug) = LOWER($${values.length + 1}))`
+        query += ` AND (a.edition_slug = $${values.length + 1} OR LOWER(a.edition_slug) = LOWER($${values.length + 1}))`
         values.push(editionParam.trim())
       }
     }
 
-    query += ' ORDER BY published_at DESC LIMIT 50'
+    query += ' ORDER BY a.published_at DESC LIMIT 50'
 
     const result = await db.query(query, values)
     return NextResponse.json(
