@@ -25,6 +25,7 @@ function normalizeArticle(item: any): Article {
   else if (rawType === 'tech') sec = 'tech'
   else if (rawType === 'cinebrief' || rawType === 'cine') sec = 'cinebrief'
   else if (rawType === 'general') sec = 'general'
+  else if (rawType === 'editions' || rawType === 'edition') sec = 'editions'
   else sec = 'standalone'
 
   return {

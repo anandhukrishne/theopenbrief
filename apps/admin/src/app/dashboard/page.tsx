@@ -17,7 +17,7 @@ interface ArticleItem {
   id: string
   title: string
   slug: string
-  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'
+  section: 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'editions'
   status: string
   excerpt?: string
   content?: string
@@ -61,7 +61,7 @@ export default function Dashboard() {
   // Form Fields
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
-  const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'>('journal')
+  const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'editions'>('journal')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
@@ -105,7 +105,7 @@ export default function Dashboard() {
   // Archive State
   const [articles, setArticles] = useState<ArticleItem[]>([])
   const [loadingArticles, setLoadingArticles] = useState(false)
-  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone'>('all')
+  const [archiveFilter, setArchiveFilter] = useState<'all' | 'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'editions'>('all')
 
   // Live Metrics
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
@@ -737,7 +737,7 @@ export default function Dashboard() {
                     {wordCount}w • {readTime}m
                   </span>
                 </div>
-                <div className="flex sm:grid sm:grid-cols-5 gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+                <div className="flex sm:grid sm:grid-cols-6 gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
                   {[
                     {
                       id: 'journal',
@@ -776,6 +776,16 @@ export default function Dashboard() {
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                           <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'editions',
+                      label: 'Special Edition',
+                      desc: 'Holiday & Event Issues',
+                      icon: (
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                         </svg>
                       ),
                     },
@@ -1196,7 +1206,7 @@ export default function Dashboard() {
 
               {/* Filter Strip */}
               <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto pb-1">
-                {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone'] as const).map((sec) => (
+                {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'editions'] as const).map((sec) => (
                   <button
                     key={sec}
                     type="button"

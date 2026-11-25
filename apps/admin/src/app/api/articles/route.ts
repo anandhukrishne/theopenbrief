@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-    const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general']
+    const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general', 'editions']
     const safeSection = validSections.includes(section) ? section : 'standalone'
 
     let targetArticle = null

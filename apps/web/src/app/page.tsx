@@ -17,10 +17,21 @@ const SECTIONS_CONFIG = [
   { section: 'general', title: 'General', href: '/general', layout: 'featured-left', trio1: 'big-left', trio2: 'big-center' },
 ] as const
 
+function pickStoryOfTheDay(articles: Article[]): Article | null {
+  if (articles.length === 0) return null
+  // Prefer a recent flagship story (journal/explainers) with a cover image, else newest with cover, else newest
+  const flagshipWithCover = articles.find(
+    (a) => a.coverImage && (a.section === 'journal' || a.section === 'explainers')
+  )
+  if (flagshipWithCover) return flagshipWithCover
+
+  const anyWithCover = articles.find((a) => Boolean(a.coverImage))
+  return anyWithCover || articles[0]
+}
+
 export default async function HomePage() {
   const allArticles = await fetchArticles()
 
-  // Date formatted like in the mockup
   const dateFormatted = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     month: 'long',
@@ -28,19 +39,55 @@ export default async function HomePage() {
     year: 'numeric',
   }).format(new Date())
 
-  const heroArticle = allArticles[0] || null
-  const topPicks = allArticles.slice(0, 4)
+  // Track rendered article IDs so Story of the Day, Top Picks, and Section Strips never repeat
+  const usedIds = new Set<string>()
 
-  // Group articles by section
-  const sectionArticlesMap: Record<string, Article[]> = {
-    explainers: allArticles.filter((a) => a.section === 'explainers').slice(0, 7),
-    journal: allArticles.filter((a) => a.section === 'journal').slice(0, 7),
-    tech: allArticles.filter((a) => a.section === 'tech').slice(0, 7),
-    cinebrief: allArticles.filter((a) => a.section === 'cinebrief').slice(0, 7),
-    general: allArticles.filter((a) => a.section === 'general' || a.section === 'standalone').slice(0, 7),
+  const heroArticle = pickStoryOfTheDay(allArticles)
+  if (heroArticle) usedIds.add(heroArticle.id)
+
+  // Top Picks: up to 4 distinct stories excluding Story of the Day (prefer diverse sections)
+  const remainingAfterHero = allArticles.filter((a) => !usedIds.has(a.id))
+  const topPicks: Article[] = []
+  const pickedSections = new Set<string>()
+
+  for (const art of remainingAfterHero) {
+    if (topPicks.length >= 4) break
+    if (!pickedSections.has(art.section)) {
+      topPicks.push(art)
+      pickedSections.add(art.section)
+      usedIds.add(art.id)
+    }
+  }
+  for (const art of remainingAfterHero) {
+    if (topPicks.length >= 4) break
+    if (!usedIds.has(art.id)) {
+      topPicks.push(art)
+      usedIds.add(art.id)
+    }
   }
 
-  // Helper to render remaining articles for a section in 1+3+3=7 architecture
+  // Detect any Special Edition dispatches (section === 'editions' or slug/section prefixed with edition)
+  const editionArticles = allArticles.filter(
+    (a) => (a.section as string) === 'editions' || a.slug.startsWith('edition-')
+  )
+
+  // Group articles by section excluding already-shown lead/top-pick stories (backfilling only if needed)
+  const getSectionStream = (matcher: (a: Article) => boolean): Article[] => {
+    const pool = allArticles.filter(matcher)
+    const fresh = pool.filter((a) => !usedIds.has(a.id))
+    const selected = fresh.slice(0, 7)
+    selected.forEach((a) => usedIds.add(a.id))
+    return selected
+  }
+
+  const sectionArticlesMap: Record<string, Article[]> = {
+    explainers: getSectionStream((a) => a.section === 'explainers'),
+    journal: getSectionStream((a) => a.section === 'journal'),
+    tech: getSectionStream((a) => a.section === 'tech'),
+    cinebrief: getSectionStream((a) => a.section === 'cinebrief'),
+    general: getSectionStream((a) => a.section === 'general' || a.section === 'standalone'),
+  }
+
   const renderSectionTrios = (articles: Article[], trio1Pattern: TrioPattern, trio2Pattern: TrioPattern) => {
     if (articles.length <= 3) return null
 
@@ -78,6 +125,12 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="hidden md:flex w-full md:w-1/4 items-center justify-end gap-4 text-right font-medium">
+            <Link
+              href="/editions"
+              className="text-[11px] font-sans font-bold uppercase tracking-wider text-red-600 dark:text-red-400 hover:underline"
+            >
+              Special Editions
+            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -87,7 +140,28 @@ export default async function HomePage() {
       <HomeNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* ── EMPTY STATE: When no articles exist ── */}
+        {/* ── Special Edition Spotlight Banner (Auto-renders when Edition posts exist) ── */}
+        {editionArticles.length > 0 && (
+          <div className="mt-6 p-4 sm:px-6 sm:py-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400 dark:text-red-600 font-bold block">
+                Special Commemorative Issue • {editionArticles.length} {editionArticles.length === 1 ? 'Dispatch' : 'Dispatches'}
+              </span>
+              <p className="text-sm sm:text-base font-bold tracking-tight">
+                {editionArticles[0].title}
+              </p>
+            </div>
+            <Link
+              href="/editions"
+              prefetch={false}
+              className="text-xs font-mono uppercase tracking-wider font-bold px-3.5 py-2 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white hover:opacity-90 transition-opacity shrink-0"
+            >
+              Open Special Edition →
+            </Link>
+          </div>
+        )}
+
+        {/* ── EMPTY STATE ── */}
         {allArticles.length === 0 && (
           <section className="py-20 sm:py-32 text-center">
             <div className="w-20 h-20 mx-auto mb-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex items-center justify-center font-bold text-2xl tracking-tight">
@@ -112,7 +186,7 @@ export default async function HomePage() {
                   Story of the day · {heroArticle.section.toUpperCase()}
                 </div>
 
-                <Link href={`/articles/${heroArticle.slug}`} className="group block">
+                <Link href={`/articles/${heroArticle.slug}`} prefetch={false} className="group block">
                   <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
                     {heroArticle.title}
                   </h1>
@@ -123,9 +197,9 @@ export default async function HomePage() {
                   )}
                 </Link>
 
-                {/* Cover Box with Fallback */}
                 <Link
                   href={`/articles/${heroArticle.slug}`}
+                  prefetch={false}
                   className="block relative w-full aspect-[16/9] bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden group"
                 >
                   <CoverImage
@@ -137,7 +211,7 @@ export default async function HomePage() {
                 </Link>
               </div>
 
-              {/* Right Side: Top Picks */}
+              {/* Right Side: Top Picks (Strictly distinct from Story of the Day) */}
               <div className="lg:col-span-5 space-y-2">
                 <h2 className="text-xs font-sans font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 pb-2 border-b border-neutral-200 dark:border-neutral-800">
                   Top Picks of the day
@@ -148,6 +222,7 @@ export default async function HomePage() {
                     <div key={pick.id || i} className="py-3.5 first:pt-2 last:pb-0 flex gap-3.5 items-start">
                       <Link
                         href={`/articles/${pick.slug}`}
+                        prefetch={false}
                         className="w-20 h-20 shrink-0 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center overflow-hidden"
                       >
                         <CoverImage
@@ -162,13 +237,14 @@ export default async function HomePage() {
                         <span className="text-[10px] font-sans font-bold uppercase text-red-600 dark:text-red-400 block">
                           {pick.section}
                         </span>
-                        <Link href={`/articles/${pick.slug}`}>
+                        <Link href={`/articles/${pick.slug}`} prefetch={false}>
                           <h3 className="text-base sm:text-lg font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
                             {pick.title}
                           </h3>
                         </Link>
                         <Link
                           href={`/authors/${getAuthorSlug(pick.authorName)}`}
+                          prefetch={false}
                           className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate hover:underline hover:text-red-600 dark:hover:text-red-400 block transition-colors"
                         >
                           {pick.authorName}
@@ -182,7 +258,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Editorial Section Streams (1+3+3=7 Architecture) ── */}
+        {/* ── Editorial Section Streams (1+3+3=7 Architecture, Zero Duplicates) ── */}
         {SECTIONS_CONFIG.map(({ section, title, href, layout, trio1, trio2 }) => {
           const articles = sectionArticlesMap[section] || []
           if (articles.length === 0) return null
