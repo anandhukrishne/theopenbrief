@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, getOrCreateProfile, UserProfile } from '@/lib/db'
 import { getAuthUser as verifyToken } from '@/lib/auth'
 
+const WEB_APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.theopenbrief.app'
+
+// Trigger instant on-demand ISR cache invalidation on the reader frontend
+async function triggerWebRevalidation(slug?: string, section?: string, previousSection?: string) {
+  const secret = process.env.REVALIDATION_SECRET
+  if (!secret) return
+
+  const normalizedSection = section === 'standalone' ? 'general' : section
+  const normalizedPrev = previousSection === 'standalone' ? 'general' : previousSection
+
+  try {
+    await fetch(`${WEB_APP_URL}/api/revalidate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-revalidate-secret': secret,
+      },
+      body: JSON.stringify({
+        slug,
+        section: normalizedSection,
+        previousSection: normalizedPrev !== normalizedSection ? normalizedPrev : undefined,
+      }),
+    })
+  } catch (err) {
+    console.warn('[Revalidate Trigger] Non-blocking revalidation call failed:', (err as any)?.message)
+  }
+}
+
 // Helper to authenticate user from session cookie
 async function getAuthUser(req: NextRequest): Promise<{ uid: string; email: string; profile: UserProfile } | null> {
   const user = await verifyToken(req)
@@ -33,18 +61,15 @@ export async function GET(req: NextRequest) {
       }
 
       if (idParam) {
-        // Single full article by ID (for editing)
         const result = await db.query('SELECT * FROM articles WHERE id = $1', [idParam])
         return NextResponse.json({ docs: result.rows })
       }
     }
 
     // --- Authenticated admin archive list: no slug/section/author = admin listing ---
-    // Detect admin archive request: authenticated + no public filters
     if (!slug && !section && !authorParam && !idParam && !fullParam) {
       const auth = await getAuthUser(req)
       if (auth) {
-        // Return lightweight columns only — no content, no cover_image_url
         const result = await db.query(
           `SELECT id, title, slug, section, status, author_id, author_name, read_time_minutes, published_at, excerpt
            FROM articles
@@ -119,7 +144,7 @@ export async function POST(req: NextRequest) {
       cover_image_url = '',
       cover_image_caption = '',
       read_time_minutes = 5,
-      id, // present if editing an existing article
+      id,
     } = body
 
     if (!title || !slug || !content) {
@@ -128,11 +153,9 @@ export async function POST(req: NextRequest) {
 
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-    // Validate section
     const validSections = ['journal', 'explainers', 'tech', 'cinebrief', 'standalone', 'general']
     const safeSection = validSections.includes(section) ? section : 'standalone'
 
-    // Check if updating an existing article
     let targetArticle = null
     if (id) {
       const res = await db.query('SELECT * FROM articles WHERE id = $1', [id])
@@ -143,9 +166,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (targetArticle) {
-      // Permission check based on hierarchy:
-      // admin & editor: can edit any article
-      // writer: can only edit articles they created (author_id match)
       const canEdit =
         auth.profile.role === 'admin' ||
         auth.profile.role === 'editor' ||
@@ -158,7 +178,6 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Update article
       const updateQuery = `
         UPDATE articles SET
           title = $1,
@@ -184,7 +203,10 @@ export async function POST(req: NextRequest) {
       ]
 
       const updated = await db.query(updateQuery, updateValues)
-      return NextResponse.json({ success: true, article: updated.rows[0] })
+      const saved = updated.rows[0]
+      await triggerWebRevalidation(saved.slug, saved.section, targetArticle.section)
+
+      return NextResponse.json({ success: true, article: saved })
     }
 
     // Creating a new article - strictly lock author attribution to current user's profile
@@ -212,7 +234,10 @@ export async function POST(req: NextRequest) {
     ]
 
     const result = await db.query(insertQuery, values)
-    return NextResponse.json({ success: true, article: result.rows[0] })
+    const created = result.rows[0]
+    await triggerWebRevalidation(created.slug, created.section)
+
+    return NextResponse.json({ success: true, article: created })
   } catch (err: any) {
     console.error('Error saving article:', err)
     return NextResponse.json({ error: err.message || 'Failed to save article' }, { status: 500 })
@@ -237,7 +262,6 @@ export async function DELETE(req: NextRequest) {
 
     await initDb()
 
-    // Find the article
     const findRes = id
       ? await db.query('SELECT * FROM articles WHERE id = $1', [id])
       : await db.query('SELECT * FROM articles WHERE slug = $1', [slug])
@@ -248,9 +272,6 @@ export async function DELETE(req: NextRequest) {
 
     const article = findRes.rows[0]
 
-    // Hierarchy check:
-    // admin and editor can delete any article
-    // writer can only delete their own article
     const canDelete =
       auth.profile.role === 'admin' ||
       auth.profile.role === 'editor' ||
@@ -264,6 +285,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     await db.query('DELETE FROM articles WHERE id = $1', [article.id])
+    await triggerWebRevalidation(article.slug, article.section)
+
     return NextResponse.json({ success: true, message: `Article "${article.title}" deleted successfully.` })
   } catch (err: any) {
     console.error('Error deleting article:', err)
