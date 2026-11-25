@@ -27,7 +27,25 @@ interface ArticleItem {
   author_name: string
   author_bio?: string
   author_avatar_url?: string
+  edition_id?: string
+  edition_slug?: string
   read_time_minutes: number
+  published_at: string
+}
+
+interface EditionItem {
+  id: string
+  title: string
+  slug: string
+  subtitle?: string
+  description?: string
+  editor_note?: string
+  cover_image_url?: string
+  theme_preset: 'christmas' | 'republic' | 'heritage' | 'monsoon' | 'midnight' | 'classic'
+  accent_color?: string
+  badge_text?: string
+  status: 'draft' | 'published'
+  article_ids?: string[]
   published_at: string
 }
 
@@ -53,7 +71,7 @@ export default function Dashboard() {
   const [savingProfile, setSavingProfile] = useState(false)
 
   // Current View
-  const [activeTab, setActiveTab] = useState<'editor' | 'archive' | 'profile' | 'staff'>('editor')
+  const [activeTab, setActiveTab] = useState<'editor' | 'archive' | 'editions' | 'profile' | 'staff'>('editor')
   const [editorMode, setEditorMode] = useState<'edit' | 'split' | 'preview'>('edit')
   const [mobileCoverOpen, setMobileCoverOpen] = useState(true)
   const [mobileMetaOpen, setMobileMetaOpen] = useState(false)
@@ -62,6 +80,7 @@ export default function Dashboard() {
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [section, setSection] = useState<'journal' | 'explainers' | 'tech' | 'cinebrief' | 'standalone' | 'editions'>('journal')
+  const [articleEditionSlug, setArticleEditionSlug] = useState('')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
@@ -69,6 +88,24 @@ export default function Dashboard() {
   const [readTime, setReadTime] = useState(5)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null)
+
+  // Special Editions State
+  const [editionsList, setEditionsList] = useState<EditionItem[]>([])
+  const [loadingEditions, setLoadingEditions] = useState(false)
+  const [editingEditionModal, setEditingEditionModal] = useState(false)
+  const [editionId, setEditionId] = useState<string | null>(null)
+  const [editionTitle, setEditionTitle] = useState('')
+  const [editionSlug, setEditionSlug] = useState('')
+  const [editionSubtitle, setEditionSubtitle] = useState('')
+  const [editionDescription, setEditionDescription] = useState('')
+  const [editionEditorNote, setEditionEditorNote] = useState('')
+  const [editionCoverImageUrl, setEditionCoverImageUrl] = useState('')
+  const [editionThemePreset, setEditionThemePreset] = useState<'christmas' | 'republic' | 'heritage' | 'monsoon' | 'midnight' | 'classic'>('christmas')
+  const [editionAccentColor, setEditionAccentColor] = useState('#B91C1C')
+  const [editionBadgeText, setEditionBadgeText] = useState('SPECIAL EDITION')
+  const [editionStatus, setEditionStatus] = useState<'draft' | 'published'>('published')
+  const [editionArticleIds, setEditionArticleIds] = useState<string[]>([])
+  const [savingEdition, setSavingEdition] = useState(false)
 
   // Status & Notifications
   const [publishing, setPublishing] = useState(false)
@@ -203,9 +240,32 @@ export default function Dashboard() {
     }
   }
 
+  // Load special editions
+  const fetchEditionsList = async () => {
+    setLoadingEditions(true)
+    try {
+      const res = await fetch('/api/editions')
+      if (res.ok) {
+        const data = await res.json()
+        setEditionsList(data.editions || [])
+      }
+    } catch (err) {
+      console.error('Failed to load editions:', err)
+    } finally {
+      setLoadingEditions(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchEditionsList()
+  }, [])
+
   useEffect(() => {
     if (activeTab === 'staff') {
       fetchStaff()
+    } else if (activeTab === 'editions') {
+      fetchEditionsList()
+      fetchArchive()
     }
   }, [activeTab])
 
@@ -368,6 +428,7 @@ export default function Dashboard() {
   const resetForm = () => {
     setTitle('')
     setSlug('')
+    setArticleEditionSlug('')
     setExcerpt('')
     setContent('')
     setCoverImageUrl('')
@@ -386,6 +447,7 @@ export default function Dashboard() {
       setTitle(art.title)
       setSlug(art.slug)
       setSection(art.section)
+      setArticleEditionSlug(art.edition_slug || '')
       setExcerpt(art.excerpt || '')
       setContent(art.content || '')
       setCoverImageUrl(art.cover_image_url || '')
@@ -476,6 +538,7 @@ export default function Dashboard() {
           title,
           slug,
           section,
+          edition_slug: articleEditionSlug || '',
           excerpt,
           content,
           cover_image_url: coverImageUrl,
@@ -495,10 +558,115 @@ export default function Dashboard() {
         link: `https://theopenbrief.app/articles/${slug}`,
       })
       fetchArchive()
+      fetchEditionsList()
     } catch (err: any) {
       setMessage({ type: 'error', text: `Publication error: ${err.message}` })
     } finally {
       setPublishing(false)
+    }
+  }
+
+  // Edition Management Handlers
+  const openCreateEdition = () => {
+    setEditionId(null)
+    setEditionTitle('')
+    setEditionSlug('')
+    setEditionSubtitle('')
+    setEditionDescription('')
+    setEditionEditorNote('')
+    setEditionCoverImageUrl('')
+    setEditionThemePreset('christmas')
+    setEditionAccentColor('#B91C1C')
+    setEditionBadgeText('CHRISTMAS 2026')
+    setEditionStatus('published')
+    setEditionArticleIds([])
+    setEditingEditionModal(true)
+  }
+
+  const openEditEdition = (ed: EditionItem) => {
+    setEditionId(ed.id)
+    setEditionTitle(ed.title)
+    setEditionSlug(ed.slug)
+    setEditionSubtitle(ed.subtitle || '')
+    setEditionDescription(ed.description || '')
+    setEditionEditorNote(ed.editor_note || '')
+    setEditionCoverImageUrl(ed.cover_image_url || '')
+    setEditionThemePreset(ed.theme_preset || 'christmas')
+    setEditionAccentColor(ed.accent_color || '#B91C1C')
+    setEditionBadgeText(ed.badge_text || 'SPECIAL EDITION')
+    setEditionStatus(ed.status || 'published')
+    const ids = Array.isArray(ed.article_ids) ? ed.article_ids : []
+    setEditionArticleIds(ids)
+    setEditingEditionModal(true)
+  }
+
+  const handleSaveEdition = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editionTitle.trim() || !editionSlug.trim()) {
+      alert('Please provide an edition title and slug.')
+      return
+    }
+
+    setSavingEdition(true)
+    setMessage(null)
+
+    try {
+      const method = editionId ? 'PUT' : 'POST'
+      const payload: any = {
+        title: editionTitle.trim(),
+        slug: editionSlug.trim(),
+        subtitle: editionSubtitle.trim(),
+        description: editionDescription.trim(),
+        editor_note: editionEditorNote.trim(),
+        cover_image_url: editionCoverImageUrl.trim(),
+        theme_preset: editionThemePreset,
+        accent_color: editionAccentColor,
+        badge_text: editionBadgeText.trim(),
+        status: editionStatus,
+        article_ids: editionArticleIds,
+      }
+      if (editionId) payload.id = editionId
+
+      const res = await fetch('/api/editions', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to save edition')
+      }
+
+      setMessage({
+        type: 'success',
+        text: `Special Edition "${editionTitle}" saved live!`,
+        link: `https://theopenbrief.app/editions/${editionSlug}`,
+      })
+      setEditingEditionModal(false)
+      fetchEditionsList()
+    } catch (err: any) {
+      alert(`Error saving edition: ${err.message}`)
+    } finally {
+      setSavingEdition(false)
+    }
+  }
+
+  const handleDeleteEdition = async (id: string, edTitle: string) => {
+    if (!window.confirm(`Permanently delete special edition "${edTitle}"? This will not delete the articles.`)) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/editions?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to delete edition')
+      }
+      setMessage({ type: 'success', text: `Edition "${edTitle}" deleted.` })
+      fetchEditionsList()
+    } catch (err: any) {
+      alert(`Error: ${err.message}`)
     }
   }
 
@@ -561,6 +729,18 @@ export default function Dashboard() {
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
               Articles ({articles.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('editions'); fetchEditionsList(); fetchArchive() }}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                activeTab === 'editions' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+              Special Editions ({editionsList.length})
             </button>
             {isStaffManager && (
               <button
@@ -821,6 +1001,34 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
+
+              {/* Special Edition Assignment Selector */}
+              {editionsList.length > 0 && (
+                <div className="p-3 bg-amber-50/70 border border-amber-200/90 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                    <span className="text-xs font-mono font-bold text-slate-800">
+                      Curate into Special Edition:
+                    </span>
+                  </div>
+                  <select
+                    value={articleEditionSlug}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setArticleEditionSlug(val)
+                      if (val) setSection('editions')
+                    }}
+                    className="text-xs font-mono font-semibold px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  >
+                    <option value="">None (Standard Standalone / Desk Section)</option>
+                    {editionsList.map((ed) => (
+                      <option key={ed.id} value={ed.slug}>
+                        {ed.title} ({ed.theme_preset.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Author Attribution Card */}
               <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-mono text-slate-600">
@@ -1725,6 +1933,438 @@ export default function Dashboard() {
             )}
           </div>
         )}
+
+        {/* ── TAB 5: Special Editions Management ── */}
+        {activeTab === 'editions' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-red-600 font-bold block mb-1">
+                  Commemorative Issues &amp; Special Collections
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  Special Editions Manager
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
+                  Design festive, milestone, and seasonal editions (such as Christmas or Republic Day) with customized theme palettes, heraldic badges, and curated story lineups.
+                </p>
+              </div>
+
+              {isStaffManager && (
+                <button
+                  type="button"
+                  onClick={openCreateEdition}
+                  className="px-4 py-2.5 bg-slate-900 text-white font-semibold text-xs rounded-xl hover:bg-black transition-colors flex items-center justify-center gap-2 shrink-0 shadow-xs"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                  </svg>
+                  New Special Edition
+                </button>
+              )}
+            </div>
+
+            {loadingEditions ? (
+              <div className="py-16 text-center text-sm font-mono text-slate-400">
+                Loading special editions...
+              </div>
+            ) : editionsList.length === 0 ? (
+              <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-10 text-center space-y-4 max-w-xl mx-auto my-8">
+                <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-bold block">
+                  No Editions Created
+                </span>
+                <h3 className="text-lg font-bold text-slate-800">
+                  Ready to launch a Christmas or Republic Day Special?
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Create your first specially designed edition page to curate companion dispatches and feature commemorative broadsheet heraldry.
+                </p>
+                {isStaffManager && (
+                  <button
+                    type="button"
+                    onClick={openCreateEdition}
+                    className="px-4 py-2 bg-slate-900 text-white text-xs font-mono font-bold rounded-lg hover:bg-black transition-colors"
+                  >
+                    Create First Edition →
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {editionsList.map((ed) => {
+                  const curatedCount = Array.isArray(ed.article_ids) ? ed.article_ids.length : 0
+                  return (
+                    <div
+                      key={ed.id}
+                      className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Theme Accent Bar */}
+                        <div
+                          className="h-2 w-full"
+                          style={{ backgroundColor: ed.accent_color || '#B91C1C' }}
+                        />
+
+                        {ed.cover_image_url && (
+                          <div className="w-full h-32 overflow-hidden bg-slate-100 border-b border-slate-100">
+                            <img
+                              src={ed.cover_image_url}
+                              alt={ed.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+
+                        <div className="p-4 sm:p-5 space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className="px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest font-extrabold rounded text-white"
+                              style={{ backgroundColor: ed.accent_color || '#B91C1C' }}
+                            >
+                              {ed.badge_text || ed.theme_preset.toUpperCase()}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold rounded ${
+                                ed.status === 'published'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}
+                            >
+                              {ed.status}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h3 className="font-bold text-slate-900 text-lg leading-snug">
+                              {ed.title}
+                            </h3>
+                            {ed.subtitle && (
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                {ed.subtitle}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="text-[11px] font-mono text-slate-400 space-y-0.5 pt-1">
+                            <div>Theme: <span className="capitalize font-semibold text-slate-700">{ed.theme_preset}</span></div>
+                            <div>Curated stories: <span className="font-semibold text-slate-700">{curatedCount}</span></div>
+                            <div>Slug: <span className="text-slate-600">/editions/{ed.slug}</span></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between gap-2">
+                        {isStaffManager ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openEditEdition(ed)}
+                              className="px-3 py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg hover:border-black transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEdition(ed.id, ed.title)}
+                              className="px-3 py-1.5 text-xs font-mono text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-mono">View Only</span>
+                        )}
+
+                        <a
+                          href={`https://theopenbrief.app/editions/${ed.slug}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 text-xs font-mono text-slate-600 border border-slate-200 rounded-lg hover:text-black hover:border-slate-400 transition-colors"
+                        >
+                          Live ↗
+                        </a>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+      {/* ── Special Edition Editor Modal ── */}
+      {editingEditionModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden my-auto border border-slate-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900">
+                  {editionId ? 'Edit Special Edition' : 'Create Special Edition'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Design and curate bespoke issues like Christmas or Republic Day.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingEditionModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <form onSubmit={handleSaveEdition} className="p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Theme Preset Selector */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-2">
+                  Theme Preset &amp; Aesthetic
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: 'christmas', label: 'Christmas', color: '#B91C1C', desc: 'Festive Crimson & Pine' },
+                    { id: 'republic', label: 'Republic Day', color: '#1D4ED8', desc: 'Sovereign Navy & Tricolor' },
+                    { id: 'heritage', label: 'Heritage', color: '#92400E', desc: 'Antique Gold & Bronze' },
+                    { id: 'monsoon', label: 'Monsoon', color: '#0F766E', desc: 'Literary Teal & Slate' },
+                    { id: 'midnight', label: 'Midnight Tech', color: '#06B6D4', desc: 'Obsidian & Neon Cyan' },
+                    { id: 'classic', label: 'Classic Broadsheet', color: '#171717', desc: 'Charcoal & Red' },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setEditionThemePreset(t.id as any)
+                        setEditionAccentColor(t.color)
+                        if (!editionBadgeText || editionBadgeText === 'SPECIAL EDITION' || editionBadgeText.includes('2026') || editionBadgeText.includes('SPECIAL')) {
+                          if (t.id === 'christmas') setEditionBadgeText('CHRISTMAS 2026')
+                          else if (t.id === 'republic') setEditionBadgeText('REPUBLIC SPECIAL')
+                          else if (t.id === 'heritage') setEditionBadgeText('HERITAGE ISSUE')
+                          else if (t.id === 'monsoon') setEditionBadgeText('MONSOON JOURNAL')
+                          else if (t.id === 'midnight') setEditionBadgeText('TECH SPECIAL')
+                          else setEditionBadgeText('SPECIAL EDITION')
+                        }
+                      }}
+                      className={`p-2.5 text-left rounded-xl border transition-all ${
+                        editionThemePreset === t.id
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
+                        <span className="font-bold text-xs truncate">{t.label}</span>
+                      </div>
+                      <span className={`text-[10px] block truncate ${editionThemePreset === t.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                        {t.desc}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Title & Slug */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                    Edition Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editionTitle}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setEditionTitle(v)
+                      if (!editionId && (!editionSlug || editionSlug === editionTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))) {
+                        setEditionSlug(v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+                      }
+                    }}
+                    placeholder="e.g. Christmas Edition 2026"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                    URL Slug *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editionSlug}
+                    onChange={(e) => setEditionSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}
+                    placeholder="e.g. christmas-2026"
+                    className="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  />
+                  <span className="text-[10px] font-mono text-slate-400 mt-0.5 block">
+                    URL: theopenbrief.app/editions/{editionSlug || '...'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Badge & Accent Color & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                    Badge Text
+                  </label>
+                  <input
+                    type="text"
+                    value={editionBadgeText}
+                    onChange={(e) => setEditionBadgeText(e.target.value)}
+                    placeholder="e.g. CHRISTMAS 2026"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold uppercase border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                    Accent Color
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={editionAccentColor}
+                      onChange={(e) => setEditionAccentColor(e.target.value)}
+                      className="w-8 h-8 rounded border border-slate-200 cursor-pointer p-0.5 shrink-0"
+                    />
+                    <input
+                      type="text"
+                      value={editionAccentColor}
+                      onChange={(e) => setEditionAccentColor(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-slate-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={editionStatus}
+                    onChange={(e) => setEditionStatus(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  >
+                    <option value="published">Published (Live)</option>
+                    <option value="draft">Draft (Staff Only)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Subtitle / Tagline */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                  Subtitle / Issue Tagline
+                </label>
+                <input
+                  type="text"
+                  value={editionSubtitle}
+                  onChange={(e) => setEditionSubtitle(e.target.value)}
+                  placeholder="e.g. Dispatches on winter tradition, civic memory, and new horizons."
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+              </div>
+
+              {/* Cover Artwork URL + WebP Uploader */}
+              <div className="space-y-2">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold">
+                  Edition Banner / Cover Artwork URL
+                </label>
+                <input
+                  type="text"
+                  value={editionCoverImageUrl}
+                  onChange={(e) => setEditionCoverImageUrl(e.target.value)}
+                  placeholder="https://raw.githubusercontent.com/.../edition-cover.webp"
+                  className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+                <WebPUploader
+                  onUploadComplete={(url) => setEditionCoverImageUrl(url)}
+                />
+              </div>
+
+              {/* Letter from Editor / Issue Prologue */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                  Letter from the Editor / Prologue (Markdown Supported)
+                </label>
+                <textarea
+                  rows={4}
+                  value={editionEditorNote}
+                  onChange={(e) => setEditionEditorNote(e.target.value)}
+                  placeholder="Write an introductory message or lead note from the editorial desk introducing this commemorative issue..."
+                  className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 leading-relaxed font-serif"
+                />
+              </div>
+
+              {/* Curate Articles Checklist */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-600 font-bold mb-1">
+                  Curate Articles for this Issue ({editionArticleIds.length} Selected)
+                </label>
+                <p className="text-[11px] text-slate-400 mb-2">
+                  Check all articles that should be featured in this commemorative edition. The first selected article serves as the Lead Dispatch.
+                </p>
+                <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-48 overflow-y-auto p-1 bg-slate-50/50">
+                  {articles.length === 0 ? (
+                    <div className="p-4 text-center text-xs text-slate-400">
+                      No articles in archive to select from.
+                    </div>
+                  ) : (
+                    articles.map((art) => {
+                      const isSelected = editionArticleIds.includes(art.id)
+                      return (
+                        <label
+                          key={art.id}
+                          className={`p-2.5 flex items-center justify-between gap-3 text-xs cursor-pointer rounded-lg hover:bg-white transition-colors ${
+                            isSelected ? 'bg-white font-semibold text-slate-900' : 'text-slate-600'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditionArticleIds([...editionArticleIds, art.id])
+                                } else {
+                                  setEditionArticleIds(editionArticleIds.filter((id) => id !== art.id))
+                                }
+                              }}
+                              className="rounded border-slate-300 text-slate-900 focus:ring-0 w-4 h-4"
+                            />
+                            <span className="truncate">{art.title}</span>
+                          </div>
+                          <span className="text-[10px] font-mono uppercase text-slate-400 shrink-0">
+                            {art.section}
+                          </span>
+                        </label>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setEditingEditionModal(false)}
+                  className="px-4 py-2 text-xs font-mono text-slate-600 hover:text-black border border-slate-200 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdition}
+                  className="px-5 py-2 text-xs font-mono bg-slate-900 text-white font-semibold rounded-lg hover:bg-black transition-colors disabled:opacity-50"
+                >
+                  {savingEdition ? 'Saving Edition...' : editionId ? 'Update Edition' : 'Publish Edition'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* ── Sticky Mobile Publish Action Bar (Visible on < lg when in Writing Desk) ── */}
@@ -1770,6 +2410,19 @@ export default function Dashboard() {
             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
           </svg>
           Articles ({articles.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => { setActiveTab('editions'); fetchEditionsList(); fetchArchive() }}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${
+            activeTab === 'editions' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          </svg>
+          Editions
         </button>
 
         {isStaffManager && (

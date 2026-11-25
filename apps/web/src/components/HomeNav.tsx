@@ -7,8 +7,9 @@ const NAV_LINKS = [
   { label: 'OPENBRIEF PLUS', href: '/journal' },
   { label: 'TOB EXPLAINERS', href: '/explainers' },
   { label: 'TECHNOBRIEF', href: '/tech' },
-  { label: 'CIN\u0112BRIEF', href: '/cinebrief' },
+  { label: 'CINĒBRIEF', href: '/cinebrief' },
   { label: 'GENERAL', href: '/general' },
+  { label: 'SPECIAL EDITIONS', href: '/editions' },
   { label: 'ABOUT', href: '/about' },
 ]
 

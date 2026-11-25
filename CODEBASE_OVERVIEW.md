@@ -97,7 +97,24 @@ The editorial portal utilizes a hardened two-step authentication scheme combinin
    - The API route `/api/articles` responds to public `GET` requests with published articles only, omitting drafts unless requested with an active staff session.
    - Articles support URL query parameters: `section`, `slug`, `author_id`, `limit`, and `offset`.
 
-### 2.3 Image and CDN Pipeline
+### 2.3 Special Editions System & Thematic Design
+
+The platform features an editorial system for managing and designing commemorative issues (such as the Christmas Edition or Republic Day Special):
+
+1. **Edition Creation and Administration (`apps/admin/src/app/dashboard/page.tsx` & `/api/editions`)**:
+   - Editors and administrators design special editions with custom properties: Title, URL Slug, Theme Preset (`christmas`, `republic`, `heritage`, `monsoon`, `midnight`, `classic`), Accent Color, Commemorative Badge text, Subtitle, Overview, Cover Art, and an introductory "Letter from the Editor".
+   - Curators multi-select existing published articles into the edition and establish custom reading sequences.
+   - Writers drafting dispatches can also directly assign stories to an active Special Edition from the Writing Desk.
+2. **Dedicated Bespoke Reader Experience (`apps/web/src/app/editions/[slug]/page.tsx`)**:
+   - When a reader visits `/editions/[slug]`, the page dynamically renders a themed aesthetic reflecting the issue:
+     - **Christmas**: Festive crimson and pine palette, seasonal heraldic ribbons, snowflake motifs, warm frosted card styling.
+     - **Republic Day**: Sovereign navy, saffron and tricolor heraldry, commemorative emblem watermarks, stately broadsheet serif typography.
+     - **Heritage, Monsoon, Midnight, Classic**: Tailored palettes for historical essays, literary issues, future tech specials, or traditional broadsheets.
+   - Includes a Lead Flagship Story showcase, companion inquiry columns, and the Editor's Prologue.
+3. **Editions Archive (`apps/web/src/app/editions/page.tsx`)**:
+   - A dedicated public index showcasing all past and present special editions with issue covers, themes, story counts, and navigation links.
+
+### 2.4 Image and CDN Pipeline
 
 1. **Client-Side Compression (`apps/admin/src/lib/imageCompressor.ts` & `WebPUploader.tsx`)**:
    - Authors upload cover images or body graphics via file picker or drag-and-drop.
@@ -173,6 +190,7 @@ The administration application handles staff authentication, article management,
 - **`apps/admin/src/app/api/auth/session/route.ts`**: Session introspection and termination endpoint. Validates the active session cookie for client components or destroys the session cookie upon logout.
 - **`apps/admin/src/app/api/articles/route.ts`**: Core article REST API. Supports public `GET` requests for published articles (with filtering by slug, section, or author) and authenticated `POST`, `PUT`, and `DELETE` operations with strict role checks (writers edit their own articles; editors and owners manage all).
 - **`apps/admin/src/app/api/staff/route.ts`**: Staff administration endpoint. Handles team member onboarding, role promotion/demotion, and user deletion by coordinating Supabase Auth Admin (`createUser`, `updateUserById`, `deleteUser`) with the `public.profiles` database table.
+- **`apps/admin/src/app/api/editions/route.ts`**: Special Editions REST API. Supports public and authenticated `GET` requests (retrieving all editions or resolving a specific edition by slug with all its curated articles in order), as well as `POST`, `PUT`, and `DELETE` operations for editors and administrators.
 - **`apps/admin/src/app/api/profile/route.ts`**: User profile endpoint allowing authenticated writers and editors to retrieve and update their own name, biography, beat, and avatar URL.
 - **`apps/admin/src/app/api/cdn/upload/route.ts`**: Image hosting proxy endpoint. Receives compressed WebP image data and uploads it directly to the designated GitHub CDN repository, returning a raw URL for immediate use in articles.
 
@@ -233,6 +251,8 @@ The reader application provides the high-performance public reading experience, 
 - **`apps/web/src/app/loading.tsx`**: Instant loading fallback screen displaying a subtle broadsheet skeleton animation while server components fetch data.
 - **`apps/web/src/app/page.tsx`**: The Open Brief front page. Renders a comprehensive broadsheet edition featuring a lead story banner, a three-column section spotlight row, dynamic section streams, and trending story sidebars.
 - **`apps/web/src/app/articles/[slug]/page.tsx`**: Article detail reading page. Fetches story data by slug, computes read times, renders author metadata and beats, and processes article content through a custom zero-dependency server Markdown parser.
+- **`apps/web/src/app/editions/page.tsx`**: Special Editions index and archive. Displays commemorative issues with theme badges, issue dates, and links to each edition's dedicated page.
+- **`apps/web/src/app/editions/[slug]/page.tsx`**: Specially designed commemorative edition page. Implements dynamic thematic design systems (Christmas, Republic Day, Heritage, Monsoon, Midnight Tech, Classic) with custom heraldic borders, cover banners, editor's prologues, and curated lead and companion story collections.
 - **`apps/web/src/app/authors/[author]/page.tsx`**: Author profile and catalog view. Displays author biography, beat, avatar, and an index of all published articles authored by that contributor.
 - **`apps/web/src/app/journal/page.tsx`**: Dedicated section landing page for Longform Journalism and deep analytical essays.
 - **`apps/web/src/app/explainers/page.tsx`**: Dedicated section landing page for structured explainers and contextual backgrounders.

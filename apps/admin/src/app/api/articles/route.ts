@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
     const idParam = searchParams.get('id')
     const fullParam = searchParams.get('full')
     const authorParam = searchParams.get('author') || searchParams.get('author_id') || searchParams.get('authorId')
+    const editionParam = searchParams.get('edition') || searchParams.get('edition_slug')
 
     if (idParam || fullParam) {
       const auth = await getAuthUser(req)
@@ -97,6 +98,10 @@ export async function GET(req: NextRequest) {
         query += ` AND (author_id = $${values.length + 1} OR LOWER(author_name) = LOWER($${values.length + 1}) OR REPLACE(LOWER(author_name), ' ', '-') = LOWER($${values.length + 1}))`
         values.push(authorParam.trim())
       }
+      if (editionParam) {
+        query += ` AND (edition_slug = $${values.length + 1} OR LOWER(edition_slug) = LOWER($${values.length + 1}))`
+        values.push(editionParam.trim())
+      }
     }
 
     query += ' ORDER BY published_at DESC LIMIT 50'
@@ -137,6 +142,8 @@ export async function POST(req: NextRequest) {
       cover_image_url = '',
       cover_image_caption = '',
       read_time_minutes = 5,
+      edition_id = null,
+      edition_slug = '',
       id,
     } = body
 
@@ -180,8 +187,10 @@ export async function POST(req: NextRequest) {
           cover_image_url = $5,
           cover_image_caption = $6,
           read_time_minutes = $7,
+          edition_id = $8,
+          edition_slug = $9,
           updated_at = NOW()
-        WHERE id = $8
+        WHERE id = $10
         RETURNING *;
       `
       const updateValues = [
@@ -192,6 +201,8 @@ export async function POST(req: NextRequest) {
         cover_image_url,
         cover_image_caption,
         read_time_minutes,
+        edition_id || null,
+        edition_slug || '',
         targetArticle.id,
       ]
 
@@ -205,8 +216,9 @@ export async function POST(req: NextRequest) {
     const insertQuery = `
       INSERT INTO articles (
         title, slug, section, excerpt, content, cover_image_url, cover_image_caption,
-        author_id, author_name, author_bio, author_avatar_url, read_time_minutes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        author_id, author_name, author_bio, author_avatar_url, read_time_minutes,
+        edition_id, edition_slug
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *;
     `
 
@@ -223,6 +235,8 @@ export async function POST(req: NextRequest) {
       auth.profile.bio || '',
       auth.profile.avatar_url || '',
       read_time_minutes,
+      edition_id || null,
+      edition_slug || '',
     ]
 
     const result = await db.query(insertQuery, values)

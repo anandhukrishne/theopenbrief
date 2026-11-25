@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { fetchArticles, Article } from '@/lib/api'
+import { fetchArticles, fetchEditions, Article } from '@/lib/api'
 import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
@@ -30,7 +30,10 @@ function pickStoryOfTheDay(articles: Article[]): Article | null {
 }
 
 export default async function HomePage() {
-  const allArticles = await fetchArticles()
+  const [allArticles, editions] = await Promise.all([
+    fetchArticles(),
+    fetchEditions(),
+  ])
 
   const dateFormatted = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
@@ -140,8 +143,26 @@ export default async function HomePage() {
       <HomeNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* ── Special Edition Spotlight Banner (Auto-renders when Edition posts exist) ── */}
-        {editionArticles.length > 0 && (
+        {/* ── Special Edition Spotlight Banner (Auto-renders when Editions exist) ── */}
+        {editions.length > 0 ? (
+          <div className="mt-6 p-4 sm:px-6 sm:py-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-neutral-800 dark:border-neutral-200">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400 dark:text-red-600 font-bold block">
+                {editions[0].badgeText || 'Special Commemorative Issue'}
+              </span>
+              <p className="text-sm sm:text-base font-bold font-serif tracking-tight">
+                {editions[0].title} {editions[0].subtitle && `— ${editions[0].subtitle}`}
+              </p>
+            </div>
+            <Link
+              href={`/editions/${editions[0].slug}`}
+              prefetch={false}
+              className="text-xs font-mono uppercase tracking-wider font-bold px-3.5 py-2 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white hover:opacity-90 transition-opacity shrink-0"
+            >
+              Open Special Edition →
+            </Link>
+          </div>
+        ) : editionArticles.length > 0 ? (
           <div className="mt-6 p-4 sm:px-6 sm:py-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <span className="text-[10px] font-mono uppercase tracking-widest text-red-400 dark:text-red-600 font-bold block">
@@ -159,7 +180,7 @@ export default async function HomePage() {
               Open Special Edition →
             </Link>
           </div>
-        )}
+        ) : null}
 
         {/* ── EMPTY STATE ── */}
         {allArticles.length === 0 && (

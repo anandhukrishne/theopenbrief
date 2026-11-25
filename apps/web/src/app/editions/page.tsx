@@ -1,8 +1,6 @@
 import Link from 'next/link'
-import { fetchArticles, Article } from '@/lib/api'
-import { getAuthorSlug } from '@/lib/utils'
+import { fetchEditions, fetchArticles, Edition, Article } from '@/lib/api'
 import SiteHeader from '@/components/SiteHeader'
-import CoverImage from '@/components/CoverImage'
 
 export const revalidate = 3600
 
@@ -11,77 +9,136 @@ export const metadata = {
   description: 'Curated commemorative issues, seasonal digests, and special reports from The Open Brief newsroom.',
 }
 
-interface EditionGroup {
-  slug: string
-  title: string
-  subtitle: string
-  articles: Article[]
-}
-
-function groupEditions(articles: Article[]): EditionGroup[] {
-  const editionPosts = articles.filter(
-    (a) => a.section === 'editions' || a.slug.startsWith('edition-')
-  )
-
-  const groupsMap = new Map<string, EditionGroup>()
-
-  for (const art of editionPosts) {
-    // Slug convention: edition-christmas-2026-story-title -> group key "christmas-2026"
-    const match = art.slug.match(/^edition-([a-z0-9]+-(?:20\d{2}|special|issue|day))-(.+)$/i)
-    const key = match ? match[1].toLowerCase() : 'special-issue'
-    const label = match
-      ? match[1]
-          .split('-')
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ') + ' Edition'
-      : 'Special Commemorative Edition'
-
-    if (!groupsMap.has(key)) {
-      groupsMap.set(key, {
-        slug: key,
-        title: label,
-        subtitle: 'Curated dispatches, essays, and visual explainers from the editorial desk.',
-        articles: [],
-      })
-    }
-    groupsMap.get(key)!.articles.push(art)
+function getThemeAccent(preset: string) {
+  switch (preset) {
+    case 'christmas':
+      return {
+        badge: 'bg-red-700 text-white',
+        border: 'hover:border-red-600 dark:hover:border-red-500',
+        text: 'text-red-700 dark:text-red-400',
+        tag: 'Christmas Edition',
+      }
+    case 'republic':
+      return {
+        badge: 'bg-blue-800 text-white',
+        border: 'hover:border-blue-600 dark:hover:border-blue-500',
+        text: 'text-blue-800 dark:text-blue-400',
+        tag: 'Republic Day Special',
+      }
+    case 'heritage':
+      return {
+        badge: 'bg-amber-800 text-white',
+        border: 'hover:border-amber-600 dark:hover:border-amber-500',
+        text: 'text-amber-800 dark:text-amber-400',
+        tag: 'Heritage Retrospective',
+      }
+    case 'monsoon':
+      return {
+        badge: 'bg-teal-800 text-white',
+        border: 'hover:border-teal-600 dark:hover:border-teal-500',
+        text: 'text-teal-800 dark:text-teal-400',
+        tag: 'Monsoon Literary Issue',
+      }
+    case 'midnight':
+      return {
+        badge: 'bg-cyan-600 text-black font-extrabold',
+        border: 'hover:border-cyan-500 dark:hover:border-cyan-400',
+        text: 'text-cyan-600 dark:text-cyan-400',
+        tag: 'Frontier Tech Special',
+      }
+    case 'classic':
+    default:
+      return {
+        badge: 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900',
+        border: 'hover:border-neutral-900 dark:hover:border-neutral-100',
+        text: 'text-neutral-900 dark:text-neutral-100',
+        tag: 'Special Issue',
+      }
   }
-
-  return Array.from(groupsMap.values())
 }
 
 export default async function EditionsPage() {
-  const allArticles = await fetchArticles()
-  const editions = groupEditions(allArticles)
+  const [editions, allArticles] = await Promise.all([
+    fetchEditions(),
+    fetchArticles(),
+  ])
+
+  // Fallback: if no managed editions exist in database yet, assemble synthetic editions from tagged articles
+  let displayEditions = editions
+  if (displayEditions.length === 0) {
+    const editionPosts = allArticles.filter(
+      (a) => a.section === 'editions' || a.slug.startsWith('edition-')
+    )
+
+    const groupsMap = new Map<string, { slug: string; title: string; subtitle: string; count: number; date: string }>()
+    for (const art of editionPosts) {
+      const match = art.slug.match(/^edition-([a-z0-9]+-(?:20\d{2}|special|issue|day))-(.+)$/i)
+      const key = match ? match[1].toLowerCase() : 'special-issue'
+      const label = match
+        ? match[1]
+            .split('-')
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ') + ' Edition'
+        : 'Special Commemorative Edition'
+
+      if (!groupsMap.has(key)) {
+        groupsMap.set(key, {
+          slug: key,
+          title: label,
+          subtitle: 'Curated dispatches, essays, and visual explainers from the editorial desk.',
+          count: 0,
+          date: art.publishedDate,
+        })
+      }
+      groupsMap.get(key)!.count += 1
+    }
+
+    displayEditions = Array.from(groupsMap.values()).map((g) => ({
+      id: g.slug,
+      title: g.title,
+      slug: g.slug,
+      subtitle: g.subtitle,
+      description: '',
+      themePreset: g.slug.includes('christmas')
+        ? 'christmas'
+        : g.slug.includes('republic')
+        ? 'republic'
+        : 'classic',
+      badgeText: 'COMMEMORATIVE ISSUE',
+      status: 'published',
+      articleIds: [],
+      publishedDate: g.date,
+    }))
+  }
 
   return (
     <main className="min-h-screen bg-[#FCFCFD] dark:bg-[#080C14] text-neutral-900 dark:text-neutral-100 transition-colors">
       <SiteHeader section="editions" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
         {/* Masthead Banner */}
-        <div className="pb-6 mb-10 border-b-2 border-neutral-900 dark:border-neutral-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="pb-6 border-b-2 border-neutral-900 dark:border-neutral-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <span className="text-[11px] font-mono uppercase tracking-widest text-red-600 dark:text-red-400 font-bold block mb-1">
-              The Open Brief • Commemorative Issues
+              The Open Brief • Commemorative Issues &amp; Special Publications
             </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-serif">
               Special Editions
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md">
-            Themed print-inspired digital issues produced for national milestones, seasonal retrospectives, and deep-dive investigations.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md leading-relaxed">
+            Themed print-inspired digital issues produced for milestones, seasonal retrospectives, and deep investigations.
           </p>
         </div>
 
-        {editions.length === 0 ? (
-          <div className="py-20 text-center border border-dashed border-neutral-300 dark:border-neutral-800 p-8 max-w-xl mx-auto my-8 space-y-4">
+        {displayEditions.length === 0 ? (
+          <div className="py-20 text-center border border-dashed border-neutral-300 dark:border-neutral-800 p-8 max-w-xl mx-auto space-y-4">
             <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-bold block">
               Upcoming Issues
             </span>
-            <h2 className="text-xl font-bold">No Special Editions Published Yet</h2>
+            <h2 className="text-xl font-bold font-serif">No Special Editions Published Yet</h2>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Publish an article under the <strong>Special Edition</strong> section (or prefix its slug with <code className="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5">edition-christmas-2026-</code> or <code className="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5">edition-republic-day-</code>) in Author Studio to launch an issue here.
+              Launch and curate commemorative issues (such as the Christmas Edition or Republic Day Special) from the Editorial Studio.
             </p>
             <Link
               href="/"
@@ -91,98 +148,72 @@ export default async function EditionsPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-14">
-            {editions.map((edition) => {
-              const [lead, ...rest] = edition.articles
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {displayEditions.map((ed) => {
+              const theme = getThemeAccent(ed.themePreset)
+              const dateStr = new Date(ed.publishedDate).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric',
+              })
+
               return (
-                <section
-                  key={edition.slug}
-                  id={edition.slug}
-                  className="border border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0D131F] p-5 sm:p-8 space-y-8"
+                <Link
+                  key={ed.id}
+                  href={`/editions/${ed.slug}`}
+                  className={`group block border border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0D131F] rounded-xs overflow-hidden transition-all duration-300 ${theme.border} hover:shadow-lg flex flex-col justify-between`}
                 >
-                  {/* Edition Header */}
-                  <div className="pb-4 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
-                        Special Issue • {edition.articles.length} {edition.articles.length === 1 ? 'Story' : 'Stories'}
-                      </span>
-                      <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">
-                        {edition.title}
+                  <div>
+                    {/* Cover Banner or Themed Header Block */}
+                    {ed.coverImage ? (
+                      <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+                        <img
+                          src={ed.coverImage}
+                          alt={ed.title}
+                          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-24 bg-neutral-100 dark:bg-neutral-900/60 p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+                        <span className="text-2xl font-serif font-extrabold text-neutral-300 dark:text-neutral-700">
+                          TOB
+                        </span>
+                        <span className="text-xs font-mono text-neutral-400">
+                          {dateStr}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="p-5 sm:p-6 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest font-extrabold rounded-xs ${theme.badge}`}>
+                          {ed.badgeText || theme.tag}
+                        </span>
+                        <span className="text-[11px] font-mono text-neutral-400">
+                          {dateStr}
+                        </span>
+                      </div>
+
+                      <h2 className="text-xl sm:text-2xl font-extrabold font-serif tracking-tight leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                        {ed.title}
                       </h2>
+
+                      {ed.subtitle && (
+                        <p className="text-xs sm:text-sm font-serif text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+                          {ed.subtitle}
+                        </p>
+                      )}
                     </div>
-                    <span className="text-xs font-mono text-neutral-400">
-                      {new Date(lead.publishedDate).toLocaleDateString('en-US', {
-                        month: 'long',
-                        year: 'numeric',
-                      })}
+                  </div>
+
+                  <div className="px-5 sm:px-6 pb-5 pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-xs font-mono">
+                    <span className="text-neutral-500">
+                      Explore Issue
+                    </span>
+                    <span className="font-bold uppercase tracking-wider group-hover:translate-x-0.5 transition-transform">
+                      Open Edition →
                     </span>
                   </div>
-
-                  {/* Lead Story + Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <article className="lg:col-span-7 space-y-3">
-                      <Link href={`/articles/${lead.slug}`} prefetch={false} className="group block space-y-3">
-                        <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                          <CoverImage
-                            src={lead.coverImage}
-                            alt={lead.title}
-                            monogramSize="lg"
-                            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-300"
-                          />
-                        </div>
-                        <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-                          {lead.title}
-                        </h3>
-                      </Link>
-                      {lead.excerpt && (
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                          {lead.excerpt}
-                        </p>
-                      )}
-                      <div className="text-xs font-sans text-neutral-500">
-                        <Link href={`/authors/${getAuthorSlug(lead.authorName)}`} prefetch={false} className="hover:underline">
-                          {lead.authorName}
-                        </Link>{' '}
-                        • {lead.readTime} min read
-                      </div>
-                    </article>
-
-                    <div className="lg:col-span-5 divide-y divide-neutral-200 dark:divide-neutral-800">
-                      {rest.length === 0 ? (
-                        <p className="text-xs font-mono text-neutral-400 py-4">
-                          Lead feature for {edition.title}. Add more dispatches with slug prefix <code className="underline">edition-{edition.slug}-</code> to expand this issue.
-                        </p>
-                      ) : (
-                        rest.map((art) => (
-                          <article key={art.id} className="py-4 first:pt-0 last:pb-0 flex gap-3.5 items-start">
-                            <Link
-                              href={`/articles/${art.slug}`}
-                              prefetch={false}
-                              className="w-24 aspect-[4/3] shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
-                            >
-                              <CoverImage
-                                src={art.coverImage}
-                                alt={art.title}
-                                monogramSize="sm"
-                                className="w-full h-full object-cover"
-                              />
-                            </Link>
-                            <div className="space-y-1 min-w-0">
-                              <Link href={`/articles/${art.slug}`} prefetch={false}>
-                                <h4 className="text-base font-bold leading-snug line-clamp-2 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                                  {art.title}
-                                </h4>
-                              </Link>
-                              <p className="text-[11px] text-neutral-500">
-                                {art.authorName} • {art.readTime} min read
-                              </p>
-                            </div>
-                          </article>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </section>
+                </Link>
               )
             })}
           </div>

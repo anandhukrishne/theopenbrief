@@ -39,7 +39,31 @@ CREATE TABLE IF NOT EXISTS public.articles (
   CONSTRAINT articles_pkey PRIMARY KEY (id)
 );
 
--- 3. Brute-Force Rate Limiting Table
+-- 3. Special Editions Table (Curated Issues like Christmas, Republic, etc.)
+CREATE TABLE IF NOT EXISTS public.editions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  subtitle text DEFAULT ''::text,
+  description text DEFAULT ''::text,
+  editor_note text DEFAULT ''::text,
+  cover_image_url text DEFAULT ''::text,
+  theme_preset text DEFAULT 'christmas'::text,
+  accent_color text DEFAULT '#B91C1C'::text,
+  badge_text text DEFAULT 'SPECIAL EDITION'::text,
+  status text NOT NULL DEFAULT 'published'::text,
+  article_ids jsonb DEFAULT '[]'::jsonb,
+  published_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT editions_pkey PRIMARY KEY (id)
+);
+
+-- Ensure edition columns exist on articles
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_id uuid;
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_slug text DEFAULT ''::text;
+
+-- 4. Brute-Force Rate Limiting Table
 CREATE TABLE IF NOT EXISTS public.auth_rate_limits (
   identifier text NOT NULL,
   failed_attempts integer NOT NULL DEFAULT 0,
@@ -52,16 +76,24 @@ CREATE TABLE IF NOT EXISTS public.auth_rate_limits (
 CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.articles(slug);
 CREATE INDEX IF NOT EXISTS idx_articles_author_id ON public.articles(author_id);
+CREATE INDEX IF NOT EXISTS idx_articles_edition_slug ON public.articles(edition_slug);
 CREATE INDEX IF NOT EXISTS idx_articles_status ON public.articles(status);
+CREATE INDEX IF NOT EXISTS idx_editions_slug ON public.editions(slug);
+CREATE INDEX IF NOT EXISTS idx_editions_status ON public.editions(status);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 
 -- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.editions ENABLE ROW LEVEL SECURITY;
 
--- Allow public read access to published articles
+-- Allow public read access to published articles and editions
 CREATE POLICY IF NOT EXISTS "Public can view published articles"
   ON public.articles FOR SELECT
+  USING (status = 'published');
+
+CREATE POLICY IF NOT EXISTS "Public can view published editions"
+  ON public.editions FOR SELECT
   USING (status = 'published');
 
 -- Allow service role full access to all tables
@@ -72,5 +104,10 @@ CREATE POLICY IF NOT EXISTS "Service role full access to articles"
 
 CREATE POLICY IF NOT EXISTS "Service role full access to profiles"
   ON public.profiles FOR ALL
+  USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role')
+  WITH CHECK (true);
+
+CREATE POLICY IF NOT EXISTS "Service role full access to editions"
+  ON public.editions FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role')
   WITH CHECK (true);

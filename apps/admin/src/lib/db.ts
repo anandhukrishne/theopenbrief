@@ -26,6 +26,24 @@ export interface UserProfile {
   updated_at: string
 }
 
+export interface Edition {
+  id: string
+  title: string
+  slug: string
+  subtitle?: string
+  description?: string
+  editor_note?: string
+  cover_image_url?: string
+  theme_preset: 'christmas' | 'republic' | 'heritage' | 'monsoon' | 'midnight' | 'classic'
+  accent_color?: string
+  badge_text?: string
+  status: 'draft' | 'published'
+  article_ids?: string[]
+  published_at: string
+  created_at: string
+  updated_at: string
+}
+
 let dbInitialized = false
 
 /**
@@ -84,10 +102,36 @@ export async function initDb() {
       ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS beat TEXT DEFAULT '';
       ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'writer';
 
+      -- Special Editions table (curated commemorative issues like Christmas, Republic, etc.)
+      CREATE TABLE IF NOT EXISTS public.editions (
+        id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+        title TEXT NOT NULL,
+        slug TEXT NOT NULL UNIQUE,
+        subtitle TEXT DEFAULT '',
+        description TEXT DEFAULT '',
+        editor_note TEXT DEFAULT '',
+        cover_image_url TEXT DEFAULT '',
+        theme_preset TEXT DEFAULT 'christmas',
+        accent_color TEXT DEFAULT '#B91C1C',
+        badge_text TEXT DEFAULT 'SPECIAL EDITION',
+        status TEXT NOT NULL DEFAULT 'published',
+        article_ids JSONB DEFAULT '[]'::jsonb,
+        published_at TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      -- Add edition columns to articles if missing
+      ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_id UUID;
+      ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_slug TEXT DEFAULT '';
+
       -- Performance indexes for Supabase queries
       CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);
       CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.articles(slug);
       CREATE INDEX IF NOT EXISTS idx_articles_author_id ON public.articles(author_id);
+      CREATE INDEX IF NOT EXISTS idx_articles_edition_slug ON public.articles(edition_slug);
+      CREATE INDEX IF NOT EXISTS idx_editions_slug ON public.editions(slug);
+      CREATE INDEX IF NOT EXISTS idx_editions_status ON public.editions(status);
       CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
     `)
 
