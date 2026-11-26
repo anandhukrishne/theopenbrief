@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     default: 'The Open Brief — Independent Journal & Dispatches',
     template: '%s — The Open Brief',
   },
-  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, cinematic essays in CinēBrief, and standalone articles.',
+  description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, cinematic essays in CinēBrief, and general articles.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app'),
   icons: {
     icon: '/favicon.png',
@@ -40,6 +40,20 @@ export const metadata: Metadata = {
     siteName: 'The Open Brief',
     type: 'website',
     locale: 'en_US',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'The Open Brief',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Open Brief — Independent Journal & Dispatches',
+    description: 'An independent digital publication featuring long-form essays, explainers, technology, and cinema.',
+    images: ['/logo.png'],
   },
 }
 
@@ -71,11 +85,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ── Universal Site-Wide Footer ── */}
         <footer className="border-t border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#090D17] mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-            
+
             {/* ── Desktop Layout (lg and up) ── */}
             <div className="hidden lg:block">
               <div className="grid grid-cols-12 gap-8 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
-                
+
                 {/* Col 1 (col-span-6): About Brand */}
                 <div className="col-span-6 space-y-5 pr-6">
                   <Link href="/" className="inline-block">
@@ -136,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <div>
                       <span className="text-neutral-400 dark:text-neutral-500 block mb-1">Editorial Desk:</span>
                       <a
-                        href="mailto:support1@theoverbrief.app"
+                        href="mailto:support1@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
                         support1@theopenbrief.app
@@ -195,7 +209,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
             {/* ── Mobile Layout (< lg) ── */}
             <div className="block lg:hidden space-y-6">
-              
+
               {/* Brand Section */}
               <div className="space-y-3 text-left px-4">
                 <Link href="/" className="inline-block">
@@ -252,10 +266,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <div>
                       <span className="text-neutral-400 dark:text-neutral-500 block mb-1">Editorial Desk:</span>
                       <a
-                        href="mailto:support1@theoverbrief.app"
+                        href="mailto:support1@theopenbrief.app"
                         className="font-medium text-neutral-900 dark:text-neutral-100 hover:underline block break-all"
                       >
-                        support1@theoverbrief.app
+                        support1@theopenbrief.app
                       </a>
                     </div>
                     <div className="flex flex-col gap-1 pt-1 text-neutral-600 dark:text-neutral-400 font-medium">

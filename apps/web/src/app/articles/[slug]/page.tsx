@@ -18,16 +18,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await fetchArticleBySlug(slug)
   if (!article) return { title: 'Not Found — The Open Brief' }
 
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app').replace(/\/$/, '')
+  const rawImage = article.coverImage?.trim()
+  const isValidPublicImage =
+    rawImage && (rawImage.startsWith('http://') || rawImage.startsWith('https://') || rawImage.startsWith('/'))
+  const previewImageUrl = isValidPublicImage
+    ? rawImage.startsWith('/')
+      ? `${siteUrl}${rawImage}`
+      : rawImage
+    : `${siteUrl}/logo.png`
+
+  const description =
+    article.excerpt?.trim() || `Read "${article.title}" by ${article.authorName} on The Open Brief.`
+
   return {
     title: `${article.title} — The Open Brief`,
-    description: article.excerpt || '',
+    description,
+    alternates: {
+      canonical: `/articles/${article.slug}`,
+    },
     openGraph: {
       title: article.title,
-      description: article.excerpt || '',
+      description,
+      url: `${siteUrl}/articles/${article.slug}`,
+      siteName: 'The Open Brief',
       type: 'article',
       publishedTime: article.publishedDate,
       authors: [article.authorName],
-      images: article.coverImage ? [article.coverImage] : undefined,
+      images: [
+        {
+          url: previewImageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description,
+      images: [previewImageUrl],
     },
   }
 }
