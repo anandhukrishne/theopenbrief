@@ -5,8 +5,8 @@ import SiteHeader from '@/components/SiteHeader'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Special Editions | The Open Brief',
-  description: 'Curated commemorative issues, seasonal digests, and special reports from The Open Brief newsroom.',
+  title: 'Special Editions | TheOpenBrief',
+  description: 'Curated commemorative issues, seasonal digests, and special reports from TheOpenBrief newsroom.',
 }
 
 function getThemeAccent(preset: string) {
@@ -76,9 +76,9 @@ export default async function EditionsPage() {
       const key = match ? match[1].toLowerCase() : 'special-issue'
       const label = match
         ? match[1]
-            .split('-')
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' ') + ' Edition'
+          .split('-')
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ') + ' Edition'
         : 'Special Commemorative Edition'
 
       if (!groupsMap.has(key)) {
@@ -102,8 +102,8 @@ export default async function EditionsPage() {
       themePreset: g.slug.includes('christmas')
         ? 'christmas'
         : g.slug.includes('republic')
-        ? 'republic'
-        : 'classic',
+          ? 'republic'
+          : 'classic',
       badgeText: 'COMMEMORATIVE ISSUE',
       status: 'published',
       articleIds: [],

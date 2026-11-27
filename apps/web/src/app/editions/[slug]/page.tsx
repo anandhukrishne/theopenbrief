@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const data = await fetchEditionBySlug(slug)
   if (!data?.edition) {
-    return { title: 'Edition Not Found | The Open Brief' }
+    return { title: 'Edition Not Found | TheOpenBrief' }
   }
   const { edition } = data
   return {
-    title: `${edition.title} | The Open Brief Special Edition`,
+    title: `${edition.title} | TheOpenBrief Special Edition`,
     description: edition.subtitle || edition.description || `Special commemorative edition: ${edition.title}.`,
   }
 }
@@ -426,7 +426,7 @@ export default async function EditionDetailPage({ params }: Props) {
           <div className="flex items-center gap-2">
             <span className="font-bold text-neutral-900 dark:text-neutral-100">{edition.title}</span>
             <span>•</span>
-            <span>The Open Brief Publishing Desk</span>
+            <span>TheOpenBrief Publishing Desk</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/editions" className="hover:underline font-bold text-neutral-900 dark:text-neutral-100">

@@ -8,7 +8,7 @@ interface Props {
   params: Promise<{ author: string }>
 }
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export default async function AuthorProfilePage({ params }: Props) {
   const { author } = await params
@@ -21,10 +21,10 @@ export default async function AuthorProfilePage({ params }: Props) {
   const rawRole = articles[0]?.authorRole?.trim() || ''
   const roleFallback =
     rawRole === 'admin'
-      ? 'Managing Editor at The Open Brief'
+      ? 'Managing Editor at TheOpenBrief'
       : rawRole === 'editor'
-      ? 'Senior Editor at The Open Brief'
-      : 'Staff Author & Contributor at The Open Brief'
+        ? 'Senior Editor at TheOpenBrief'
+        : 'Staff Author & Contributor at TheOpenBrief'
   const authorBeat = rawBeat || roleFallback
   const authorBio = articles[0]?.authorBio?.trim() || ''
   const authorAvatar = articles[0]?.authorAvatar?.trim() || ''

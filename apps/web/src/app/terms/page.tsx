@@ -22,14 +22,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using The Open Brief (theopenbrief.app), you accept and agree to be bound by these Terms of Use. If you do not agree, please do not use the site.
+              By accessing and using TheOpenBrief (theopenbrief.app), you accept and agree to be bound by these Terms of Use. If you do not agree, please do not use the site.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">2. Content Ownership</h2>
             <p>
-              All articles, essays, and editorial content published on The Open Brief are the intellectual property of their respective authors and The Open Brief. Reproduction, redistribution, or commercial use of content without written permission is prohibited.
+              All articles, essays, and editorial content published on TheOpenBrief are the intellectual property of their respective authors and TheOpenBrief. Reproduction, redistribution, or commercial use of content without written permission is prohibited.
             </p>
           </section>
 
@@ -43,14 +43,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">4. Editorial Standards</h2>
             <p>
-              The Open Brief reserves the right to edit, modify, or remove any content that does not meet our editorial standards. The editorial team has final authority over publication decisions.
+              TheOpenBrief reserves the right to edit, modify, or remove any content that does not meet our editorial standards. The editorial team has final authority over publication decisions.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">5. Limitation of Liability</h2>
             <p>
-              The Open Brief is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for any damages arising from the use or inability to use the platform.
+              TheOpenBrief is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for any damages arising from the use or inability to use the platform.
             </p>
           </section>
 

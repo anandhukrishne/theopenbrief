@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Cache-Control': 'no-store, max-age=0',
         },
       }
     )
@@ -193,21 +193,23 @@ export async function POST(req: NextRequest) {
       const updateQuery = `
         UPDATE articles SET
           title = $1,
-          section = $2,
-          excerpt = $3,
-          content = $4,
-          cover_image_url = $5,
-          cover_image_caption = $6,
-          read_time_minutes = $7,
-          edition_id = $8,
-          edition_slug = $9,
-          is_story_of_the_day = $10,
+          slug = $2,
+          section = $3,
+          excerpt = $4,
+          content = $5,
+          cover_image_url = $6,
+          cover_image_caption = $7,
+          read_time_minutes = $8,
+          edition_id = $9,
+          edition_slug = $10,
+          is_story_of_the_day = $11,
           updated_at = NOW()
-        WHERE id = $11
+        WHERE id = $12
         RETURNING *;
       `
       const updateValues = [
         title,
+        cleanSlug,
         safeSection,
         excerpt,
         content,
@@ -223,6 +225,9 @@ export async function POST(req: NextRequest) {
       const updated = await db.query(updateQuery, updateValues)
       const saved = updated.rows[0]
       await triggerWebRevalidation(saved.slug, saved.section, targetArticle.section)
+      if (targetArticle.slug && targetArticle.slug !== saved.slug) {
+        await triggerWebRevalidation(targetArticle.slug, saved.section, targetArticle.section)
+      }
 
       return NextResponse.json({ success: true, article: saved })
     }

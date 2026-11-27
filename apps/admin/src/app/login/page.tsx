@@ -197,7 +197,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
-              The Open Brief Studio
+              TheOpenBrief Studio
             </span>
           </div>
           <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold">
@@ -211,7 +211,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2.5">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
-                The Open Brief Studio
+                TheOpenBrief Studio
               </span>
             </div>
             <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
@@ -224,9 +224,8 @@ export default function LoginPage() {
               {CAROUSEL_SLIDES.map((slide, idx) => (
                 <div
                   key={idx}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out flex flex-col ${
-                    currentSlide === idx ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
-                  }`}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out flex flex-col ${currentSlide === idx ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'
+                    }`}
                 >
                   <div className="relative flex-1 w-full overflow-hidden bg-black/40">
                     <img
@@ -270,9 +269,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setCurrentSlide(idx)}
                 aria-label={`Slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                  currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-neutral-600 hover:bg-neutral-500'
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-neutral-600 hover:bg-neutral-500'
+                  }`}
               />
             ))}
           </div>

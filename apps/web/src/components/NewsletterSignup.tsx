@@ -16,15 +16,15 @@ const VARIANT_COPY: Record<
     source: 'about_page',
   },
   article: {
-    eyebrow: 'The Open Brief Dispatch',
-    title: 'Enjoyed this dispatch?',
+    eyebrow: 'Subscribe to TheOpenBrief',
+    title: 'Enjoyed this article?',
     description:
       'Get our weekly roundup of new essays, visual explainers, and reviews delivered straight to your inbox.',
     source: 'article_footer',
   },
   home: {
-    eyebrow: 'Weekly Editorial Briefing',
-    title: 'Get The Open Brief in your inbox',
+    eyebrow: 'Weekly Newsletter',
+    title: 'Get TheOpenBrief in your inbox',
     description:
       'Every week, our editorial desk sends a curated digest of our latest explainers, technology, and cinema dispatches.',
     source: 'home_banner',
@@ -82,9 +82,8 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
 
   return (
     <section
-      className={`border border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#0D1320] rounded-xs ${
-        isHome ? 'my-12 p-6 sm:p-8' : 'mt-12 p-6 sm:p-7'
-      } ${className}`}
+      className={`border border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#0D1320] rounded-xs ${isHome ? 'my-12 p-6 sm:p-8' : 'mt-12 p-6 sm:p-7'
+        } ${className}`}
     >
       <div className={isHome ? 'flex flex-col lg:flex-row lg:items-center justify-between gap-6' : 'space-y-4'}>
         <div className={isHome ? 'max-w-xl space-y-1.5' : 'space-y-1.5'}>
@@ -127,11 +126,10 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
 
           {feedback && (
             <p
-              className={`mt-2.5 text-xs font-sans font-medium ${
-                status === 'error'
+              className={`mt-2.5 text-xs font-sans font-medium ${status === 'error'
                   ? 'text-red-600 dark:text-red-400'
                   : 'text-emerald-700 dark:text-emerald-400'
-              }`}
+                }`}
             >
               {feedback}
             </p>

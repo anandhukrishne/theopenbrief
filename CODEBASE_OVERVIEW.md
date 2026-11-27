@@ -6,7 +6,7 @@ This document provides a comprehensive breakdown of the entire Open Brief platfo
 
 ## 1. System Architecture
 
-The Open Brief codebase is architected as an npm workspace monorepo consisting of two decoupled Next.js 15 applications supported by a managed Supabase PostgreSQL backend:
+TheOpenBrief codebase is architected as an npm workspace monorepo consisting of two decoupled Next.js 15 applications supported by a managed Supabase PostgreSQL backend:
 
 1. **Reader Web Platform (`apps/web`)**: The public-facing editorial publication hosted at `theopenbrief.app`. It consumes published article data over HTTP from the Admin API, renders editorial layouts with a zero-dependency server-side Markdown parser, supports dark and light display modes, and serves RSS syndication feeds.
 2. **Editorial Studio (`apps/admin`)**: The staff administration portal hosted at `admin.theopenbrief.app`. It connects directly to Supabase Auth and Supabase PostgreSQL via connection pooling, providing staff authentication, role-based article authoring, user profile management, team roster administration, and an automated WebP image processing pipeline.
@@ -249,7 +249,7 @@ The reader application provides the high-performance public reading experience, 
 - **`apps/web/src/app/layout.tsx`**: Master layout wrapping all reader routes. Houses persistent global components: `SiteHeader`, navigation bars, footer directory, and the theme provider script.
 - **`apps/web/src/app/globals.css`**: Global publication stylesheet with CSS reset rules, broadsheet typography styling, dark-theme variables, and watermark positioning rules.
 - **`apps/web/src/app/loading.tsx`**: Instant loading fallback screen displaying a subtle broadsheet skeleton animation while server components fetch data.
-- **`apps/web/src/app/page.tsx`**: The Open Brief front page. Renders a comprehensive broadsheet edition featuring a lead story banner, a three-column section spotlight row, dynamic section streams, and trending story sidebars.
+- **`apps/web/src/app/page.tsx`**: TheOpenBrief front page. Renders a comprehensive broadsheet edition featuring a lead story banner, a three-column section spotlight row, dynamic section streams, and trending story sidebars.
 - **`apps/web/src/app/articles/[slug]/page.tsx`**: Article detail reading page. Fetches story data by slug, computes read times, renders author metadata and beats, and processes article content through a custom zero-dependency server Markdown parser.
 - **`apps/web/src/app/editions/page.tsx`**: Special Editions index and archive. Displays commemorative issues with theme badges, issue dates, and links to each edition's dedicated page.
 - **`apps/web/src/app/editions/[slug]/page.tsx`**: Specially designed commemorative edition page. Implements dynamic thematic design systems (Christmas, Republic Day, Heritage, Monsoon, Midnight Tech, Classic) with custom heraldic borders, cover banners, editor's prologues, and curated lead and companion story collections.

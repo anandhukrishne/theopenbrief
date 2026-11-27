@@ -12,12 +12,12 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const article = await fetchArticleBySlug(slug)
-  if (!article) return { title: 'Not Found — The Open Brief' }
+  if (!article) return { title: 'Not Found — TheOpenBrief' }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app').replace(/\/$/, '')
   const rawImage = article.coverImage?.trim()
@@ -30,10 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : `${siteUrl}/logo.png`
 
   const description =
-    article.excerpt?.trim() || `Read "${article.title}" by ${article.authorName} on The Open Brief.`
+    article.excerpt?.trim() || `Read "${article.title}" by ${article.authorName} on TheOpenBrief.`
 
   return {
-    title: `${article.title} — The Open Brief`,
+    title: `${article.title} — TheOpenBrief`,
     description,
     alternates: {
       canonical: `/articles/${article.slug}`,
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: article.title,
       description,
       url: `${siteUrl}/articles/${article.slug}`,
-      siteName: 'The Open Brief',
+      siteName: 'TheOpenBrief',
       type: 'article',
       publishedTime: article.publishedDate,
       authors: [article.authorName],
@@ -301,7 +301,7 @@ export default async function ArticlePage({ params }: Props) {
       {/* ── Main Canvas with Desktop Sidebar / Mobile Stack ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          
+
           {/* ── Left / Center Column: Article Body (col-span-8) ── */}
           <article className="lg:col-span-8 max-w-3xl">
             {/* Section Breadcrumbs */}
@@ -397,7 +397,7 @@ export default async function ArticlePage({ params }: Props) {
                     {article.authorName}
                   </Link>
                   <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mt-1.5">
-                    {article.authorBio || 'Author and regular contributor at The Open Brief.'}
+                    {article.authorBio || 'Author and regular contributor at TheOpenBrief.'}
                   </p>
                   <div className="mt-2.5">
                     <Link

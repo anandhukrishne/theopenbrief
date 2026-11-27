@@ -1,5 +1,5 @@
 /**
- * Utility functions for The Open Brief
+ * Utility functions for TheOpenBrief
  */
 
 /**

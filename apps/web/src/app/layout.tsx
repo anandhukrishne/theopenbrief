@@ -26,8 +26,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'The Open Brief — Independent Journal & Dispatches',
-    template: '%s — The Open Brief',
+    default: 'TheOpenBrief — Independent Journal & Dispatches',
+    template: '%s — TheOpenBrief',
   },
   description: 'An independent digital publication featuring long-form essays in OpenBrief Plus, architectural explainers in TOB Explainers, systems analysis in TechnoBrief, cinematic essays in CinēBrief, and general articles.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://theopenbrief.app'),
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     apple: '/favicon.png',
   },
   openGraph: {
-    siteName: 'The Open Brief',
+    siteName: 'TheOpenBrief',
     type: 'website',
     locale: 'en_US',
     images: [
@@ -45,13 +45,13 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'The Open Brief',
+        alt: 'TheOpenBrief',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Open Brief — Independent Journal & Dispatches',
+    title: 'TheOpenBrief — Independent Journal & Dispatches',
     description: 'An independent digital publication featuring long-form essays, explainers, technology, and cinema.',
     images: ['/logo.png'],
   },

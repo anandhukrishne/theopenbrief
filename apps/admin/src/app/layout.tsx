@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Author Studio — The Open Brief',
-  description: 'Editorial Studio for Authors and Editors of The Open Brief.',
+  title: 'Author Studio — TheOpenBrief',
+  description: 'Editorial Studio for Authors and Editors of TheOpenBrief.',
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',

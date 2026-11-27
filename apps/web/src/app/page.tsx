@@ -9,7 +9,7 @@ import NewsletterSignup from '@/components/NewsletterSignup'
 import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 const SECTIONS_CONFIG = [
   { section: 'explainers', title: 'TOB Explainers', href: '/explainers', layout: 'featured-left', trio1: 'big-left', trio2: 'big-center' },

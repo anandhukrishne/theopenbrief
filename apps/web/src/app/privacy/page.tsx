@@ -22,14 +22,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">1. Information We Collect</h2>
             <p>
-              The Open Brief collects minimal data necessary to operate the publication. When you visit our site, we may collect standard web server logs including your IP address, browser type, and pages visited. If you create an Author Studio account, we store your name, email address, and authentication credentials through Google Sign-In.
+              TheOpenBrief collects minimal data necessary to operate the publication. When you visit our site, we may collect standard web server logs including your IP address, browser type, and pages visited. If you create an Author Studio account, we store your name, email address, and authentication credentials through Google Sign-In.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">2. How We Use Information</h2>
             <p>
-              We use collected information solely to operate and improve The Open Brief. Author account data is used for authentication, article attribution, and editorial communication. We do not sell, rent, or share your personal information with third parties for marketing purposes.
+              We use collected information solely to operate and improve TheOpenBrief. Author account data is used for authentication, article attribution, and editorial communication. We do not sell, rent, or share your personal information with third parties for marketing purposes.
             </p>
           </section>
 

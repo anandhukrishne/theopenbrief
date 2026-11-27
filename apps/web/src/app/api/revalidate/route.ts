@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
 
   revalidateTag('articles')
   revalidatePath('/')
+  revalidatePath('/articles/[slug]', 'page')
+  revalidatePath('/authors/[author]', 'page')
   revalidatePath('/rss.xml')
   revalidatePath('/sitemap.xml')
 

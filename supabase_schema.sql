@@ -1,5 +1,5 @@
 -- ==============================================================================
--- THE OPEN BRIEF - VERIFIED SUPABASE SCHEMA
+-- TheOpenBrief - VERIFIED SUPABASE SCHEMA
 -- Run this script in the Supabase SQL Editor (Dashboard -> SQL Editor -> New Query)
 -- ==============================================================================
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.articles (
   cover_image_url text DEFAULT ''::text,
   cover_image_caption text DEFAULT ''::text,
   author_id text NOT NULL,
-  author_name text NOT NULL DEFAULT 'The Open Brief Desk'::text,
+  author_name text NOT NULL DEFAULT 'TheOpenBrief Desk'::text,
   author_bio text DEFAULT ''::text,
   author_avatar_url text DEFAULT ''::text,
   read_time_minutes integer DEFAULT 5,

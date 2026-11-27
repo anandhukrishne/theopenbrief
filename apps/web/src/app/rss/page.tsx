@@ -4,7 +4,7 @@ import { fetchArticles } from '@/lib/api'
 
 export const metadata = {
   title: 'RSS Feed — Really Simple Syndication',
-  description: 'Subscribe to The Open Brief via Really Simple Syndication (RSS).',
+  description: 'Subscribe to TheOpenBrief via Really Simple Syndication (RSS).',
 }
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +26,7 @@ export default async function RssPage() {
         </h1>
 
         <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-8">
-          Subscribe to The Open Brief using your favorite RSS reader to receive new explainers, technical breakdowns, movie reviews, and essays as soon as they are published.
+          Subscribe to TheOpenBrief using your favorite RSS reader to receive new explainers, technical breakdowns, movie reviews, and essays as soon as they are published.
         </p>
 
         {/* Feed URL Box */}

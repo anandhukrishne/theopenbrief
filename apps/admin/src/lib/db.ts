@@ -79,7 +79,7 @@ export async function initDb() {
         cover_image_url TEXT DEFAULT '',
         cover_image_caption TEXT DEFAULT '',
         author_id TEXT NOT NULL,
-        author_name TEXT NOT NULL DEFAULT 'The Open Brief Desk',
+        author_name TEXT NOT NULL DEFAULT 'TheOpenBrief Desk',
         author_bio TEXT DEFAULT '',
         author_avatar_url TEXT DEFAULT '',
         read_time_minutes INT DEFAULT 5,

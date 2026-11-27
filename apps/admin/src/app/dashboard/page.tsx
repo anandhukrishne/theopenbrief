@@ -75,6 +75,7 @@ export default function Dashboard() {
 
   // Status & Notifications
   const [publishing, setPublishing] = useState(false)
+  const [purgingCache, setPurgingCache] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string; link?: string } | null>(null)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
@@ -134,12 +135,12 @@ export default function Dashboard() {
           setProfileAvatarUrl(data.profile.avatar_url || '')
           try {
             localStorage.setItem('openbrief_cached_profile', JSON.stringify(data.profile))
-          } catch {}
+          } catch { }
         }
       } else if (res.status === 401) {
         try {
           localStorage.removeItem('openbrief_cached_profile')
-        } catch {}
+        } catch { }
         router.replace('/login')
       }
     } catch (err) {
@@ -162,7 +163,7 @@ export default function Dashboard() {
           setProfileAvatarUrl(parsed.avatar_url || '')
         }
       }
-    } catch {}
+    } catch { }
 
     loadProfile()
     fetchArchive()
@@ -387,8 +388,8 @@ export default function Dashboard() {
   const handleLogout = async () => {
     try {
       localStorage.removeItem('openbrief_cached_profile')
-    } catch {}
-    try { await supabaseClient.auth.signOut() } catch (_) {}
+    } catch { }
+    try { await supabaseClient.auth.signOut() } catch (_) { }
     await fetch('/api/auth/session', { method: 'DELETE' })
     router.push('/login')
     router.refresh()
@@ -534,6 +535,25 @@ export default function Dashboard() {
     }
   }
 
+  const handlePurgeSiteCache = async () => {
+    setPurgingCache(true)
+    setMessage(null)
+    try {
+      const res = await fetch('/api/revalidate-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to purge live cache')
+      setMessage({ type: 'success', text: 'Live site cache cleared across homepage, sections, and articles.' })
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setPurgingCache(false)
+    }
+  }
+
   const handleToggleStoryOfTheDay = async (artId: string, currentlySelected: boolean) => {
     try {
       const res = await fetch('/api/articles', {
@@ -583,7 +603,7 @@ export default function Dashboard() {
             <img src="/favicon.png" alt="TOB" className="w-7 h-7 rounded object-contain shadow-xs" />
             <div className="leading-tight">
               <span className="font-bold text-sm text-slate-900 tracking-tight block">
-                The Open Brief
+                TheOpenBrief
               </span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
                 Author Studio
@@ -596,24 +616,22 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setActiveTab('editor')}
-              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
-                activeTab === 'editor' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
-              }`}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${activeTab === 'editor' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+                }`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
               </svg>
               Writing Desk
             </button>
             <button
               type="button"
               onClick={() => { setActiveTab('archive'); fetchArchive() }}
-              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
-                activeTab === 'archive' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
-              }`}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${activeTab === 'archive' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+                }`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
               </svg>
               Articles ({articles.length})
             </button>
@@ -621,12 +639,11 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => { setActiveTab('staff'); fetchStaff() }}
-                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
-                  activeTab === 'staff' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
-                }`}
+                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${activeTab === 'staff' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-black'
+                  }`}
               >
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                 </svg>
                 Staff &amp; Access
               </button>
@@ -666,13 +683,12 @@ export default function Dashboard() {
                 {profile?.name || 'Author'}
               </span>
               <span
-                className={`uppercase text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                  profile?.role === 'admin'
+                className={`uppercase text-[10px] px-1.5 py-0.5 rounded font-bold ${profile?.role === 'admin'
                     ? 'bg-rose-100 text-rose-800'
                     : profile?.role === 'editor'
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'bg-slate-200 text-slate-700'
-                }`}
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}
               >
                 {profile?.role || 'Author'}
               </span>
@@ -681,7 +697,7 @@ export default function Dashboard() {
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
-                <path d="M7 10l5 5 5-5z"/>
+                <path d="M7 10l5 5 5-5z" />
               </svg>
             </button>
 
@@ -702,7 +718,7 @@ export default function Dashboard() {
                   className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
                 >
                   <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                   </svg>
                   My Profile &amp; Settings
                 </button>
@@ -717,7 +733,7 @@ export default function Dashboard() {
                     className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
                   >
                     <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
-                      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                     </svg>
                     Staff &amp; Password Access
                   </button>
@@ -730,7 +746,7 @@ export default function Dashboard() {
                   className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
                 >
                   <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
-                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
                   </svg>
                   View Live Site ↗
                 </a>
@@ -743,7 +759,7 @@ export default function Dashboard() {
                   className="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 text-rose-600 flex items-center gap-2 transition-colors font-medium"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
                   </svg>
                   Sign Out
                 </button>
@@ -757,11 +773,10 @@ export default function Dashboard() {
       <div className="flex-1 max-w-7xl w-full mx-auto p-3.5 sm:p-6 lg:p-8">
         {message && (
           <div
-            className={`mb-4 sm:mb-6 p-3.5 sm:p-4 rounded-xl text-xs sm:text-sm font-medium flex flex-col sm:flex-row sm:items-center justify-between gap-2 border ${
-              message.type === 'success'
+            className={`mb-4 sm:mb-6 p-3.5 sm:p-4 rounded-xl text-xs sm:text-sm font-medium flex flex-col sm:flex-row sm:items-center justify-between gap-2 border ${message.type === 'success'
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
                 : 'bg-red-50 text-red-900 border-red-200'
-            }`}
+              }`}
           >
             <span>{message.text}</span>
             {message.link && (
@@ -800,7 +815,7 @@ export default function Dashboard() {
                       desc: 'Long-Form Essays',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.2 20.4 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+                          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.2 20.4 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z" />
                         </svg>
                       ),
                     },
@@ -810,7 +825,7 @@ export default function Dashboard() {
                       desc: 'Visual Deep Dives',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                         </svg>
                       ),
                     },
@@ -820,7 +835,7 @@ export default function Dashboard() {
                       desc: 'Engineering Bites',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M7 16l-4-4 4-4 1.41 1.41L5.83 12l2.58 2.59L7 16zm10 0l-1.41-1.41L18.17 12l-2.58-2.59L17 8l4 4-4 4zM10.84 18l3-12h1.32l-3 12h-1.32z"/>
+                          <path d="M7 16l-4-4 4-4 1.41 1.41L5.83 12l2.58 2.59L7 16zm10 0l-1.41-1.41L18.17 12l-2.58-2.59L17 8l4 4-4 4zM10.84 18l3-12h1.32l-3 12h-1.32z" />
                         </svg>
                       ),
                     },
@@ -830,7 +845,7 @@ export default function Dashboard() {
                       desc: 'Cinema & Arts',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                          <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
                         </svg>
                       ),
                     },
@@ -840,7 +855,7 @@ export default function Dashboard() {
                       desc: 'Standalone Articles',
                       icon: (
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                         </svg>
                       ),
                     },
@@ -849,11 +864,10 @@ export default function Dashboard() {
                       key={p.id}
                       type="button"
                       onClick={() => setSection(p.id as any)}
-                      className={`text-left p-2.5 sm:p-3 rounded-xl border transition-all shrink-0 min-w-[132px] sm:min-w-0 snap-start ${
-                        section === p.id
+                      className={`text-left p-2.5 sm:p-3 rounded-xl border transition-all shrink-0 min-w-[132px] sm:min-w-0 snap-start ${section === p.id
                           ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="shrink-0">{p.icon}</span>
@@ -998,7 +1012,7 @@ export default function Dashboard() {
                     title="Insert Link"
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
                     </svg>
                     Link
                   </button>
@@ -1270,23 +1284,33 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              {/* Filter Strip */}
-              <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto pb-1">
-                {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone'] as const).map((sec) => (
-                  <button
-                    key={sec}
-                    type="button"
-                    onClick={() => setArchiveFilter(sec)}
-                    className={`px-3 py-1.5 rounded-lg border capitalize shrink-0 ${
-                      archiveFilter === sec
-                        ? 'bg-slate-900 text-white border-slate-900'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                    }`}
-                  >
-                    {sec}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePurgeSiteCache}
+                  disabled={purgingCache}
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-900 hover:text-black text-xs font-mono font-semibold transition-colors disabled:opacity-50 shrink-0"
+                >
+                  {purgingCache ? 'Refreshing...' : 'Refresh Live Cache'}
+                </button>
               </div>
+            </div>
+
+            {/* Filter Strip */}
+            <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto pb-1">
+              {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone'] as const).map((sec) => (
+                <button
+                  key={sec}
+                  type="button"
+                  onClick={() => setArchiveFilter(sec)}
+                  className={`px-3 py-1.5 rounded-lg border capitalize shrink-0 ${archiveFilter === sec
+                      ? 'bg-slate-900 text-white border-slate-900'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                    }`}
+                >
+                  {sec}
+                </button>
+              ))}
             </div>
 
             {loadingArticles ? (
@@ -1343,11 +1367,10 @@ export default function Dashboard() {
                             <button
                               type="button"
                               onClick={() => handleToggleStoryOfTheDay(art.id, Boolean(art.is_story_of_the_day))}
-                              className={`px-3 py-2 sm:py-1.5 text-xs font-mono border rounded-lg transition-colors text-center ${
-                                art.is_story_of_the_day
+                              className={`px-3 py-2 sm:py-1.5 text-xs font-mono border rounded-lg transition-colors text-center ${art.is_story_of_the_day
                                   ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
                                   : 'bg-white text-slate-700 border-slate-200 hover:border-slate-900'
-                              }`}
+                                }`}
                             >
                               {art.is_story_of_the_day ? 'Unpin Lead' : 'Set as Lead'}
                             </button>
@@ -1421,8 +1444,8 @@ export default function Dashboard() {
                     {profile?.role === 'admin'
                       ? 'Full system access'
                       : profile?.role === 'editor'
-                      ? 'Edit/delete any article'
-                      : 'Manage your own articles'}
+                        ? 'Edit/delete any article'
+                        : 'Manage your own articles'}
                   </span>
                 </div>
               </div>
@@ -1620,13 +1643,12 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <span
-                              className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold shrink-0 font-mono ${
-                                m.role === 'admin'
+                              className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold shrink-0 font-mono ${m.role === 'admin'
                                   ? 'bg-rose-100 text-rose-800'
                                   : m.role === 'editor'
-                                  ? 'bg-amber-100 text-amber-800'
-                                  : 'bg-slate-200 text-slate-700'
-                              }`}
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-slate-200 text-slate-700'
+                                }`}
                             >
                               {m.role}
                             </span>
@@ -1694,13 +1716,12 @@ export default function Dashboard() {
                               </td>
                               <td className="py-3.5 pr-3">
                                 <span
-                                  className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold inline-block font-mono ${
-                                    m.role === 'admin'
+                                  className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold inline-block font-mono ${m.role === 'admin'
                                       ? 'bg-rose-100 text-rose-800'
                                       : m.role === 'editor'
-                                      ? 'bg-amber-100 text-amber-800'
-                                      : 'bg-slate-200 text-slate-700'
-                                  }`}
+                                        ? 'bg-amber-100 text-amber-800'
+                                        : 'bg-slate-200 text-slate-700'
+                                    }`}
                                 >
                                   {m.role}
                                 </span>
@@ -1717,7 +1738,7 @@ export default function Dashboard() {
                                   title="Edit Password / Role"
                                 >
                                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                                   </svg>
                                 </button>
                                 {isSelf ? (
@@ -1730,7 +1751,7 @@ export default function Dashboard() {
                                     title="Revoke Access"
                                   >
                                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                                     </svg>
                                   </button>
                                 )}
@@ -1762,7 +1783,7 @@ export default function Dashboard() {
                       className="p-1.5 text-slate-400 hover:text-slate-700"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                       </svg>
                     </button>
                   </div>
@@ -1845,12 +1866,11 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => setActiveTab('editor')}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${
-            activeTab === 'editor' ? 'text-slate-900 font-bold' : 'text-slate-400'
-          }`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'editor' ? 'text-slate-900 font-bold' : 'text-slate-400'
+            }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
           </svg>
           Write
         </button>
@@ -1858,12 +1878,11 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => { setActiveTab('archive'); fetchArchive() }}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${
-            activeTab === 'archive' ? 'text-slate-900 font-bold' : 'text-slate-400'
-          }`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'archive' ? 'text-slate-900 font-bold' : 'text-slate-400'
+            }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
           </svg>
           Articles ({articles.length})
         </button>
@@ -1872,12 +1891,11 @@ export default function Dashboard() {
           <button
             type="button"
             onClick={() => { setActiveTab('staff'); fetchStaff() }}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${
-              activeTab === 'staff' ? 'text-slate-900 font-bold' : 'text-slate-400'
-            }`}
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'staff' ? 'text-slate-900 font-bold' : 'text-slate-400'
+              }`}
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
             Staff
           </button>
@@ -1886,12 +1904,11 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${
-            activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
-          }`}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
+            }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
           </svg>
           Profile
         </button>
@@ -1900,7 +1917,7 @@ export default function Dashboard() {
       {/* ── Admin Footer (Hidden on mobile to keep bottom bar clean) ── */}
       <footer className="hidden sm:block border-t border-slate-200 bg-white py-6 mt-16 text-xs font-mono text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} The Open Brief. Author Studio. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} TheOpenBrief. Author Studio. All rights reserved.</p>
           <div className="flex items-center gap-4 text-slate-400">
             <span>Developed by 45 STUDioS</span>
             <span>•</span>

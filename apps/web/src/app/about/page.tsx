@@ -3,8 +3,8 @@ import SiteHeader from '@/components/SiteHeader'
 import NewsletterSignup from '@/components/NewsletterSignup'
 
 export const metadata = {
-  title: 'About The Open Brief',
-  description: 'Origins and manifesto of The Open Brief.',
+  title: 'About TheOpenBrief',
+  description: 'Origins and manifesto of TheOpenBrief.',
 }
 
 export default function AboutPage() {
