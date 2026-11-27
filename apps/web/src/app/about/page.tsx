@@ -80,7 +80,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <NewsletterSignup />
+        <NewsletterSignup variant="about" />
 
         <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-sans text-neutral-500 dark:text-neutral-400 font-medium">
           <Link href="/" className="font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">

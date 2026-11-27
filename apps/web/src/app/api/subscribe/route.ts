@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+    const source = typeof body?.source === 'string' && body.source.trim() ? body.source.trim() : 'about_page'
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${CMS_URL}/api/subscribers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, source: 'about_page' }),
+      body: JSON.stringify({ email, source }),
     })
 
     const data = await res.json()

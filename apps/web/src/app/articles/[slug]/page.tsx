@@ -6,6 +6,7 @@ import { getAuthorSlug } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import LocalDate from '@/components/LocalDate'
+import NewsletterSignup from '@/components/NewsletterSignup'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -409,6 +410,9 @@ export default async function ArticlePage({ params }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* ── Bottom Newsletter Signup ── */}
+            <NewsletterSignup variant="article" />
 
             {/* ── Mobile "Also Read" Section ── */}
             {alsoReadArticles.length > 0 && (

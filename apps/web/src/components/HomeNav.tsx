@@ -18,14 +18,14 @@ export default function HomeNav() {
   return (
     <nav className="border-b border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0B101B]">
       {/* Desktop nav */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-6 sm:gap-12 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-800 dark:text-neutral-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-center gap-4 text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-800 dark:text-neutral-200">
         {/* Desktop links — hidden on mobile */}
-        <div className="hidden md:flex items-center gap-6 sm:gap-10">
+        <div className="hidden md:flex items-center gap-2 sm:gap-4">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="hover:text-red-600 dark:hover:text-red-400 transition-colors whitespace-nowrap last:text-neutral-400"
+              className="px-3.5 py-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800/70 hover:text-neutral-900 dark:hover:text-white transition-colors whitespace-nowrap last:text-neutral-500 dark:last:text-neutral-400"
             >
               {l.label}
             </Link>
@@ -46,7 +46,7 @@ export default function HomeNav() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <button
-              className="p-1.5 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="p-1.5 rounded-full text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? 'Close menu' : 'Open menu'}
             >
@@ -66,11 +66,11 @@ export default function HomeNav() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-4 py-4 flex flex-col gap-1">
+        <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-3 py-3 flex flex-col gap-1">
           <Link
             href="/"
             onClick={() => setOpen(false)}
-            className="text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="text-sm font-bold tracking-wider uppercase px-4 py-2.5 rounded-full bg-red-600 text-white shadow-xs transition-colors"
           >
             HOME
           </Link>
@@ -79,7 +79,7 @@ export default function HomeNav() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 transition-colors last:border-b-0"
+              className="text-sm font-bold tracking-wider uppercase px-4 py-2.5 rounded-full text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors"
             >
               {l.label}
             </Link>

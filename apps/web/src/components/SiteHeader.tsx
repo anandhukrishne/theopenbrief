@@ -33,17 +33,17 @@ export default function SiteHeader({ section }: { section?: string | null }) {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs font-bold tracking-wider uppercase">
+        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5 text-xs font-bold tracking-wider uppercase">
           {NAV_LINKS.map((l) => {
             const isActive = section === l.section
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
                   isActive
-                    ? 'text-red-600 dark:text-red-400 font-extrabold'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:text-red-600 dark:hover:text-red-400'
+                    ? 'bg-red-600 text-white dark:bg-red-600 dark:text-white font-bold shadow-xs'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/70 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 {l.label}
@@ -56,7 +56,7 @@ export default function SiteHeader({ section }: { section?: string | null }) {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <button
-            className="md:hidden p-1.5 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="md:hidden p-1.5 rounded-full text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
@@ -75,14 +75,14 @@ export default function SiteHeader({ section }: { section?: string | null }) {
 
       {/* Mobile Drawer */}
       {open && (
-        <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-4 py-3 flex flex-col gap-1">
+        <div className="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0B101B] px-3 py-3 flex flex-col gap-1">
           <Link
             href="/"
             onClick={() => setOpen(false)}
-            className={`text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800/60 transition-colors ${
+            className={`text-sm font-bold tracking-wider uppercase px-4 py-2.5 rounded-full transition-colors ${
               !section
-                ? 'text-red-600 dark:text-red-400 font-extrabold'
-                : 'text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400'
+                ? 'bg-red-600 text-white font-bold shadow-xs'
+                : 'text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/70'
             }`}
           >
             HOME
@@ -94,10 +94,10 @@ export default function SiteHeader({ section }: { section?: string | null }) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className={`text-sm font-bold tracking-wider uppercase py-2.5 border-b border-neutral-100 dark:border-neutral-800/60 last:border-b-0 transition-colors ${
+                className={`text-sm font-bold tracking-wider uppercase px-4 py-2.5 rounded-full transition-colors ${
                   isActive
-                    ? 'text-red-600 dark:text-red-400 font-extrabold'
-                    : 'text-neutral-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400'
+                    ? 'bg-red-600 text-white font-bold shadow-xs'
+                    : 'text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/70'
                 }`}
               >
                 {l.label}

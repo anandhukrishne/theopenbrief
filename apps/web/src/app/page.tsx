@@ -5,6 +5,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import HomeNav from '@/components/HomeNav'
 import LocalDate from '@/components/LocalDate'
+import NewsletterSignup from '@/components/NewsletterSignup'
 import SectionHeroBlock from '@/components/SectionHeroBlock'
 import SectionTrioRow, { TrioPattern } from '@/components/SectionTrioRow'
 
@@ -272,23 +273,28 @@ export default async function HomePage() {
         )}
 
         {/* ── Editorial Section Streams (1+3+3=7 Architecture, Zero Duplicates) ── */}
-        {SECTIONS_CONFIG.map(({ section, title, href, layout, trio1, trio2 }) => {
-          const articles = sectionArticlesMap[section] || []
-          if (articles.length === 0) return null
-
-          return (
-            <div key={section} className="space-y-0">
-              <SectionHeroBlock
-                section={section}
-                title={title}
-                href={href}
-                layout={layout}
-                articles={articles}
-              />
-              {renderSectionTrios(articles, trio1, trio2)}
-            </div>
+        {(() => {
+          const activeSections = SECTIONS_CONFIG.filter(
+            ({ section }) => (sectionArticlesMap[section] || []).length > 0
           )
-        })}
+
+          return activeSections.map(({ section, title, href, layout, trio1, trio2 }, idx) => {
+            const articles = sectionArticlesMap[section] || []
+            return (
+              <div key={section} className="space-y-0">
+                <SectionHeroBlock
+                  section={section}
+                  title={title}
+                  href={href}
+                  layout={layout}
+                  articles={articles}
+                />
+                {renderSectionTrios(articles, trio1, trio2)}
+                {idx === 0 && <NewsletterSignup variant="home" />}
+              </div>
+            )
+          })
+        })()}
       </div>
     </main>
   )
