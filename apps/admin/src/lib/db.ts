@@ -126,6 +126,15 @@ export async function initDb() {
       ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS edition_slug TEXT DEFAULT '';
       ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS is_story_of_the_day BOOLEAN DEFAULT false;
 
+      -- Newsletter subscribers table
+      CREATE TABLE IF NOT EXISTS public.subscribers (
+        id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        status TEXT NOT NULL DEFAULT 'active',
+        source TEXT DEFAULT 'about_page',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       -- Performance indexes for Supabase queries
       CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);
       CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.articles(slug);

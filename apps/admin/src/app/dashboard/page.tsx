@@ -50,6 +50,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
+  const [profileBeat, setProfileBeat] = useState('')
   const [profileAvatarUrl, setProfileAvatarUrl] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
 
@@ -129,6 +130,7 @@ export default function Dashboard() {
           setProfile(data.profile)
           setProfileName(data.profile.name)
           setProfileBio(data.profile.bio || '')
+          setProfileBeat(data.profile.beat || '')
           setProfileAvatarUrl(data.profile.avatar_url || '')
           try {
             localStorage.setItem('openbrief_cached_profile', JSON.stringify(data.profile))
@@ -156,6 +158,7 @@ export default function Dashboard() {
           setProfile(parsed)
           setProfileName(parsed.name)
           setProfileBio(parsed.bio || '')
+          setProfileBeat(parsed.beat || '')
           setProfileAvatarUrl(parsed.avatar_url || '')
         }
       }
@@ -468,7 +471,7 @@ export default function Dashboard() {
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: profileName, bio: profileBio, avatar_url: profileAvatarUrl }),
+        body: JSON.stringify({ name: profileName, bio: profileBio, beat: profileBeat, avatar_url: profileAvatarUrl }),
       })
 
       if (!res.ok) {
@@ -1458,6 +1461,19 @@ export default function Dashboard() {
                   onChange={(e) => setProfileName(e.target.value)}
                   required
                   placeholder="e.g. Anandhu Krishna"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Editorial Beat / Desk
+                </label>
+                <input
+                  type="text"
+                  value={profileBeat}
+                  onChange={(e) => setProfileBeat(e.target.value)}
+                  placeholder="e.g. Technology & Systems, Cinema & Culture, Lead Columnist"
                   className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
                 />
               </div>

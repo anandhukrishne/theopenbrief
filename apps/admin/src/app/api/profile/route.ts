@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
 
     await initDb()
     const body = await req.json()
-    const { name, bio, avatar_url } = body
+    const { name, bio, avatar_url, beat } = body
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -37,14 +37,23 @@ export async function PUT(req: NextRequest) {
     const cleanName = name.trim()
     const cleanBio = (bio || '').trim()
     const cleanAvatar = (avatar_url || '').trim()
+    const cleanBeat = typeof beat === 'string' ? beat.trim() : undefined
 
-    const res = await db.query(
-      `UPDATE profiles
-       SET name = $1, bio = $2, avatar_url = $3, updated_at = NOW()
-       WHERE id = $4
-       RETURNING *`,
-      [cleanName, cleanBio, cleanAvatar, user.uid]
-    )
+    const res = cleanBeat !== undefined
+      ? await db.query(
+          `UPDATE profiles
+           SET name = $1, bio = $2, avatar_url = $3, beat = $4, updated_at = NOW()
+           WHERE id = $5
+           RETURNING *`,
+          [cleanName, cleanBio, cleanAvatar, cleanBeat, user.uid]
+        )
+      : await db.query(
+          `UPDATE profiles
+           SET name = $1, bio = $2, avatar_url = $3, updated_at = NOW()
+           WHERE id = $4
+           RETURNING *`,
+          [cleanName, cleanBio, cleanAvatar, user.uid]
+        )
 
     if (res.rows.length === 0) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })

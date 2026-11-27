@@ -13,6 +13,8 @@ export interface Article {
   authorName: string
   authorBio?: string
   authorAvatar?: string
+  authorBeat?: string
+  authorRole?: string
   editionId?: string
   editionSlug?: string
   isStoryOfTheDay?: boolean
@@ -78,6 +80,8 @@ function normalizeArticle(item: any): Article {
     authorName: item.author_name || 'The Open Brief Desk',
     authorBio: item.author_bio || '',
     authorAvatar: item.author_avatar_url || undefined,
+    authorBeat: item.author_beat || undefined,
+    authorRole: item.author_role || undefined,
     editionId: item.edition_id || undefined,
     editionSlug: item.edition_slug || undefined,
     isStoryOfTheDay: Boolean(item.is_story_of_the_day),

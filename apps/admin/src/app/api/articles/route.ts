@@ -78,11 +78,11 @@ export async function GET(req: NextRequest) {
     }
 
     let query = slug
-      ? `SELECT a.*, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url
+      ? `SELECT a.*, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url, COALESCE(p.beat, '') AS author_beat, COALESCE(p.role, 'writer') AS author_role
          FROM articles a
          LEFT JOIN public.profiles p ON a.author_id = p.id
          WHERE a.status = $1`
-      : `SELECT a.id, a.title, a.slug, a.section, a.excerpt, a.cover_image_url, a.cover_image_caption, a.author_id, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url, a.read_time_minutes, a.published_at, a.is_story_of_the_day
+      : `SELECT a.id, a.title, a.slug, a.section, a.excerpt, a.cover_image_url, a.cover_image_caption, a.author_id, COALESCE(NULLIF(p.name, ''), a.author_name) AS author_name, COALESCE(NULLIF(p.bio, ''), a.author_bio) AS author_bio, COALESCE(NULLIF(p.avatar_url, ''), a.author_avatar_url) AS author_avatar_url, COALESCE(p.beat, '') AS author_beat, COALESCE(p.role, 'writer') AS author_role, a.read_time_minutes, a.published_at, a.is_story_of_the_day
          FROM articles a
          LEFT JOIN public.profiles p ON a.author_id = p.id
          WHERE a.status = $1`

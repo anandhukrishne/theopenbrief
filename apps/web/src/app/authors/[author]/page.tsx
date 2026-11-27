@@ -15,8 +15,17 @@ export default async function AuthorProfilePage({ params }: Props) {
   const decodedAuthor = decodeURIComponent(author)
   const articles = await fetchArticlesByAuthor(decodedAuthor)
 
-  // Use author details from the first matching article or decoded slug
+  // Use author details from the first matching article (joined from public.profiles) or decoded slug
   const authorName = articles[0]?.authorName || decodedAuthor.replace(/-/g, ' ')
+  const rawBeat = articles[0]?.authorBeat?.trim() || ''
+  const rawRole = articles[0]?.authorRole?.trim() || ''
+  const roleFallback =
+    rawRole === 'admin'
+      ? 'Managing Editor at The Open Brief'
+      : rawRole === 'editor'
+      ? 'Senior Editor at The Open Brief'
+      : 'Staff Author & Contributor at The Open Brief'
+  const authorBeat = rawBeat || roleFallback
   const authorBio = articles[0]?.authorBio?.trim() || ''
   const authorAvatar = articles[0]?.authorAvatar?.trim() || ''
 
@@ -51,7 +60,7 @@ export default async function AuthorProfilePage({ params }: Props) {
                 {authorName}
               </h1>
               <p className="text-xs sm:text-sm font-sans font-semibold text-red-600 dark:text-red-400">
-                Staff Author &amp; Contributor at The Open Brief
+                {authorBeat}
               </p>
               {authorBio && (
                 <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal pt-0.5">

@@ -73,7 +73,17 @@ CREATE TABLE IF NOT EXISTS public.auth_rate_limits (
   CONSTRAINT auth_rate_limits_pkey PRIMARY KEY (identifier)
 );
 
--- 4. Performance Indexes
+-- 5. Newsletter Subscribers Table
+CREATE TABLE IF NOT EXISTS public.subscribers (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  email text NOT NULL UNIQUE,
+  status text NOT NULL DEFAULT 'active'::text,
+  source text DEFAULT 'about_page'::text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT subscribers_pkey PRIMARY KEY (id)
+);
+
+-- 6. Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_articles_section_published ON public.articles(section, published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.articles(slug);
 CREATE INDEX IF NOT EXISTS idx_articles_author_id ON public.articles(author_id);
@@ -82,6 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_articles_status ON public.articles(status);
 CREATE INDEX IF NOT EXISTS idx_editions_slug ON public.editions(slug);
 CREATE INDEX IF NOT EXISTS idx_editions_status ON public.editions(status);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+CREATE INDEX IF NOT EXISTS idx_subscribers_email ON public.subscribers(email);
 
 -- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
