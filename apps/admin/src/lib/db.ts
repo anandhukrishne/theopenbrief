@@ -5,14 +5,23 @@ const connectionString =
   process.env.DATABASE_URL ||
   ''
 
-// Reusable PostgreSQL pool for Supabase
-export const db = new Pool({
-  connectionString: connectionString || undefined,
-  ssl: connectionString ? { rejectUnauthorized: false } : undefined,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-})
+const globalForPg = globalThis as unknown as { pgPool?: Pool }
+
+// Reusable singleton PostgreSQL pool sized for serverless + Supabase pooler limits
+export const db =
+  globalForPg.pgPool ??
+  new Pool({
+    connectionString: connectionString || undefined,
+    ssl: connectionString ? { rejectUnauthorized: false } : undefined,
+    max: 2,
+    idleTimeoutMillis: 5000,
+    connectionTimeoutMillis: 5000,
+    allowExitOnIdle: true,
+  })
+
+if (!globalForPg.pgPool) {
+  globalForPg.pgPool = db
+}
 
 export interface UserProfile {
   id: string
