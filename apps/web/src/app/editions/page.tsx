@@ -119,32 +119,23 @@ export default async function EditionsPage() {
         {/* Masthead Banner */}
         <div className="pb-6 border-b-2 border-neutral-900 dark:border-neutral-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-red-600 dark:text-red-400 font-bold block mb-1">
-              The Open Brief • Commemorative Issues &amp; Special Publications
-            </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-serif">
               Special Editions
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md leading-relaxed">
-            Themed print-inspired digital issues produced for milestones, seasonal retrospectives, and deep investigations.
-          </p>
         </div>
 
         {displayEditions.length === 0 ? (
           <div className="py-20 text-center border border-dashed border-neutral-300 dark:border-neutral-800 p-8 max-w-xl mx-auto space-y-4">
             <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-bold block">
-              Upcoming Issues
+              Coming soon
             </span>
-            <h2 className="text-xl font-bold font-serif">No Special Editions Published Yet</h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              Launch and curate commemorative issues (such as the Christmas Edition or Republic Day Special) from the Editorial Studio.
-            </p>
+            <h2 className="text-xl font-bold font-serif">Christmas Edition</h2>
             <Link
               href="/"
               className="inline-block pt-2 text-xs font-sans font-bold uppercase tracking-wider underline hover:text-red-600"
             >
-              ← Return to Front Page
+              ← Return to Home
             </Link>
           </div>
         ) : (
