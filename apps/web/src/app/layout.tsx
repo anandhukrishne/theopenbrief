@@ -84,14 +84,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ── Universal Site-Wide Footer ── */}
         <footer className="border-t border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#090D17] mt-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-6 sm:pt-14 sm:pb-8">
 
             {/* ── Desktop Layout (lg and up) ── */}
             <div className="hidden lg:block">
-              <div className="grid grid-cols-12 gap-8 pb-12 border-b border-neutral-300 dark:border-neutral-800 items-start">
+              <div className="grid grid-cols-12 gap-8 pb-10 border-b border-neutral-300 dark:border-neutral-800 items-start">
 
-                {/* Col 1 (col-span-6): About Brand */}
-                <div className="col-span-6 space-y-5 pr-6">
+                {/* Col 1 (col-span-5): About Brand + Quick Icons */}
+                <div className="col-span-5 space-y-5 pr-6">
                   <Link href="/" className="inline-block">
                     <img src="/logo.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain dark:hidden" />
                     <img src="/logo-white.png" alt="TheOpenBrief.app" className="h-8 w-auto object-contain hidden dark:block" />
@@ -100,14 +100,65 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-md pt-1">
                     An independent publication dedicated to in-depth visual explainers, movie and show reviews, and recent technological advancements.
                   </p>
+
+                  {/* 4 Quick Editorial Icons: WhatsApp Channel, Download, RSS, Email */}
+                  <div className="flex items-center gap-2.5 pt-1">
+                    <a
+                      href="https://whatsapp.com/channel/0029VbE7ysZLCoX22KRwnq1t"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Follow our WhatsApp Channel"
+                      title="Follow our WhatsApp Channel"
+                      className="w-8 h-8 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-600 dark:hover:border-red-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.766.469 3.484 1.344 5l-1.406 5.156 5.281-1.391c1.469.797 3.109 1.219 4.75 1.219 5.516 0 9.969-4.453 9.969-9.969S17.547 2 12.031 2zm5.828 14.125c-.25.703-1.438 1.344-2 1.422-.516.078-1.188.109-1.922-.125-.453-.141-1.031-.328-1.766-.656-3.094-1.344-5.109-4.484-5.266-4.688-.156-.203-1.25-1.672-1.25-3.188 0-1.516.797-2.266 1.078-2.578.281-.313.609-.391.813-.391.203 0 .406.016.578.016.188 0 .438-.078.688.531.25.609.859 2.094.938 2.25.078.156.125.344.031.547-.094.203-.141.328-.297.5-.156.172-.328.391-.469.516-.156.141-.313.297-.141.594.172.297.766 1.266 1.656 2.047 1.141 1.016 2.094 1.328 2.391 1.484.297.156.469.125.641-.078.172-.203.75-.875.953-1.172.203-.297.406-.25.672-.141.266.109 1.719.813 2.016.953.297.141.484.219.563.344.078.125.078.719-.172 1.422z" />
+                      </svg>
+                    </a>
+                    <Link
+                      href="/download"
+                      aria-label="Download App"
+                      title="Download App"
+                      className="w-8 h-8 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-600 dark:hover:border-red-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </Link>
+                    <Link
+                      href="/rss"
+                      aria-label="RSS Feed"
+                      title="RSS Feed"
+                      className="w-8 h-8 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-600 dark:hover:border-red-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 11a9 9 0 0 1 9 9" />
+                        <path d="M4 4a16 16 0 0 1 16 16" />
+                        <circle cx="5" cy="19" r="1" />
+                      </svg>
+                    </Link>
+                    <a
+                      href="mailto:support1@theopenbrief.app"
+                      aria-label="Email Editorial Desk"
+                      title="Email Editorial Desk"
+                      className="w-8 h-8 rounded-full border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-600 dark:hover:border-red-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                    </a>
+                  </div>
                 </div>
 
-                {/* Col 2 (col-span-3): Sections */}
-                <div className="col-span-3 space-y-4">
+                {/* Col 2 (col-span-4): Sections (2-column compact grid) */}
+                <div className="col-span-4 space-y-4">
                   <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
                     Sections
                   </span>
-                  <ul className="space-y-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     <li>
                       <Link href="/journal" className="hover:text-red-600 dark:hover:text-red-400 transition-colors block">
                         OpenBrief Plus

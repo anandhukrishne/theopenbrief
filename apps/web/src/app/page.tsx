@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { fetchArticles, fetchEditions, Article } from '@/lib/api'
-import { getAuthorSlug } from '@/lib/utils'
+import { getAuthorSlug, getSectionLabel } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import HomeNav from '@/components/HomeNav'
@@ -227,7 +227,7 @@ export default async function HomePage() {
 
                 <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
                   {topPicks.map((pick, i) => (
-                    <div key={pick.id || i} className="py-3.5 first:pt-2 last:pb-0 flex gap-3.5 items-start">
+                    <div key={pick.id || i} className="py-3.5 first:pt-2 last:pb-0 flex gap-3.5 items-center">
                       <Link
                         href={`/articles/${pick.slug}`}
                         prefetch={false}
@@ -243,7 +243,7 @@ export default async function HomePage() {
 
                       <div className="flex-1 min-w-0 space-y-1">
                         <span className="text-[10px] font-sans font-bold uppercase text-red-600 dark:text-red-400 block">
-                          {pick.section}
+                          {getSectionLabel(pick.section)}
                         </span>
                         <Link href={`/articles/${pick.slug}`} prefetch={false}>
                           <h3 className="text-base sm:text-lg font-bold leading-snug line-clamp-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">

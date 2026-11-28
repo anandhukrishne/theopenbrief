@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Article } from '@/lib/api'
-import { getAuthorSlug } from '@/lib/utils'
+import { getAuthorSlug, getSectionLabel } from '@/lib/utils'
 import CoverImage from '@/components/CoverImage'
 
 export type TrioPattern = 'big-left' | 'big-center' | 'big-right'
@@ -62,7 +62,7 @@ export default function SectionTrioRow({ articles, pattern, className = '' }: Se
     <article className="group flex flex-col justify-between p-4 sm:p-5 rounded-xs bg-white dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors h-full">
       <div className="space-y-2">
         <span className="text-[10px] font-sans uppercase tracking-wider font-bold text-red-600 dark:text-red-400 block">
-          {article.section === 'standalone' ? 'general' : article.section}
+          {getSectionLabel(article.section)}
         </span>
         <Link href={`/articles/${article.slug}`}>
           <h4 className="text-sm sm:text-base font-bold leading-snug text-neutral-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-3">

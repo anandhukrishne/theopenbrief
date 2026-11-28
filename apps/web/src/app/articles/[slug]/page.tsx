@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { fetchArticleBySlug, fetchArticles, Article } from '@/lib/api'
-import { getAuthorSlug } from '@/lib/utils'
+import { getAuthorSlug, getSectionLabel } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 import CoverImage from '@/components/CoverImage'
 import LocalDate from '@/components/LocalDate'
@@ -65,19 +65,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function renderInlineFormatting(text: string): (string | React.ReactNode)[] {
-  const regex = /(\[.*?\]\(.*?\)|\*\*.*?\*\*|`.*?`)/g
-  const parts = text.split(regex)
+  const unescaped = text.replace(/\\([[\]*_`])/g, '$1')
+  const regex = /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`)/g
+  const parts = unescaped.split(regex)
 
   return parts.map((part, i) => {
     if (part.startsWith('[') && part.includes('](') && part.endsWith(')')) {
-      const m = part.match(/^\[(.*?)\]\((.*?)\)$/)
+      const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
       if (m) {
+        const href = m[2].trim()
+        const isHttp = href.startsWith('http://') || href.startsWith('https://')
         return (
           <a
             key={i}
-            href={m[2]}
-            target={m[2].startsWith('http') ? '_blank' : undefined}
-            rel={m[2].startsWith('http') ? 'noopener noreferrer' : undefined}
+            href={href}
+            target={isHttp ? '_blank' : undefined}
+            rel={isHttp ? 'noopener noreferrer' : undefined}
             className="text-red-600 dark:text-red-400 hover:underline font-medium"
           >
             {m[1]}
@@ -90,6 +93,13 @@ function renderInlineFormatting(text: string): (string | React.ReactNode)[] {
         <strong key={i} className="font-bold text-neutral-950 dark:text-neutral-50">
           {part.slice(2, -2)}
         </strong>
+      )
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length >= 3) {
+      return (
+        <em key={i} className="italic">
+          {part.slice(1, -1)}
+        </em>
       )
     }
     if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
@@ -443,14 +453,14 @@ export default async function ArticlePage({ params }: Props) {
                     <Link
                       key={art.id}
                       href={`/articles/${art.slug}`}
-                      className="flex gap-3.5 items-start group pb-3 border-b border-neutral-200 dark:border-neutral-800 last:border-0"
+                      className="flex gap-3.5 items-center group pb-3 border-b border-neutral-200 dark:border-neutral-800 last:border-0"
                     >
                       <div className="w-16 h-16 shrink-0 bg-neutral-100 dark:bg-neutral-900 rounded-xs overflow-hidden border border-neutral-200 dark:border-neutral-800">
                         <CoverImage src={art.coverImage} alt={art.title} monogramSize="sm" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
                         <span className="text-[10px] font-sans uppercase text-red-600 dark:text-red-400 font-bold block">
-                          {art.section}
+                          {getSectionLabel(art.section)}
                         </span>
                         <h4 className="text-sm sm:text-base font-bold leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
                           {art.title}
@@ -483,14 +493,14 @@ export default async function ArticlePage({ params }: Props) {
                     <Link
                       key={art.id}
                       href={`/articles/${art.slug}`}
-                      className="group flex gap-3.5 items-start pb-3 border-b border-neutral-100 dark:border-neutral-800/80 last:border-0 last:pb-0"
+                      className="group flex gap-3.5 items-center pb-3 border-b border-neutral-100 dark:border-neutral-800/80 last:border-0 last:pb-0"
                     >
                       <div className="w-16 h-16 shrink-0 bg-neutral-100 dark:bg-neutral-900 rounded-xs overflow-hidden border border-neutral-200 dark:border-neutral-800">
                         <CoverImage src={art.coverImage} alt={art.title} monogramSize="sm" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
                         <span className="text-[10px] font-sans uppercase text-red-600 dark:text-red-400 font-bold block">
-                          {art.section}
+                          {getSectionLabel(art.section)}
                         </span>
                         <h4 className="text-sm sm:text-base font-bold leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
                           {art.title}
