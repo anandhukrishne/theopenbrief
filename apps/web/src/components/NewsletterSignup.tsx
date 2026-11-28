@@ -82,10 +82,32 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
 
   return (
     <section
-      className={`border border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#0D1320] rounded-xs ${isHome ? 'my-12 p-6 sm:p-8' : 'mt-12 p-6 sm:p-7'
+      className={`relative overflow-hidden border border-neutral-300 dark:border-neutral-800 bg-[#F9FAFB] dark:bg-[#0D1320] rounded-xs ${isHome ? 'my-12 p-6 sm:p-8' : 'mt-12 p-6 sm:p-7'
         } ${className}`}
     >
-      <div className={isHome ? 'flex flex-col lg:flex-row lg:items-center justify-between gap-6' : 'space-y-4'}>
+      {/* Subtle Envelope & Dispatch Sheet Watermark */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 200 160"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="absolute -right-4 -bottom-4 w-44 sm:w-52 -rotate-6 text-neutral-900 dark:text-neutral-100 opacity-[0.045] dark:opacity-[0.06] pointer-events-none select-none"
+      >
+        {/* Dispatch sheet emerging from envelope */}
+        <path d="M52 54V22a6 6 0 0 1 6-6h84a6 6 0 0 1 6 6v32" />
+        <line x1="72" y1="34" x2="128" y2="34" />
+        <line x1="72" y1="48" x2="112" y2="48" />
+        {/* Envelope body */}
+        <rect x="24" y="54" width="152" height="92" rx="8" />
+        <path d="M26 58l74 52 74-52" />
+        <path d="M26 142l48-38" />
+        <path d="M174 142l-48-38" />
+      </svg>
+
+      <div className={`relative z-10 ${isHome ? 'flex flex-col lg:flex-row lg:items-center justify-between gap-6' : 'space-y-4'}`}>
         <div className={isHome ? 'max-w-xl space-y-1.5' : 'space-y-1.5'}>
           <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-red-600 dark:text-red-400 block">
             {copy.eyebrow}

@@ -196,11 +196,11 @@ export default function LoginPage() {
         <div className="lg:hidden bg-[#18181B] px-5 py-3.5 flex items-center justify-between border-b border-neutral-800 select-none">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+            <span className="text-[11px] font-sans uppercase tracking-widest text-neutral-300">
               TheOpenBrief Studio
             </span>
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold">
+          <span className="text-[10px] font-sans uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold">
             Staff Portal
           </span>
         </div>
@@ -210,11 +210,11 @@ export default function LoginPage() {
           <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
+              <span className="text-xs font-sans uppercase tracking-widest text-neutral-400">
                 TheOpenBrief Studio
               </span>
             </div>
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+            <span className="text-[10px] font-sans text-neutral-500 uppercase tracking-wider">
               {currentSlide + 1} / {CAROUSEL_SLIDES.length}
             </span>
           </div>
@@ -298,7 +298,7 @@ export default function LoginPage() {
           )}
 
           {devCode && (
-            <div className="mb-4 p-2.5 text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+            <div className="mb-4 p-2.5 text-xs font-sans text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
               <span>Dev OTP Code: <strong>{devCode}</strong></span>
               <button
                 type="button"
@@ -395,7 +395,7 @@ export default function LoginPage() {
                   Security Verification
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-500 mt-1">
-                  Enter the verification code sent to <span className="font-mono text-neutral-700">{email}</span>
+                  Enter the verification code sent to <span className="font-sans text-neutral-700">{email}</span>
                 </p>
               </div>
 

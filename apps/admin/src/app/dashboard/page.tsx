@@ -95,6 +95,13 @@ export default function Dashboard() {
   const [editRoleValue, setEditRoleValue] = useState<'admin' | 'editor' | 'writer'>('writer')
   const [updatingStaff, setUpdatingStaff] = useState(false)
 
+  // Auto-dismiss status/success notifications after 15 seconds
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(() => setMessage(null), 15000)
+    return () => clearTimeout(timer)
+  }, [message])
+
   // Close profile dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -599,16 +606,8 @@ export default function Dashboard() {
       {/* ── Studio Navigation Header ── */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center gap-2 shrink-0">
-            <img src="/favicon.png" alt="TOB" className="w-7 h-7 rounded object-contain shadow-xs" />
-            <div className="leading-tight">
-              <span className="font-bold text-sm text-slate-900 tracking-tight block">
-                TheOpenBrief
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
-                Author Studio
-              </span>
-            </div>
+          <div className="flex items-center shrink-0">
+            <img src="/favicon.png" alt="TheOpenBrief" className="w-8 h-8 rounded object-contain shadow-xs" />
           </div>
 
           {/* Desktop Tab Navigation */}
@@ -657,7 +656,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={resetForm}
-              className="sm:hidden px-2.5 py-1.5 text-[11px] font-mono bg-slate-100 text-slate-700 rounded-lg border border-slate-200"
+              className="sm:hidden px-2.5 py-1.5 text-[11px] font-sans bg-slate-100 text-slate-700 rounded-lg border border-slate-200"
             >
               + New
             </button>
@@ -667,7 +666,7 @@ export default function Dashboard() {
             href="https://theopenbrief.app"
             target="_blank"
             rel="noreferrer"
-            className="text-xs font-mono text-slate-500 hover:text-black transition-colors hidden md:inline"
+            className="text-xs font-sans text-slate-500 hover:text-black transition-colors hidden md:inline"
           >
             Live Site ↗
           </a>
@@ -677,7 +676,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setProfileDropdownOpen((v) => !v)}
-              className="flex items-center gap-1.5 sm:gap-2 text-xs font-mono bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg hover:border-slate-400 transition-colors cursor-pointer select-none min-h-[36px]"
+              className="flex items-center gap-1.5 sm:gap-2 text-xs font-sans bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg hover:border-slate-400 transition-colors cursor-pointer select-none min-h-[36px]"
             >
               <span className="font-semibold text-slate-800 max-w-[92px] sm:max-w-[140px] truncate">
                 {profile?.name || 'Author'}
@@ -706,7 +705,7 @@ export default function Dashboard() {
               <div className="absolute right-0 mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 text-xs font-sans">
                 <div className="px-3.5 py-2 border-b border-slate-100">
                   <div className="font-semibold text-slate-900 truncate">{profile?.name || 'Author'}</div>
-                  <div className="text-slate-400 font-mono text-[11px] truncate">{profile?.email}</div>
+                  <div className="text-slate-400 font-sans text-[11px] truncate">{profile?.email}</div>
                 </div>
 
                 <button
@@ -738,18 +737,6 @@ export default function Dashboard() {
                     Staff &amp; Password Access
                   </button>
                 )}
-
-                <a
-                  href="https://theopenbrief.app"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-colors font-medium"
-                >
-                  <svg className="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
-                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
-                  </svg>
-                  View Live Site ↗
-                </a>
 
                 <div className="my-1 border-t border-slate-100" />
 
@@ -784,7 +771,7 @@ export default function Dashboard() {
                 href={message.link}
                 target="_blank"
                 rel="noreferrer"
-                className="font-mono text-xs underline font-semibold text-emerald-800 hover:text-emerald-950 shrink-0"
+                className="font-sans text-xs underline font-semibold text-emerald-800 hover:text-emerald-950 shrink-0"
               >
                 View Live Article ↗
               </a>
@@ -800,10 +787,10 @@ export default function Dashboard() {
               {/* Publication Pillar Selector (Horizontal scroll on mobile, 5-col grid on sm+) */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[11px] font-mono uppercase tracking-widest text-slate-400 font-semibold">
+                  <label className="text-[11px] font-sans uppercase tracking-widest text-slate-400 font-semibold">
                     Section
                   </label>
-                  <span className="text-[11px] font-mono text-slate-400 sm:hidden">
+                  <span className="text-[11px] font-sans text-slate-400 sm:hidden">
                     {wordCount}w • {readTime}m
                   </span>
                 </div>
@@ -884,7 +871,7 @@ export default function Dashboard() {
               {/* Story of the Day Toggle */}
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="text-xs font-mono font-bold text-slate-900 block">
+                  <span className="text-xs font-sans font-bold text-slate-900 block">
                     Feature as Story of the Day
                   </span>
                   <span className="text-[11px] text-slate-500 block">
@@ -903,7 +890,7 @@ export default function Dashboard() {
               </div>
 
               {/* Author Attribution Card */}
-              <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-mono text-slate-600">
+              <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-sans text-slate-600">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                   <span className="truncate">
@@ -992,7 +979,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('```\n', '\n```')}
-                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-mono rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 shrink-0"
+                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-sans rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 shrink-0"
                     title="Code Block"
                   >
                     &lt;/&gt;
@@ -1000,7 +987,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => insertMarkdown('\n\n---\n\n')}
-                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-mono rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 shrink-0"
+                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-sans rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 shrink-0"
                     title="Divider"
                   >
                     —
@@ -1008,7 +995,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={insertLink}
-                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-mono rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 flex items-center gap-1 shrink-0"
+                    className="px-2.5 py-1.5 sm:px-2 sm:py-1 font-sans rounded-md bg-slate-50 sm:bg-transparent hover:bg-slate-100 text-slate-700 flex items-center gap-1 shrink-0"
                     title="Insert Link"
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -1018,7 +1005,7 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-mono ml-auto">
+                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-sans ml-auto">
                   <button
                     type="button"
                     onClick={() => setEditorMode('edit')}
@@ -1065,7 +1052,7 @@ export default function Dashboard() {
                     required
                     rows={18}
                     placeholder="Markdown draft..."
-                    className="w-full text-sm font-mono text-slate-800 border border-slate-200 rounded-lg p-3 resize-none outline-none focus:ring-1 focus:ring-slate-900"
+                    className="w-full text-sm font-sans text-slate-800 border border-slate-200 rounded-lg p-3 resize-none outline-none focus:ring-1 focus:ring-slate-900"
                   />
                   <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 overflow-y-auto max-h-[500px] text-sm leading-relaxed space-y-4">
                     <MarkdownViewer content={content} />
@@ -1089,10 +1076,10 @@ export default function Dashboard() {
               {/* Desktop Publishing Actions Card (Hidden on mobile since sticky bar handles it) */}
               <div className="hidden lg:block bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
+                  <span className="text-xs font-sans uppercase tracking-widest text-slate-400 font-semibold">
                     Article Status
                   </span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
+                  <span className="text-xs font-sans px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
                     {editingId ? 'Editing Article' : 'New Article'}
                   </span>
                 </div>
@@ -1114,7 +1101,7 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="w-full py-2 text-xs font-mono text-slate-600 hover:text-black border border-slate-200 rounded-lg transition-colors"
+                      className="w-full py-2 text-xs font-sans text-slate-600 hover:text-black border border-slate-200 rounded-lg transition-colors"
                     >
                       Clear &amp; Start New Blank Draft
                     </button>
@@ -1124,7 +1111,7 @@ export default function Dashboard() {
                         type="button"
                         disabled={deleting}
                         onClick={() => handleDeleteArticle(editingId, title)}
-                        className="w-full py-2 text-xs font-mono text-red-600 hover:text-red-800 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                        className="w-full py-2 text-xs font-sans text-red-600 hover:text-red-800 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                       >
                         {deleting ? 'Deleting...' : 'Delete Article'}
                       </button>
@@ -1140,10 +1127,10 @@ export default function Dashboard() {
                   onClick={() => setMobileCoverOpen((v) => !v)}
                   className="w-full flex items-center justify-between text-left lg:pointer-events-none"
                 >
-                  <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
-                    Cover Image {coverImageUrl ? '• Attached' : ''}
+                  <span className="text-xs font-sans uppercase tracking-widest text-slate-400 font-semibold">
+                    Cover Image
                   </span>
-                  <span className="text-xs font-mono text-slate-400 lg:hidden">
+                  <span className="text-xs font-sans text-slate-400 lg:hidden">
                     {mobileCoverOpen ? 'Hide −' : 'Show +'}
                   </span>
                 </button>
@@ -1178,10 +1165,10 @@ export default function Dashboard() {
                   onClick={() => setMobileMetaOpen((v) => !v)}
                   className="w-full flex items-center justify-between text-left lg:pb-2 lg:border-b lg:border-slate-100 lg:pointer-events-none"
                 >
-                  <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
+                  <span className="text-xs font-sans uppercase tracking-widest text-slate-400 font-semibold">
                     Metadata &amp; URL Slug
                   </span>
-                  <span className="text-xs font-mono text-slate-400 lg:hidden">
+                  <span className="text-xs font-sans text-slate-400 lg:hidden">
                     {mobileMetaOpen ? 'Hide −' : 'Edit +'}
                   </span>
                 </button>
@@ -1198,9 +1185,9 @@ export default function Dashboard() {
                         onChange={(e) => setSlug(e.target.value)}
                         required
                         placeholder="article-slug"
-                        className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                        className="w-full px-3 py-2 text-xs font-sans border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
                       />
-                      <p className="text-[11px] font-mono text-slate-400 mt-1 truncate">
+                      <p className="text-[11px] font-sans text-slate-400 mt-1 truncate">
                         theopenbrief.app/articles/{slug || '...'}
                       </p>
                     </div>
@@ -1233,9 +1220,9 @@ export default function Dashboard() {
                         onChange={(e) => setSlug(e.target.value)}
                         required
                         placeholder="article-slug"
-                        className="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                        className="w-full px-3 py-2 text-xs font-sans border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
                       />
-                      <p className="text-[11px] font-mono text-slate-400 mt-1 truncate">
+                      <p className="text-[11px] font-sans text-slate-400 mt-1 truncate">
                         theopenbrief.app/articles/{slug || '...'}
                       </p>
                     </div>
@@ -1263,7 +1250,7 @@ export default function Dashboard() {
                     type="button"
                     disabled={deleting}
                     onClick={() => handleDeleteArticle(editingId, title)}
-                    className="w-full py-2.5 text-xs font-mono text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
+                    className="w-full py-2.5 text-xs font-sans text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
                   >
                     {deleting ? 'Deleting...' : 'Delete This Article'}
                   </button>
@@ -1289,7 +1276,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={handlePurgeSiteCache}
                   disabled={purgingCache}
-                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-900 hover:text-black text-xs font-mono font-semibold transition-colors disabled:opacity-50 shrink-0"
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-900 hover:text-black text-xs font-sans font-semibold transition-colors disabled:opacity-50 shrink-0"
                 >
                   {purgingCache ? 'Refreshing...' : 'Refresh Live Cache'}
                 </button>
@@ -1297,7 +1284,7 @@ export default function Dashboard() {
             </div>
 
             {/* Filter Strip */}
-            <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 text-xs font-sans overflow-x-auto pb-1">
               {(['all', 'journal', 'explainers', 'tech', 'cinebrief', 'standalone'] as const).map((sec) => (
                 <button
                   key={sec}
@@ -1314,7 +1301,7 @@ export default function Dashboard() {
             </div>
 
             {loadingArticles ? (
-              <div className="py-12 text-center text-sm font-mono text-slate-400">
+              <div className="py-12 text-center text-sm font-sans text-slate-400">
                 Loading published articles...
               </div>
             ) : filteredArticles.length === 0 ? (
@@ -1323,7 +1310,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('editor')}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-mono"
+                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-sans"
                 >
                   Draft First Article →
                 </button>
@@ -1343,22 +1330,42 @@ export default function Dashboard() {
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
-                            {art.section}
+                          <span className="text-[10px] font-sans uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
+                            {art.section === 'standalone' ? 'general' : art.section}
                           </span>
                           {art.is_story_of_the_day && (
-                            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-red-600 text-white font-bold">
+                            <span className="text-[10px] font-sans uppercase tracking-wider px-2 py-0.5 rounded bg-red-600 text-white font-bold">
                               Story of the Day
                             </span>
                           )}
-                          <span className="text-xs font-mono text-slate-400">
+                          <span className="text-xs font-sans text-slate-400">
                             {new Date(art.published_at).toLocaleDateString()}
                           </span>
                         </div>
                         <h3 className="font-bold text-slate-900 text-base leading-snug">{art.title}</h3>
-                        <p className="text-xs text-slate-500 font-mono truncate">
-                          by {art.author_name} • {art.read_time_minutes} min • /{art.slug}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-sans">
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            {art.author_name}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            {art.read_time_minutes} min
+                          </span>
+                          <span className="inline-flex items-center gap-1 truncate max-w-[260px]">
+                            <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                            </svg>
+                            /{art.slug}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2 pt-1 sm:pt-0 shrink-0 flex-wrap">
@@ -1367,7 +1374,7 @@ export default function Dashboard() {
                             <button
                               type="button"
                               onClick={() => handleToggleStoryOfTheDay(art.id, Boolean(art.is_story_of_the_day))}
-                              className={`px-3 py-2 sm:py-1.5 text-xs font-mono border rounded-lg transition-colors text-center ${art.is_story_of_the_day
+                              className={`px-3 py-2 sm:py-1.5 text-xs font-sans border rounded-lg transition-colors text-center ${art.is_story_of_the_day
                                   ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
                                   : 'bg-white text-slate-700 border-slate-200 hover:border-slate-900'
                                 }`}
@@ -1377,26 +1384,26 @@ export default function Dashboard() {
                             <button
                               type="button"
                               onClick={() => editArticle(art.id)}
-                              className="flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 text-xs font-mono bg-white border border-slate-200 rounded-lg hover:border-black transition-colors text-center"
+                              className="flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 text-xs font-sans bg-white border border-slate-200 rounded-lg hover:border-black transition-colors text-center"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteArticle(art.id, art.title)}
-                              className="flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 text-xs font-mono text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-center"
+                              className="flex-1 sm:flex-none px-3.5 py-2 sm:py-1.5 text-xs font-sans text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-center"
                             >
                               Delete
                             </button>
                           </>
                         ) : (
-                          <span className="text-xs font-mono text-slate-400 italic">Read-only</span>
+                          <span className="text-xs font-sans text-slate-400 italic">Read-only</span>
                         )}
                         <a
                           href={`https://theopenbrief.app/articles/${art.slug}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3 py-2 sm:py-1.5 text-xs font-mono text-slate-600 border border-slate-200 sm:border-transparent rounded-lg hover:text-black shrink-0"
+                          className="px-3 py-2 sm:py-1.5 text-xs font-sans text-slate-600 border border-slate-200 sm:border-transparent rounded-lg hover:text-black shrink-0"
                         >
                           Live ↗
                         </a>
@@ -1428,7 +1435,7 @@ export default function Dashboard() {
                   type="text"
                   value={profile?.email || ''}
                   disabled
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 text-slate-500 border border-slate-200 rounded-xl cursor-not-allowed font-mono"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 text-slate-500 border border-slate-200 rounded-xl cursor-not-allowed font-sans"
                 />
               </div>
 
@@ -1437,7 +1444,7 @@ export default function Dashboard() {
                   Editorial Role
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 text-xs font-mono uppercase font-bold rounded-lg bg-slate-900 text-white">
+                  <span className="px-3 py-1 text-xs font-sans uppercase font-bold rounded-lg bg-slate-900 text-white">
                     {profile?.role}
                   </span>
                   <span className="text-xs text-slate-400">
@@ -1452,7 +1459,7 @@ export default function Dashboard() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Author Photo / Avatar (Compressed WebP)
+                  Author Photo / Avatar
                 </label>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center shrink-0">
@@ -1476,7 +1483,7 @@ export default function Dashboard() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Display / Byline Name
+                  Display Name
                 </label>
                 <input
                   type="text"
@@ -1490,7 +1497,7 @@ export default function Dashboard() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Editorial Beat / Desk
+                  Tag
                 </label>
                 <input
                   type="text"
@@ -1537,7 +1544,7 @@ export default function Dashboard() {
 
               <form onSubmit={handleCreateStaff} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                  <label className="block text-[11px] font-sans uppercase tracking-wider text-slate-500 font-bold mb-1.5">
                     Full Display Name *
                   </label>
                   <input
@@ -1551,7 +1558,7 @@ export default function Dashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                  <label className="block text-[11px] font-sans uppercase tracking-wider text-slate-500 font-bold mb-1.5">
                     Login Username / Email *
                   </label>
                   <input
@@ -1560,12 +1567,12 @@ export default function Dashboard() {
                     value={staffEmail}
                     onChange={(e) => setStaffEmail(e.target.value)}
                     placeholder="e.g., cvance@theopenbrief.app"
-                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-sans"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                  <label className="block text-[11px] font-sans uppercase tracking-wider text-slate-500 font-bold mb-1.5">
                     Access Password *
                   </label>
                   <input
@@ -1574,12 +1581,12 @@ export default function Dashboard() {
                     value={staffPassword}
                     onChange={(e) => setStaffPassword(e.target.value)}
                     placeholder="Assign strong password"
-                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-sans"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                  <label className="block text-[11px] font-sans uppercase tracking-wider text-slate-500 font-bold mb-1.5">
                     Editorial Role &amp; Permissions
                   </label>
                   <select
@@ -1594,7 +1601,7 @@ export default function Dashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold mb-1.5">
+                  <label className="block text-[11px] font-sans uppercase tracking-wider text-slate-500 font-bold mb-1.5">
                     Beat / Title
                   </label>
                   <input
@@ -1624,7 +1631,7 @@ export default function Dashboard() {
               </div>
 
               {loadingStaff ? (
-                <div className="py-12 text-center text-xs font-mono text-slate-400">
+                <div className="py-12 text-center text-xs font-sans text-slate-400">
                   Loading newsroom roster...
                 </div>
               ) : (
@@ -1643,7 +1650,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <span
-                              className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold shrink-0 font-mono ${m.role === 'admin'
+                              className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold shrink-0 font-sans ${m.role === 'admin'
                                   ? 'bg-rose-100 text-rose-800'
                                   : m.role === 'editor'
                                     ? 'bg-amber-100 text-amber-800'
@@ -1653,7 +1660,7 @@ export default function Dashboard() {
                               {m.role}
                             </span>
                           </div>
-                          <div className="text-[11px] font-mono text-slate-500 truncate">{m.email}</div>
+                          <div className="text-[11px] font-sans text-slate-500 truncate">{m.email}</div>
                           <div className="flex items-center gap-2 pt-1">
                             <button
                               type="button"
@@ -1662,17 +1669,17 @@ export default function Dashboard() {
                                 setEditPasswordValue('')
                                 setEditRoleValue(m.role)
                               }}
-                              className="flex-1 py-2 text-xs font-mono border border-slate-200 rounded-lg text-slate-700 hover:border-black"
+                              className="flex-1 py-2 text-xs font-sans border border-slate-200 rounded-lg text-slate-700 hover:border-black"
                             >
                               Edit Role / Password
                             </button>
                             {isSelf ? (
-                              <span className="px-3 py-2 text-[11px] font-mono text-slate-400 italic">(You)</span>
+                              <span className="px-3 py-2 text-[11px] font-sans text-slate-400 italic">(You)</span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleDeleteStaff(m.id, m.name)}
-                                className="px-3 py-2 text-xs font-mono text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50"
+                                className="px-3 py-2 text-xs font-sans text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50"
                               >
                                 Revoke
                               </button>
@@ -1687,7 +1694,7 @@ export default function Dashboard() {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead>
-                        <tr className="border-b border-slate-200 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
+                        <tr className="border-b border-slate-200 text-slate-400 font-sans text-[10px] uppercase tracking-wider">
                           <th className="pb-3 font-semibold">Staff Member</th>
                           <th className="pb-3 font-semibold">Username</th>
                           <th className="pb-3 font-semibold">Password</th>
@@ -1706,17 +1713,17 @@ export default function Dashboard() {
                                   {m.beat || (m.role === 'admin' ? 'Editor-in-Chief' : 'Staff Contributor')}
                                 </div>
                               </td>
-                              <td className="py-3.5 pr-3 font-mono text-slate-600 text-[11px]">
+                              <td className="py-3.5 pr-3 font-sans text-slate-600 text-[11px]">
                                 {m.email}
                               </td>
-                              <td className="py-3.5 pr-3 font-mono text-slate-700">
+                              <td className="py-3.5 pr-3 font-sans text-slate-700">
                                 <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] uppercase font-semibold">
                                   Supabase Auth (Hashed)
                                 </span>
                               </td>
                               <td className="py-3.5 pr-3">
                                 <span
-                                  className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold inline-block font-mono ${m.role === 'admin'
+                                  className={`uppercase text-[10px] px-2 py-0.5 rounded font-bold inline-block font-sans ${m.role === 'admin'
                                       ? 'bg-rose-100 text-rose-800'
                                       : m.role === 'editor'
                                         ? 'bg-amber-100 text-amber-800'
@@ -1742,7 +1749,7 @@ export default function Dashboard() {
                                   </svg>
                                 </button>
                                 {isSelf ? (
-                                  <span className="text-[10px] font-mono text-slate-400 italic">(You)</span>
+                                  <span className="text-[10px] font-sans text-slate-400 italic">(You)</span>
                                 ) : (
                                   <button
                                     type="button"
@@ -1773,7 +1780,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                     <div className="min-w-0 pr-2">
                       <h4 className="font-bold text-slate-900">Edit Staff Credentials</h4>
-                      <p className="text-xs text-slate-500 font-mono mt-0.5 truncate">
+                      <p className="text-xs text-slate-500 font-sans mt-0.5 truncate">
                         {editingStaffMember.name} ({editingStaffMember.email})
                       </p>
                     </div>
@@ -1799,7 +1806,7 @@ export default function Dashboard() {
                         value={editPasswordValue}
                         onChange={(e) => setEditPasswordValue(e.target.value)}
                         placeholder="Enter new password"
-                        className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-mono"
+                        className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-sans"
                       />
                       <p className="text-[10px] text-slate-400 mt-1">Updates the login password immediately.</p>
                     </div>
@@ -1847,7 +1854,7 @@ export default function Dashboard() {
       {/* ── Sticky Mobile Publish Action Bar (Visible on < lg when in Writing Desk) ── */}
       {activeTab === 'editor' && (
         <div className="lg:hidden fixed bottom-[56px] inset-x-0 z-20 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-3.5 py-2 flex items-center justify-between gap-2.5">
-          <div className="text-[11px] font-mono text-slate-500 truncate">
+          <div className="text-[11px] font-sans text-slate-500 truncate">
             {editingId ? 'Editing live story' : 'Draft ready'}
           </div>
           <button
@@ -1866,7 +1873,7 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => setActiveTab('editor')}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'editor' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-sans ${activeTab === 'editor' ? 'text-slate-900 font-bold' : 'text-slate-400'
             }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -1878,7 +1885,7 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => { setActiveTab('archive'); fetchArchive() }}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'archive' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-sans ${activeTab === 'archive' ? 'text-slate-900 font-bold' : 'text-slate-400'
             }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -1891,7 +1898,7 @@ export default function Dashboard() {
           <button
             type="button"
             onClick={() => { setActiveTab('staff'); fetchStaff() }}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'staff' ? 'text-slate-900 font-bold' : 'text-slate-400'
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-sans ${activeTab === 'staff' ? 'text-slate-900 font-bold' : 'text-slate-400'
               }`}
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -1904,7 +1911,7 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-mono ${activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-sans ${activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
             }`}
         >
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -1915,11 +1922,21 @@ export default function Dashboard() {
       </nav>
 
       {/* ── Admin Footer (Hidden on mobile to keep bottom bar clean) ── */}
-      <footer className="hidden sm:block border-t border-slate-200 bg-white py-6 mt-16 text-xs font-mono text-slate-500">
+      <footer className="hidden sm:block border-t border-slate-200 bg-white py-6 mt-16 text-xs font-sans text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>© {new Date().getFullYear()} TheOpenBrief. Author Studio. All rights reserved.</p>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Developed by 45 STUDioS</span>
+            <span>
+              Developed by{' '}
+              <a
+                href="https://anandhukrishne.tech"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-600 hover:text-black transition-colors underline"
+              >
+                45 STUDioS
+              </a>
+            </span>
             <span>•</span>
             <a
               href="https://theopenbrief.app"
@@ -1983,7 +2000,7 @@ function MarkdownViewer({ content }: { content: string }) {
         }
         if (text.startsWith('```')) {
           return (
-            <pre key={idx} className="bg-slate-900 text-slate-100 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+            <pre key={idx} className="bg-slate-900 text-slate-100 p-3 rounded-lg text-xs font-sans overflow-x-auto">
               {text.replace(/^```[^\n]*\n?|\n?```$/g, '')}
             </pre>
           )

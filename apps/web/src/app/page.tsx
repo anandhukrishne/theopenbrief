@@ -121,12 +121,6 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="hidden md:flex w-full md:w-1/4 items-center justify-end gap-4 text-right font-medium">
-            <Link
-              href="/editions"
-              className="text-[11px] font-sans font-bold uppercase tracking-wider text-red-600 dark:text-red-400 hover:underline"
-            >
-              Special Editions
-            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -197,7 +191,7 @@ export default async function HomePage() {
               {/* Left Side: Story of the day */}
               <div className="lg:col-span-7 space-y-3">
                 <div className="text-[10px] font-bold text-red-600 dark:text-red-500 uppercase tracking-widest font-sans">
-                  Story of the day · {heroArticle.section === 'standalone' ? 'GENERAL' : heroArticle.section.toUpperCase()}
+                  Story of the day
                 </div>
 
                 <Link href={`/articles/${heroArticle.slug}`} prefetch={false} className="group block">
@@ -256,13 +250,11 @@ export default async function HomePage() {
                             {pick.title}
                           </h3>
                         </Link>
-                        <Link
-                          href={`/authors/${getAuthorSlug(pick.authorName)}`}
-                          prefetch={false}
-                          className="text-[11px] text-neutral-500 dark:text-neutral-400 italic truncate hover:underline hover:text-red-600 dark:hover:text-red-400 block transition-colors"
-                        >
-                          {pick.authorName}
-                        </Link>
+                        {pick.excerpt && (
+                          <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+                            {pick.excerpt}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
