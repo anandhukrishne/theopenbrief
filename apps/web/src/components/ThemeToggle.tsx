@@ -38,8 +38,7 @@ export default function ThemeToggle() {
     return () => mediaQuery.removeEventListener('change', handleSystemChange)
   }, [])
 
-  const toggleTheme = () => {
-    const nextDark = !isDark
+  const applyNextTheme = (nextDark: boolean) => {
     setIsDark(nextDark)
     if (nextDark) {
       document.documentElement.classList.add('dark')
@@ -48,6 +47,51 @@ export default function ThemeToggle() {
       document.documentElement.classList.remove('dark')
       localStorage.setItem('tob-theme', 'light')
     }
+  }
+
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const nextDark = !isDark
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+
+    const doc = document as Document & {
+      startViewTransition?: (callback: () => void) => { ready: Promise<void> }
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (!doc.startViewTransition || prefersReducedMotion) {
+      applyNextTheme(nextDark)
+      return
+    }
+
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    )
+
+    const transition = doc.startViewTransition(() => {
+      applyNextTheme(nextDark)
+    })
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 500,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        }
+      )
+    })
   }
 
   if (!mounted) {
@@ -60,12 +104,16 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="w-9 h-9 rounded-full flex items-center justify-center bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 transition-colors shrink-0 shadow-xs border border-neutral-800 dark:border-neutral-200"
+      className="group relative w-9 h-9 rounded-full flex items-center justify-center bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 transition-all duration-200 active:scale-90 shrink-0 shadow-xs border border-neutral-800 dark:border-neutral-200 overflow-hidden"
     >
-      {isDark ? (
-        /* Google Material Sun (light_mode) */
+      <span className="relative w-[18px] h-[18px] flex items-center justify-center">
+        {/* Google Material Sun (light_mode) */}
         <svg
-          className="w-[18px] h-[18px]"
+          className={`absolute inset-0 w-[18px] h-[18px] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isDark
+              ? 'opacity-100 rotate-0 scale-100'
+              : 'opacity-0 rotate-90 scale-50'
+          }`}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -76,10 +124,14 @@ export default function ThemeToggle() {
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
         </svg>
-      ) : (
-        /* Google Material Moon (dark_mode) */
+
+        {/* Google Material Moon (dark_mode) */}
         <svg
-          className="w-[18px] h-[18px]"
+          className={`absolute inset-0 w-[18px] h-[18px] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isDark
+              ? 'opacity-0 -rotate-90 scale-50'
+              : 'opacity-100 rotate-0 scale-100'
+          }`}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -89,7 +141,7 @@ export default function ThemeToggle() {
         >
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
-      )}
+      </span>
     </button>
   )
 }

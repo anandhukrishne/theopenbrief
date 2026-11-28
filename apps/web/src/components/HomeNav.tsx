@@ -36,20 +36,28 @@ export default function HomeNav() {
         <div className="md:hidden w-full flex items-center justify-between">
           <button
             type="button"
-            className="p-1.5 rounded-full text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-2 rounded-full text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors active:scale-95"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
-            {open ? (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-              </svg>
-            ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-              </svg>
-            )}
+            <span className="w-5 h-3.5 relative flex flex-col justify-between">
+              <span
+                className={`block h-[2px] w-full bg-current rounded-full origin-center transition-all duration-300 ease-in-out ${
+                  open ? 'translate-y-[6px] rotate-45' : ''
+                }`}
+              />
+              <span
+                className={`block h-[2px] w-full bg-current rounded-full transition-all duration-200 ease-in-out ${
+                  open ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'
+                }`}
+              />
+              <span
+                className={`block h-[2px] w-full bg-current rounded-full origin-center transition-all duration-300 ease-in-out ${
+                  open ? '-translate-y-[6px] -rotate-45' : ''
+                }`}
+              />
+            </span>
           </button>
 
           <ThemeToggle />

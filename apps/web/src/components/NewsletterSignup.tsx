@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 
 export type NewsletterVariant = 'about' | 'article' | 'home'
 
@@ -16,20 +16,35 @@ const VARIANT_COPY: Record<
     source: 'about_page',
   },
   article: {
-    eyebrow: 'Subscribe to TheOpenBrief',
-    title: 'Enjoyed this article?',
+    eyebrow: 'The Open Brief Dispatch',
+    title: 'Enjoyed this dispatch?',
     description:
       'Get our weekly roundup of new essays, visual explainers, and reviews delivered straight to your inbox.',
     source: 'article_footer',
   },
   home: {
-    eyebrow: 'Weekly Newsletter',
-    title: 'Get TheOpenBrief in your inbox',
+    eyebrow: 'Weekly Editorial Briefing',
+    title: 'Get The Open Brief in your inbox',
     description:
       'Every week, our editorial desk sends a curated digest of our latest explainers, technology, and cinema dispatches.',
     source: 'home_banner',
   },
 }
+
+const CONFETTI_PIECES = [
+  { tx: '-54px', ty: '-42px', rot: '-140deg', color: 'bg-red-600', size: 'w-2 h-1.5 rounded-xs' },
+  { tx: '-34px', ty: '-58px', rot: '110deg', color: 'bg-amber-400', size: 'w-1.5 h-1.5 rounded-full' },
+  { tx: '-14px', ty: '-62px', rot: '-90deg', color: 'bg-emerald-500', size: 'w-2 h-1 rounded-xs' },
+  { tx: '12px', ty: '-64px', rot: '130deg', color: 'bg-sky-500', size: 'w-1.5 h-1.5 rounded-full' },
+  { tx: '34px', ty: '-56px', rot: '175deg', color: 'bg-red-500', size: 'w-2 h-1 rounded-xs' },
+  { tx: '54px', ty: '-40px', rot: '-160deg', color: 'bg-amber-500', size: 'w-1.5 h-1.5 rounded-full' },
+  { tx: '-62px', ty: '-12px', rot: '95deg', color: 'bg-sky-400', size: 'w-1.5 h-1 rounded-xs' },
+  { tx: '62px', ty: '-10px', rot: '-115deg', color: 'bg-emerald-400', size: 'w-2 h-1.5 rounded-xs' },
+  { tx: '-46px', ty: '28px', rot: '145deg', color: 'bg-amber-400', size: 'w-1.5 h-1.5 rounded-full' },
+  { tx: '-18px', ty: '42px', rot: '-120deg', color: 'bg-red-600', size: 'w-2 h-1 rounded-xs' },
+  { tx: '22px', ty: '40px', rot: '160deg', color: 'bg-emerald-500', size: 'w-1.5 h-1.5 rounded-full' },
+  { tx: '48px', ty: '26px', rot: '-95deg', color: 'bg-sky-500', size: 'w-2 h-1 rounded-xs' },
+]
 
 interface NewsletterSignupProps {
   variant?: NewsletterVariant
@@ -41,6 +56,7 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [feedback, setFeedback] = useState('')
+  const [confettiKey, setConfettiKey] = useState(0)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,6 +84,7 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
       }
 
       setStatus('success')
+      setConfettiKey((k) => k + 1)
       setFeedback(data.message || 'Subscribed! You will receive our weekly editorial digest.')
       if (!data.alreadySubscribed) {
         setEmail('')
@@ -137,21 +154,45 @@ export default function NewsletterSignup({ variant = 'about', className = '' }: 
               disabled={status === 'loading'}
               className="flex-1 px-4 py-2.5 text-sm bg-white dark:bg-[#080C14] border border-neutral-300 dark:border-neutral-700 rounded-full text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:border-red-600 dark:focus:border-red-400 transition-colors disabled:opacity-60"
             />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="px-6 py-2.5 text-xs font-sans font-bold uppercase tracking-wider rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-red-600 dark:hover:bg-red-600 dark:hover:text-white transition-colors disabled:opacity-60 shrink-0 shadow-xs"
-            >
-              {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
-            </button>
+            <div className="relative inline-flex shrink-0">
+              {confettiKey > 0 && (
+                <div
+                  key={confettiKey}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible z-20"
+                >
+                  {CONFETTI_PIECES.map((piece, idx) => (
+                    <span
+                      key={idx}
+                      style={
+                        {
+                          '--tx': piece.tx,
+                          '--ty': piece.ty,
+                          '--rot': piece.rot,
+                        } as CSSProperties
+                      }
+                      className={`absolute ${piece.size} ${piece.color} animate-tob-confetti`}
+                    />
+                  ))}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full sm:w-auto px-6 py-2.5 text-xs font-sans font-bold uppercase tracking-wider rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-red-600 dark:hover:bg-red-600 dark:hover:text-white active:scale-95 transition-all disabled:opacity-60 shadow-xs"
+              >
+                {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+              </button>
+            </div>
           </form>
 
           {feedback && (
             <p
-              className={`mt-2.5 text-xs font-sans font-medium ${status === 'error'
+              className={`mt-2.5 text-xs font-sans font-medium ${
+                status === 'error'
                   ? 'text-red-600 dark:text-red-400'
                   : 'text-emerald-700 dark:text-emerald-400'
-                }`}
+              }`}
             >
               {feedback}
             </p>
