@@ -78,7 +78,7 @@ export default function SectionHeroBlock({
   const companionArticles = articles.slice(1, 3)
 
   const FeaturedArticleCard = (
-    <article className="space-y-2.5">
+    <article className="relative z-10 space-y-2.5">
       <Link href={`/articles/${leadArticle.slug}`} prefetch={false} className="group block space-y-2">
         <div className="w-full aspect-[16/9] overflow-hidden rounded-xs bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700">
           <CoverImage
@@ -219,7 +219,7 @@ export default function SectionHeroBlock({
       </div>
 
       <div className="lg:hidden space-y-6">
-        <div className="relative pb-3 border-b border-neutral-300 dark:border-neutral-800 flex items-end justify-between overflow-visible min-h-[60px]">
+        <div className="relative pb-3 border-b border-neutral-300 dark:border-neutral-800 flex items-end justify-between overflow-hidden min-h-[60px]">
           {section === 'explainers' ? (
             <>
               {!isSectionPage ? (

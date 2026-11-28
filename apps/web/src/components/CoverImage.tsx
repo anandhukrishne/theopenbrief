@@ -19,18 +19,22 @@ export default function CoverImage({
 }: CoverImageProps) {
   const [hasError, setHasError] = useState(false)
 
-  const sizeClasses = {
-    sm: 'w-8 h-8 text-[10px]',
-    md: 'w-12 h-12 text-sm',
-    lg: 'w-16 h-16 sm:w-20 sm:h-20 text-xl sm:text-2xl',
+  const boxSizes = {
+    sm: 'w-9 h-9 p-1.5',
+    md: 'w-14 h-14 p-2',
+    lg: 'w-20 h-20 sm:w-24 sm:h-24 p-3',
   }
 
-  // If no source or error loading image, render the clean TOB editorial monogram box
+  // If no source or error loading image, render the official TOB mark inside the editorial monogram box
   if (!src || hasError || !src.trim()) {
     return (
       <div className={`w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 ${aspectRatio || ''}`}>
-        <div className={`${sizeClasses[monogramSize]} bg-neutral-900 dark:bg-neutral-800 text-white flex items-center justify-center font-bold tracking-tight shadow-sm select-none`}>
-          TOB
+        <div className={`${boxSizes[monogramSize]} bg-neutral-900 dark:bg-neutral-800 flex items-center justify-center shadow-sm select-none`}>
+          <img
+            src="/tob-mark-white.png"
+            alt="TOB"
+            className="w-full h-full object-contain"
+          />
         </div>
       </div>
     )

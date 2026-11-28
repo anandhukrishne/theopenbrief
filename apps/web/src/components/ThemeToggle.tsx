@@ -8,14 +8,34 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('tob-theme')
-    if (stored === 'dark') {
-      setIsDark(true)
-      document.documentElement.classList.add('dark')
-    } else {
-      setIsDark(false)
-      document.documentElement.classList.remove('dark')
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const applyTheme = () => {
+      const stored = localStorage.getItem('tob-theme')
+      const nextDark = stored === 'dark' || (!stored && mediaQuery.matches)
+      setIsDark(nextDark)
+      if (nextDark) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
+
+    applyTheme()
+
+    const handleSystemChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('tob-theme')) {
+        setIsDark(e.matches)
+        if (e.matches) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      }
+    }
+
+    mediaQuery.addEventListener('change', handleSystemChange)
+    return () => mediaQuery.removeEventListener('change', handleSystemChange)
   }, [])
 
   const toggleTheme = () => {
